@@ -3,7 +3,7 @@ import NextLink from "next/link"
 import { cn } from "@/lib/utils"
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "icon"
+  variant?: "primary" | "secondary" | "ghost" | "icon" | "outline"
   size?: "sm" | "md" | "lg"
   isLoading?: boolean
   children?: React.ReactNode
@@ -20,6 +20,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       secondary: "bg-white text-blue-deep border-2 border-blue-deep hover:bg-blue-50 active:scale-95",
       ghost: "bg-transparent text-gray-700 hover:bg-gray-100 active:scale-95",
       icon: "bg-transparent text-gray-700 hover:bg-gray-100 active:scale-95 p-0",
+      outline: "bg-transparent text-foreground border border-border hover:bg-muted active:scale-95",
     }
     
     const sizes = {

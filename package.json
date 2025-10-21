@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "pre-commit": "npm run lint && npm run type-check"
+    "pre-commit": "npm run lint && npm run type-check",
+    "clean": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\"",
+    "reset": "npm run clean && npm run dev"
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -62,6 +62,21 @@ This is a complete redesign being built separately from the current live site:
 
 The current live site remains untouched until launch day.
 
+### Troubleshooting
+
+**Internal Server Error / Build Cache Issues:**
+
+If you see "Internal Server Error" in the browser, the `.next` build cache may be corrupted. Fix it with:
+
+```bash
+npm run clean    # Removes .next directory
+npm run dev      # Restart dev server
+# OR use the combined command:
+npm run reset    # Cleans and restarts in one command
+```
+
+This is a known issue with Next.js Turbopack during active development.
+
 ## Technology Stack
 
 - **Framework**: Next.js 15 (App Router)
