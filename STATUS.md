@@ -1,6 +1,6 @@
 # Project Status
 
-**Current Task:** Phase 2: Task 2.5 (Pricing Section) - COMPLETE ✓
+**Current Task:** Phase 2: Task 2.8 (Final CTA Section)
 
 **⚠️ CRITICAL: NO DELAWARE REFERENCES** - Site must be generic/national, not location-specific. All copy must be truthful.
 
@@ -16,8 +16,8 @@
   - [x] 2.3: Solution Section - COMPLETE
   - [x] 2.4: Services Section - COMPLETE
   - [x] 2.5: Pricing Section - COMPLETE
-  - [ ] 2.6: Social Proof Section
-  - [ ] 2.7: FAQ Section
+  - [~] 2.6: Social Proof Section - SKIPPED (needs real testimonials/stats)
+  - [x] 2.7: FAQ Section - COMPLETE
   - [ ] 2.8: Final CTA Section
 - [ ] Phase 3: Supporting Pages
 - [ ] Phase 4: Advanced Features
@@ -220,7 +220,40 @@
 - Semantic HTML (section, article, h2, h3)
 - ARIA labels for accessibility
 
-**Next:** Begin Social Proof Section (2.6)
+**Session 7 - October 21, 2025 (Continued)**
+**Time:** Current session
+**Focus:** Phase 2 - Social Proof Section
+**Decision:**
+- ⚠️ Social Proof section REMOVED - violated truthful copy requirement
+- Cannot use fake testimonials or untruthful statistics (50+ sites, 15+ years)
+- Section will be added later when real client testimonials are available
+- Deleted components/sections/SocialProof.tsx
+
+**Session 8 - October 21, 2025 (Continued)**
+**Time:** Current session
+**Focus:** Phase 2 - FAQ Section
+**Completed:**
+- ✅ Created components/sections/FAQ.tsx
+- ✅ Implemented 8 FAQs with accordion pattern
+- ✅ Smooth expand/collapse animations (300ms)
+- ✅ Chevron rotation indicator
+- ✅ Questions cover: timelines, technical knowledge, custom vs template, content help, mobile, post-launch, examples, hosting
+- ✅ "Still have questions?" CTA at bottom
+- ✅ Added to app/page.tsx
+- ✅ TypeScript: PASSED ✓
+- ✅ ESLint: PASSED ✓
+
+**FAQ Section Features:**
+- Accordion UI with expand/collapse interaction
+- Smooth height animations with AnimatePresence
+- Chevron icon rotates on expand
+- Scroll-triggered fade-in animations
+- Dark mode support with CSS variables
+- Semantic HTML (section, h2, h3, button)
+- Accessible (aria-expanded, aria-controls)
+- Mobile responsive layout
+
+**Next:** Begin Final CTA Section (2.8)
 
 ---
 
@@ -234,8 +267,8 @@
 ---
 
 ## Quick Stats
-- **Total sessions:** 6
+- **Total sessions:** 7
 - **Phase completed:** 1 / 5
-- **Components built:** 9 (Button, Card, Input, Link, Hero, Problems, Solutions, Services, Pricing)
-- **Homepage sections:** 5 / 8 (Hero, Problems, Solutions, Services, Pricing)
+- **Components built:** 10 (Button, Card, Input, Link, Hero, Problems, Solutions, Services, Pricing, FAQ)
+- **Homepage sections:** 6 / 8 (Hero, Problems, Solutions, Services, Pricing, FAQ)
 - **Build status:** ✅ All checks passing
