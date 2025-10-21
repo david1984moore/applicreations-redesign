@@ -21,7 +21,7 @@ const plans = [
       '30 days support',
     ],
     cta: 'Get Started',
-    ctaHref: '#contact',
+    ctaHref: '/quote',
     popular: false,
   },
   {
@@ -42,7 +42,7 @@ const plans = [
       'Performance optimization',
     ],
     cta: 'Get Started',
-    ctaHref: '#contact',
+    ctaHref: '/quote',
     popular: true,
   },
   {
@@ -63,7 +63,7 @@ const plans = [
       'Ongoing maintenance available',
     ],
     cta: 'Get Quote',
-    ctaHref: '#contact',
+    ctaHref: '/quote',
     popular: false,
   },
 ];
@@ -75,7 +75,7 @@ export function Pricing() {
   return (
     <section
       ref={ref}
-      className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-blue-50/30"
+      className="py-24 px-4 sm:px-6 lg:px-8 bg-linear-to-b from-background to-blue-50/30"
       aria-labelledby="pricing-heading"
     >
       <div className="max-w-7xl mx-auto">
@@ -136,7 +136,7 @@ export function Pricing() {
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3">
                     <svg
-                      className="w-5 h-5 text-success flex-shrink-0 mt-0.5"
+                      className="w-5 h-5 text-success shrink-0 mt-0.5"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-hidden="true"

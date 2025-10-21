@@ -50,9 +50,9 @@ const HOW_IT_WORKS = {
   steps: [
     {
       number: "01",
-      title: "Quick Consultation",
-      description: "15-minute call to understand your business, goals, and customers.",
-      duration: "15 minutes"
+      title: "Get Your Quote",
+      description: "Select the features you need and get instant pricing and project specifications.",
+      duration: "5 minutes"
     },
     {
       number: "02",

@@ -25,7 +25,7 @@ export default function FinalCTA() {
             variants={fadeIn}
             className="text-xl text-primary-50 mb-12 max-w-2xl mx-auto leading-relaxed"
           >
-            Let's build a website that works as hard as you do. Get a free consultation and instant quote - no pressure, no obligations.
+            Let's build a website that works as hard as you do. Use our quote tool to design your perfect site and get instant pricing - no pressure, no obligations.
           </motion.p>
 
           <motion.div
@@ -33,15 +33,15 @@ export default function FinalCTA() {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
           >
             <Button
-              href="#contact"
+              href="/quote"
               variant="secondary"
               size="lg"
               className="w-full sm:w-auto bg-white text-primary-600 hover:bg-primary-50 border-0"
             >
-              Get Your Free Quote
+              Get Instant Quote
             </Button>
             <Button
-              href="#demo"
+              href="/demos"
               variant="outline"
               size="lg"
               className="w-full sm:w-auto border-2 border-white text-white hover:bg-white/10"

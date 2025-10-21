@@ -168,7 +168,7 @@ export function Services() {
                 {service.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3">
                     <svg
-                      className="w-5 h-5 text-success flex-shrink-0 mt-0.5"
+                      className="w-5 h-5 text-success shrink-0 mt-0.5"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-hidden="true"
@@ -215,11 +215,11 @@ export function Services() {
             Not sure which option fits your needs?
           </h3>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Get a free consultation and we&apos;ll recommend the best solution for your
-            business.
+            Use our quote tool to select what you need and get instant pricing
+            tailored to your business.
           </p>
-          <Button variant="primary" size="lg" href="#contact">
-            Schedule Free Consultation
+          <Button variant="primary" size="lg" href="/quote">
+            Get Your Custom Quote
           </Button>
         </motion.div>
       </div>

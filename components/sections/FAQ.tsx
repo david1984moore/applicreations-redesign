@@ -12,7 +12,7 @@ interface FAQItem {
 const faqs: FAQItem[] = [
   {
     question: "How long does it take to build a custom website?",
-    answer: "Most projects take 2-4 weeks from start to launch. Simple websites can be ready in as little as 1 week, while complex web applications may take 4-6 weeks. We'll give you an exact timeline during your free consultation based on your specific needs."
+    answer: "Most projects take 2-4 weeks from start to launch. Simple websites can be ready in as little as 1 week, while complex web applications may take 4-6 weeks. Our quote tool will give you an exact timeline based on the features you select."
   },
   {
     question: "Do I need to know how to code to manage my site?",
@@ -36,7 +36,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: "Can I see examples of your work?",
-    answer: "Yes! We have demo sites that showcase our capabilities. During your consultation, we'll show you relevant examples and discuss how we can customize similar approaches for your business. Every project is unique, but demos give you a sense of quality and possibilities."
+    answer: "Yes! We have demo sites that showcase our capabilities. You can browse our demos to see examples of different features and designs. Every project is unique, but demos give you a sense of quality and possibilities you can include in your custom site."
   },
   {
     question: "Do you offer hosting, or do I need to arrange that?",
