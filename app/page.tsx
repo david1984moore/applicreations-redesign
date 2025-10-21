@@ -1,103 +1,173 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/Button"
+import { Card } from "@/components/ui/Card"
+import { Input } from "@/components/ui/Input"
+import { Link } from "@/components/ui/Link"
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen p-8 bg-gray-50">
+      <div className="max-w-6xl mx-auto space-y-12">
+        {/* Header */}
+        <header className="text-center space-y-4 py-12">
+          <h1 className="text-4xl font-bold text-gray-900">
+            Applicreations Redesign
+          </h1>
+          <p className="text-xl text-gray-600">
+            Phase 1: Design System Components
+          </p>
+        </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+        {/* Button Showcase */}
+        <section className="bg-white rounded-lg p-8 space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-900">Buttons</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Variants</h3>
+              <div className="flex flex-wrap gap-4">
+                <Button variant="primary">Primary Button</Button>
+                <Button variant="secondary">Secondary Button</Button>
+                <Button variant="ghost">Ghost Button</Button>
+                <Button variant="icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Sizes</h3>
+              <div className="flex flex-wrap gap-4 items-end">
+                <Button size="sm">Small</Button>
+                <Button size="md">Medium</Button>
+                <Button size="lg">Large</Button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-3">States</h3>
+              <div className="flex flex-wrap gap-4">
+                <Button isLoading>Loading</Button>
+                <Button disabled>Disabled</Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Card Showcase */}
+        <section className="bg-white rounded-lg p-8 space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-900">Cards</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card variant="default">
+              <h3 className="text-lg font-semibold mb-2">Default Card</h3>
+              <p className="text-gray-600">Standard card with border styling.</p>
+            </Card>
+            
+            <Card variant="elevated">
+              <h3 className="text-lg font-semibold mb-2">Elevated Card</h3>
+              <p className="text-gray-600">Card with shadow for emphasis.</p>
+            </Card>
+            
+            <Card variant="interactive">
+              <h3 className="text-lg font-semibold mb-2">Interactive Card</h3>
+              <p className="text-gray-600">Hover me! Includes animation with Framer Motion.</p>
+            </Card>
+          </div>
+        </section>
+
+        {/* Input Showcase */}
+        <section className="bg-white rounded-lg p-8 space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-900">Inputs</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+            <Input 
+              label="Default Input"
+              placeholder="Enter text here..."
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+            
+            <Input 
+              label="With Value"
+              placeholder="Enter text here..."
+              defaultValue="Sample text"
+            />
+            
+            <Input 
+              label="Error State"
+              placeholder="Enter email..."
+              error="Please enter a valid email address"
+            />
+            
+            <Input 
+              label="Success State"
+              placeholder="Enter text..."
+              success
+              defaultValue="Validated input"
+            />
+          </div>
+        </section>
+
+        {/* Link Showcase */}
+        <section className="bg-white rounded-lg p-8 space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-900">Links</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Internal Link</h3>
+              <Link href="/about">About Page (internal)</Link>
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-3">External Link</h3>
+              <Link href="https://applicreations.com">Applicreations Website (opens in new tab)</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Design System Info */}
+        <section className="bg-white rounded-lg p-8 space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-900">Design System</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Colors</h3>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-blue-deep"></div>
+                  <span className="text-sm">Blue Deep (Primary)</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-action"></div>
+                  <span className="text-sm">Action (Green)</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-error"></div>
+                  <span className="text-sm">Error (Red)</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Typography Scale</h3>
+              <div className="space-y-2">
+                <p className="text-xs">Extra Small (12px)</p>
+                <p className="text-sm">Small (14px)</p>
+                <p className="text-base">Base (16px)</p>
+                <p className="text-lg">Large (18px)</p>
+                <p className="text-xl">Extra Large (21px)</p>
+                <p className="text-2xl">2X Large (28px)</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="text-center py-8 text-gray-600">
+          <p>✅ Phase 1 Complete - Foundation & Design System</p>
+          <p className="text-sm mt-2">Next: Phase 2 - Homepage Construction</p>
       </footer>
+      </div>
     </div>
-  );
+  )
 }
