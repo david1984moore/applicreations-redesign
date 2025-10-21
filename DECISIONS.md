@@ -132,5 +132,45 @@ Each entry: Date, Decision, Rationale, Alternatives Considered
 **Prevention**: When seeing ENOENT errors about manifest files in terminal, always delete `.next` first before debugging code
 **Impact**: Clean rebuild resolves all 500 errors. Hero section now renders perfectly with all features working.
 
+## October 21, 2025 - Hero Section Final Design: Minimal Apple-Inspired Approach
+**Decision**: Complete redesign of Hero section to minimal, Steve Jobs-inspired aesthetic
+**Final Implementation**:
+  - **Logo placement**: Centered butterfly logo (from logo.png) with dramatic drop-shadow (0 20px 40px + 0 8px 16px) creating "floating above surface" effect
+  - **Main headline**: "Your vision, our pride" - Large, bold (4xl → 6xl), tight tracking, emotional hook
+  - **Subheadline**: "Custom apps and websites" - Lighter weight (font-light), clear what you do
+  - **CTAs**: Two buttons (Get Instant Quote + See Demo Sites) with no additional trust indicators
+  - **Layout**: h-screen (not min-h-screen) ensures all content fits in viewport on load - no cutoff
+  - **Spacing**: py-8 on container, mb-8 butterfly, mb-4 headline, mb-12 subline - tight, balanced vertical rhythm
+  - **Visual hierarchy**: Butterfly → Bold headline → Light subline → CTAs
+  
+**Design Philosophy Applied**:
+  - Steve Jobs principle: Remove everything unnecessary. If it's good, people will know.
+  - Removed trust indicator badges (too marketing-y, cluttered)
+  - Focus on ONE clear message with emotional resonance
+  - Let white space do the work
+  - Shadow creates depth without decoration
+  
+**Copy Evolution**:
+  - Started: "Professional web development for businesses ready to grow online..."
+  - Explored: "Build something remarkable", "Great businesses deserve great websites", "Built to be remembered"
+  - Final: "Your vision, our pride" - Partnership feel, emotional without being sappy
+  - User originated final copy direction: "we build what you can be proud of" → refined to winner
+  
+**Technical Details**:
+  - Custom drop-shadow via inline style (not Tailwind) for precise control
+  - Motion.div with scale animation (0.8 → 1) on butterfly for elegant entrance
+  - Staggered animation delays (0, 0.1s, 0.15s, 0.2s) for content cascade
+  - H1 semantic tag on headline for SEO
+  - Proper heading hierarchy and accessibility
+  
+**Alternatives Rejected**:
+  - Top-left logo + name + tagline - created visual imbalance, too busy
+  - Large "Build Your Digital Presence" headline - too generic, not emotional enough
+  - Trust indicator pills at bottom - Steve Jobs would cut these, cluttered the clean aesthetic
+  - Single CTA - kept two CTAs as compromise (Jobs would prefer one)
+  
+**User Feedback**: "The hero at least looks fucking great" ✓
+**Impact**: Sets premium, confident tone for entire site. Minimal, focused, memorable. Ready to ship.
+
 ---
 
