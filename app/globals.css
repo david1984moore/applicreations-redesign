@@ -71,6 +71,9 @@
   --color-gray-800: oklch(27% 0 0);
   --color-gray-900: oklch(17% 0 0);
   
+  /* Blue Scale for backgrounds */
+  --color-blue-50: oklch(98% 0.02 264);
+  
   /* Spacing - 8-point grid */
   --spacing-1: 0.5rem;
   --spacing-2: 1rem;

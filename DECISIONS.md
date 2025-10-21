@@ -77,4 +77,60 @@ Each entry: Date, Decision, Rationale, Alternatives Considered
   - 200ms duration - rejected as too fast
 **Impact**: Completely fluid, zero-hitch animations. Text stays pixel-perfect stable. 60fps guaranteed. Production-quality polish.
 
+---
+
+## October 21, 2025 - Hero Section Implementation
+**Decision**: Build Hero section as first Phase 2 component with full Framer Motion animations
+**Rationale**: Hero is most critical section (3-second test). Must be perfect. Implementation:
+  - Exact copy from SCOPE.md (no variations)
+  - Semantic H1 for SEO
+  - Responsive typography (38px mobile → 51px desktop)
+  - Dual CTAs with proper hierarchy (primary + secondary)
+  - Trust indicators as pill badges
+  - Framer Motion for smooth entrance animations
+  - Subtle gradient background (doesn't compete with content)
+**Alternatives**: 
+  - Static hero without animations - rejected, loses polish
+  - Different copy - rejected, must match SCOPE.md exactly
+**Impact**: Professional, conversion-focused hero that passes 3-second test. Sets quality bar for rest of site.
+
+## October 21, 2025 - Button Component Enhancement (href Support)
+**Decision**: Extend Button component to support href prop, rendering as Next.js Link when provided
+**Rationale**: Hero CTAs need to link to /demo and /quote pages. Button component originally only supported button elements. Solution:
+  - Add optional `href` prop to ButtonProps
+  - When href is provided (and not disabled/loading), render as NextLink
+  - Otherwise render as button element
+  - Maintains all styling, variants, and accessibility features
+  - Updated secondary variant: white bg + blue border (per SCOPE.md specs)
+**Alternatives**: 
+  - Use separate Link component styled as button - rejected, duplicates code
+  - Wrap buttons in Links - rejected, poor semantics and accessibility
+**Impact**: Single Button component handles both button and link use cases. Cleaner API, better DX.
+
+## October 21, 2025 - Content Direction Change: Remove Delaware References
+**Decision**: Remove all Delaware-specific messaging from the redesign
+**Rationale**: User explicitly stated they do not want Delaware mentioned anywhere on the site. Original SCOPE.md was Delaware-focused, but actual site should be:
+  - Generic/national positioning (NOT location-specific)
+  - Truthful claims only (no false statistics about years in business or sites launched)
+  - Simple, honest messaging: "Custom apps and websites"
+  - Professional web development without geographic targeting
+**Implementation**: 
+  - Updated Hero section with approved generic copy
+  - Added critical override notice to SCOPE.md
+  - Created memory to prevent future Delaware references
+  - Hero now shows: "Custom Apps and Websites" with professional, truthful messaging
+**Impact**: All future sections must follow this generic, truthful approach. SCOPE.md Delaware content is reference only - DO NOT USE.
+
+## October 21, 2025 - Build Cache Corruption Fix
+**Issue**: Internal Server Error (500) when loading Hero section after implementation
+**Root Cause**: Corrupted Next.js build cache in `.next` folder - ENOENT errors for build manifest files
+**Solution**: Delete `.next` folder and restart dev server with `npm run dev`
+**Rationale**: Next.js build cache can become corrupted during rapid development iterations, especially when:
+  - Files are modified while dev server is running
+  - Build processes are interrupted
+  - File changes happen too quickly for incremental builds
+**Prevention**: When seeing ENOENT errors about manifest files in terminal, always delete `.next` first before debugging code
+**Impact**: Clean rebuild resolves all 500 errors. Hero section now renders perfectly with all features working.
+
+---
 

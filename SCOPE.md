@@ -3,7 +3,19 @@
 **Version:** 2.0  
 **Date:** October 21, 2025  
 **Development Approach:** Phased implementation using Cursor Pro + Claude Pro workflow  
-**Philosophy:** Apple-inspired design excellence applied to Delaware business web presence
+**Philosophy:** Apple-inspired design excellence for professional web development
+
+---
+
+## ⚠️ CRITICAL OVERRIDE - October 21, 2025
+
+**DO NOT USE DELAWARE MESSAGING**: The original scope document below contains Delaware-specific copy and positioning. **IGNORE ALL DELAWARE REFERENCES.** The actual site must be:
+- Generic/national (NOT location-specific)
+- Truthful (no false claims about years in business or number of sites)
+- Simple messaging: "Custom apps and websites" 
+- Professional web development services without geographic targeting
+
+**Use the Hero section in `components/sections/Hero.tsx` as the reference for approved messaging.**
 
 ---
 
