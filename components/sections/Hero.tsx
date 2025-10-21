@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/Button'
 import { motion } from 'framer-motion'
 import { DURATIONS, EASING } from '@/lib/animations'
+import Image from 'next/image'
 
 const HERO_CONTENT = {
   headline: "Custom Apps and Websites",
@@ -36,15 +37,30 @@ export function Hero() {
       {/* Content Container */}
       <div className="relative z-10 max-w-4xl mx-auto text-center py-20">
         
-        {/* Headline */}
-        <motion.h1 
-          className="text-[38px] sm:text-[42px] lg:text-[51px] font-bold leading-[1.1] text-gray-900 dark:text-gray-50 mb-6"
+        {/* Logo and Brand */}
+        <motion.div
+          className="relative inline-block mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: DURATIONS.normal, ease: EASING.easeOut }}
         >
-          {HERO_CONTENT.headline}
-        </motion.h1>
+          <div className="relative pt-8">
+            <Image 
+              src="/logo.png"
+              alt="Applicreations Logo"
+              width={80}
+              height={80}
+              className="absolute top-[-5px] left-[20%] sm:left-[21%] lg:left-[22%] w-16 h-16 sm:w-18 sm:h-18 lg:w-20 lg:h-20 z-10"
+              priority
+            />
+            <h1 className="text-[43px] sm:text-[51px] lg:text-[60px] font-bold leading-tight text-gray-900 dark:text-gray-50 text-center relative tracking-wide">
+              Applicreations
+            </h1>
+            <p className="text-[18px] sm:text-[20px] lg:text-[21px] text-gray-600 dark:text-gray-400 italic text-left ml-[38%] sm:ml-[39%] lg:ml-[40%] mt-[-4px]">
+              Custom apps & websites
+            </p>
+          </div>
+        </motion.div>
         
         {/* Subheadline */}
         <motion.p 
