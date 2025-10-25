@@ -93,9 +93,10 @@ const ICONS = {
   ),
 }
 
-const CheckIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"/>
+const FeatureIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
   </svg>
 )
 
@@ -147,7 +148,7 @@ export default function Solutions() {
   return (
     <section
       ref={sectionRef}
-      className="py-16 md:py-24 px-4 bg-linear-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-800"
+      className="py-20 md:py-32 px-4 bg-linear-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800"
       aria-labelledby="solutions-heading"
     >
       <div className="max-w-[1200px] mx-auto">
@@ -168,7 +169,7 @@ export default function Solutions() {
         </div>
 
         {/* Solution Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16 md:mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 mb-16 md:mb-24">
           {SOLUTIONS.map((solution, index) => (
             <motion.div
               key={solution.title}
@@ -200,8 +201,8 @@ export default function Solutions() {
                 </p>
 
                 {/* Benefit Callout */}
-                <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-sky px-4 py-3 mb-4 rounded-r">
-                  <p className="text-[14px] font-semibold text-blue-deep dark:text-blue-sky">
+                <div className="bg-linear-to-r from-amber-50/60 to-orange-50/40 dark:from-amber-900/10 dark:to-orange-900/5 border border-amber-200/30 dark:border-amber-800/20 px-4 py-3 mb-4 rounded-lg backdrop-blur-sm">
+                  <p className="text-[14px] font-semibold text-amber-800 dark:text-amber-200">
                     {solution.benefit}
                   </p>
                 </div>
@@ -210,8 +211,8 @@ export default function Solutions() {
                 <ul className="space-y-2 mt-auto">
                   {solution.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2">
-                      <span className="text-green-600 dark:text-green-400 shrink-0 mt-0.5">
-                        <CheckIcon />
+                      <span className="text-primary shrink-0 mt-0.5">
+                        <FeatureIcon />
                       </span>
                       <span className="text-[14px] text-gray-700 dark:text-gray-300">
                         {feature}
@@ -233,9 +234,9 @@ export default function Solutions() {
           {/* Desktop: Horizontal Timeline */}
           <div className="hidden md:block relative">
             {/* Connection Line */}
-            <div className="absolute top-[48px] left-[10%] right-[10%] h-0.5 bg-blue-200 dark:bg-blue-800" aria-hidden="true" />
+            <div className="absolute top-[48px] left-[10%] right-[10%] h-0.5 bg-linear-to-r from-gray-200 via-amber-200/60 to-gray-200 dark:from-gray-700 dark:via-amber-800/40 dark:to-gray-700" aria-hidden="true" />
 
-            <div className="grid grid-cols-3 gap-8">
+            <div className="grid grid-cols-3 gap-10">
               {HOW_IT_WORKS.steps.map((step, index) => (
                 <motion.div
                   key={step.number}
@@ -250,7 +251,7 @@ export default function Solutions() {
                 >
                   {/* Step Number Circle */}
                   <div className="flex flex-col items-center mb-4">
-                    <div className="w-24 h-24 rounded-full bg-blue-sky text-white flex items-center justify-center text-[32px] font-bold mb-2 relative z-10">
+                    <div className="w-24 h-24 rounded-full bg-linear-to-br from-gray-800 to-gray-900 dark:from-gray-100 dark:to-gray-200 text-white dark:text-gray-900 flex items-center justify-center text-[32px] font-bold mb-2 relative z-10 shadow-lg shadow-gray-900/20 dark:shadow-gray-100/20">
                       {step.number}
                     </div>
                     <span className="text-[12px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">
@@ -288,7 +289,7 @@ export default function Solutions() {
               >
                 {/* Step Number */}
                 <div className="shrink-0">
-                  <div className="w-16 h-16 rounded-full bg-blue-sky text-white flex items-center justify-center text-[24px] font-bold">
+                  <div className="w-16 h-16 rounded-full bg-linear-to-br from-gray-800 to-gray-900 dark:from-gray-100 dark:to-gray-200 text-white dark:text-gray-900 flex items-center justify-center text-[24px] font-bold shadow-lg shadow-gray-900/20 dark:shadow-gray-100/20">
                     {step.number}
                   </div>
                 </div>

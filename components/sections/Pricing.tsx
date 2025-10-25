@@ -9,7 +9,7 @@ const plans = [
     id: 'starter',
     name: 'Starter Website',
     tagline: 'Perfect for small businesses',
-    price: '$2,500',
+    price: 'Starting at $2,500',
     duration: 'one-time',
     description: 'A professional 5-page website that gets you online fast.',
     features: [
@@ -18,31 +18,31 @@ const plans = [
       'SEO optimization',
       'Contact form',
       'Google Analytics',
-      '30 days support',
+      '30 days support*',
     ],
     cta: 'Get Started',
-    ctaHref: '/quote',
+    ctaHref: '#contact',
     popular: false,
   },
   {
     id: 'professional',
-    name: 'Professional Site',
-    tagline: 'Most popular choice',
-    price: '$4,500',
+    name: 'Professional Website',
+    tagline: 'Best value for growing businesses',
+    price: 'Starting at $4,500',
     duration: 'one-time',
     description: 'Everything you need to compete online and capture leads.',
     features: [
-      '10 custom pages',
+      'Up to 8 custom pages',
       'Advanced SEO setup',
       'Lead capture forms',
       'Email integration',
       'CMS for easy updates',
       'Social media integration',
-      '60 days support',
+      '60 days support*',
       'Performance optimization',
     ],
     cta: 'Get Started',
-    ctaHref: '/quote',
+    ctaHref: '#contact',
     popular: true,
   },
   {
@@ -63,7 +63,7 @@ const plans = [
       'Ongoing maintenance available',
     ],
     cta: 'Get Quote',
-    ctaHref: '/quote',
+    ctaHref: '#contact',
     popular: false,
   },
 ];
@@ -75,7 +75,7 @@ export function Pricing() {
   return (
     <section
       ref={ref}
-      className="py-24 px-4 sm:px-6 lg:px-8 bg-linear-to-b from-background to-blue-50/30"
+      className="py-32 px-4 sm:px-6 lg:px-8 bg-background"
       aria-labelledby="pricing-heading"
     >
       <div className="max-w-7xl mx-auto">
@@ -98,7 +98,7 @@ export function Pricing() {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-16">
           {plans.map((plan, index) => (
             <motion.article
               key={plan.id}
@@ -108,35 +108,63 @@ export function Pricing() {
                 duration: 0.5,
                 delay: index * 0.1,
               }}
-              className={`relative bg-card border rounded-xl p-8 shadow-sm hover:shadow-lg transition-shadow ${
-                plan.popular ? 'border-primary border-2' : 'border-border'
+              className={`relative bg-card border rounded-xl p-10 shadow-sm transition-shadow flex flex-col ${
+                plan.popular ? 'border-accent-warm border-2' : 'border-border'
               }`}
             >
+              {/* Most Popular Badge */}
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <span className="inline-block bg-accent-warm text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-md">
+                    Most Popular
+                  </span>
+                </div>
+              )}
+              
               {/* Plan Header */}
               <div className="mb-6">
-                <h3 className="text-2xl font-bold text-foreground mb-2">
+                <h3 className="text-2xl font-semibold text-foreground mb-2">
                   {plan.name}
                 </h3>
-                <p className="text-sm text-primary font-medium mb-4">
+                <p className="text-sm text-primary font-medium mb-6">
                   {plan.tagline}
                 </p>
-                <div className="mb-4">
-                  <span className="text-4xl font-bold text-foreground">
-                    {plan.price}
-                  </span>
-                  {plan.duration === 'one-time' && (
-                    <span className="text-muted-foreground ml-2">one-time</span>
+                
+                {/* Price Display - Redesigned */}
+                <div className="mb-6">
+                  {plan.price.startsWith('Starting at') ? (
+                    <div className="text-center">
+                      <div className="text-xs text-muted-foreground/70 uppercase tracking-wide mb-1">
+                        Starting at
+                      </div>
+                      <div className="text-5xl font-bold text-foreground mb-1">
+                        {plan.price.replace('Starting at ', '')}
+                      </div>
+                      {plan.duration === 'one-time' && (
+                        <div className="text-sm text-muted-foreground">one-time</div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-5xl font-bold text-foreground mb-1">
+                        {plan.price}
+                      </div>
+                      {plan.duration === 'one-time' && (
+                        <div className="text-sm text-muted-foreground">one-time</div>
+                      )}
+                    </div>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">{plan.description}</p>
+                
+                <p className="text-sm text-muted-foreground text-center">{plan.description}</p>
               </div>
 
               {/* Features */}
-              <ul className="space-y-4 mb-8" aria-label={`${plan.name} features`}>
+              <ul className="space-y-4 mb-8 flex-grow" aria-label={`${plan.name} features`}>
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3">
                     <svg
-                      className="w-5 h-5 text-success shrink-0 mt-0.5"
+                      className="w-5 h-5 text-primary shrink-0 mt-0.5"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-hidden="true"
@@ -172,9 +200,9 @@ export function Pricing() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="bg-card border border-border rounded-xl p-8"
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
             <div>
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 backdrop-blur-sm border border-primary/20 rounded-lg mb-4">
                 <svg
                   className="w-6 h-6 text-primary"
                   fill="none"
@@ -190,14 +218,14 @@ export function Pricing() {
                   />
                 </svg>
               </div>
-              <h3 className="font-bold text-foreground mb-2">No Hidden Fees</h3>
+              <h3 className="font-semibold text-foreground mb-2">No Hidden Fees</h3>
               <p className="text-sm text-muted-foreground">
                 All costs discussed upfront. No surprise charges.
               </p>
             </div>
 
             <div>
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 backdrop-blur-sm border border-primary/20 rounded-lg mb-4">
                 <svg
                   className="w-6 h-6 text-primary"
                   fill="none"
@@ -213,14 +241,14 @@ export function Pricing() {
                   />
                 </svg>
               </div>
-              <h3 className="font-bold text-foreground mb-2">You Own Everything</h3>
+              <h3 className="font-semibold text-foreground mb-2">You Own Everything</h3>
               <p className="text-sm text-muted-foreground">
                 Full ownership of your site, code, and content.
               </p>
             </div>
 
             <div>
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 backdrop-blur-sm border border-primary/20 rounded-lg mb-4">
                 <svg
                   className="w-6 h-6 text-primary"
                   fill="none"
@@ -236,7 +264,7 @@ export function Pricing() {
                   />
                 </svg>
               </div>
-              <h3 className="font-bold text-foreground mb-2">Support Included</h3>
+              <h3 className="font-semibold text-foreground mb-2">Support Included</h3>
               <p className="text-sm text-muted-foreground">
                 Post-launch support to ensure everything runs smoothly.
               </p>
@@ -254,8 +282,8 @@ export function Pricing() {
           <p className="text-muted-foreground mb-4">
             Have questions? Want a custom quote?
           </p>
-          <Button variant="secondary" size="lg" href="#contact">
-            Talk to Us
+          <Button variant="primary" size="lg" href="#contact">
+            Contact Us
           </Button>
         </motion.div>
       </div>

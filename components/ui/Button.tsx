@@ -13,20 +13,20 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading = false, disabled, children, href, ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-deep focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+    const baseStyles = "inline-flex items-center justify-center font-medium tracking-tight transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 whitespace-nowrap"
     
     const variants = {
-      primary: "bg-blue-deep text-white hover:bg-blue-navy active:scale-95",
-      secondary: "bg-white text-blue-deep border-2 border-blue-deep hover:bg-blue-50 active:scale-95",
-      ghost: "bg-transparent text-gray-700 hover:bg-gray-100 active:scale-95",
-      icon: "bg-transparent text-gray-700 hover:bg-gray-100 active:scale-95 p-0",
-      outline: "bg-transparent text-foreground border border-border hover:bg-muted active:scale-95",
+      primary: "bg-primary text-white shadow-sm hover:brightness-110 hover:shadow-md active:scale-[0.98]",
+      secondary: "bg-white text-primary border border-primary/20 shadow-sm hover:border-primary/30 hover:shadow-md active:scale-[0.98]",
+      ghost: "bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200",
+      icon: "bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200 p-0",
+      outline: "bg-transparent text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:scale-[0.98]",
     }
     
     const sizes = {
-      sm: "h-[44px] min-w-[44px] px-4 text-sm rounded-md",
+      sm: "h-[44px] min-w-[44px] px-5 text-sm rounded-md",
       md: "h-[48px] min-w-[48px] px-6 text-base rounded-md",
-      lg: "h-[56px] min-w-[56px] px-8 text-lg rounded-lg",
+      lg: "h-[52px] min-w-[52px] px-8 text-lg rounded-lg",
     }
     
     const classes = cn(

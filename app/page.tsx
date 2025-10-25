@@ -3,6 +3,7 @@ import Problems from "@/components/sections/Problems"
 import Solutions from "@/components/sections/Solutions"
 import { Services } from "@/components/sections/Services"
 import { Pricing } from "@/components/sections/Pricing"
+import { Maintenance } from "@/components/sections/Maintenance"
 import FAQ from "@/components/sections/FAQ"
 import FinalCTA from "@/components/sections/FinalCTA"
 
@@ -14,6 +15,7 @@ export default function Home() {
       <Solutions />
       <Services />
       <Pricing />
+      <Maintenance />
       <FAQ />
       <FinalCTA />
     </main>

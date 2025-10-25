@@ -5,62 +5,37 @@ import { motion } from 'framer-motion'
 
 const SECTION_INTRO = {
   eyebrow: "The Problem",
-  headline: "Your Business Deserves Better Than a Facebook Page",
-  subheadline: "You're losing customers to competitors with real websites. Here's why:",
+  headline: "Your Business Deserves a Real Web Presence",
+  subheadline: "You're losing customers to competitors with professional websites. Here's why:",
 }
 
 const PROBLEMS = [
   {
     icon: "search",
-    title: "You're Invisible to Google",
-    description: "Facebook posts don't show up in local searches. When customers search \"[your service] near me\", your competitors appear. You don't.",
+    title: "You're Invisible to Search Engines",
+    description: "Without a website, you don't appear in local searches. When customers search \"[your service] near me\", your competitors show up. You don't.",
     color: "var(--color-error)"
   },
   {
     icon: "trust",
     title: "You Look Less Professional",
-    description: "Customers judge credibility in seconds. A Facebook page signals \"side hustle.\" A real website signals \"established business.\"",
+    description: "Customers judge credibility instantly. Social media profiles signal \"side hustle.\" A professional website signals \"established business.\"",
     color: "var(--color-warning)"
   },
   {
     icon: "control",
-    title: "Facebook Owns Your Presence",
-    description: "Algorithm changes kill your reach. Account restrictions lock you out. Facebook controls your business visibility—you don't.",
+    title: "You Don't Own Your Platform",
+    description: "Relying on Facebook, Instagram, or other platforms means algorithm changes can kill your reach overnight. You need a presence you control.",
     color: "var(--color-error)"
   },
   {
     icon: "growth",
-    title: "You Can't Capture Leads",
-    description: "No email list. No analytics. No way to retarget visitors. You're building on rented land with zero ownership of your customer relationships.",
+    title: "You Can't Capture Leads Effectively",
+    description: "No email list. Limited analytics. No way to retarget visitors. You're missing opportunities to build lasting customer relationships.",
     color: "var(--color-primary)"
   },
 ]
 
-// Icon components (inline SVG)
-const ICONS = {
-  search: (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8"/>
-      <path d="m21 21-4.35-4.35"/>
-    </svg>
-  ),
-  trust: (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-    </svg>
-  ),
-  control: (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-    </svg>
-  ),
-  growth: (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-    </svg>
-  ),
-}
 
 export default function Problems() {
   const [isVisible, setIsVisible] = useState(false)
@@ -94,7 +69,7 @@ export default function Problems() {
     >
       <div className="max-w-[1200px] mx-auto">
         {/* Section Intro */}
-        <div className="text-center mb-12 md:mb-16">
+        <div className="text-center mb-10 md:mb-12">
           <p className="text-[12px] uppercase tracking-[0.05em] text-blue-sky mb-3 font-semibold">
             {SECTION_INTRO.eyebrow}
           </p>
@@ -109,54 +84,80 @@ export default function Problems() {
           </p>
         </div>
 
-        {/* Problem Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          {PROBLEMS.map((problem, index) => (
-            <motion.div
-              key={problem.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{
-                duration: 0.5,
-                delay: index * 0.075,
-                ease: [0.25, 0.1, 0.25, 1],
-              }}
-            >
-              <motion.article
-                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 h-full flex flex-col transition-shadow duration-300"
-                whileHover={{
-                  y: -4,
-                  scale: 1.01,
-                  boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.2)',
-                  transition: {
-                    type: 'spring',
-                    stiffness: 300,
-                    damping: 20,
-                  },
+        {/* Problem Items Staggered List */}
+        <div className="max-w-6xl mx-auto space-y-12">
+          {PROBLEMS.map((problem, index) => {
+            const isEven = index % 2 === 0;
+            return (
+              <motion.div
+                key={problem.title}
+                initial={{ opacity: 0, x: isEven ? -40 : 40 }}
+                animate={isVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: isEven ? -40 : 40 }}
+                transition={{
+                  duration: 0.7,
+                  delay: index * 0.15,
+                  ease: [0.25, 0.1, 0.25, 1],
                 }}
-                whileTap={{ scale: 0.99 }}
+                className={`flex ${isEven ? 'justify-start' : 'justify-end'}`}
               >
-                {/* Icon */}
-                <div
-                  className="mb-4"
-                  style={{ color: problem.color }}
-                  aria-hidden="true"
+                <article
+                  className={`flex items-start gap-6 group cursor-default max-w-2xl ${
+                    isEven ? 'flex-row' : 'flex-row-reverse'
+                  }`}
                 >
-                  {ICONS[problem.icon as keyof typeof ICONS]}
-                </div>
+                  {/* Icon with colored background */}
+                  <div className="shrink-0">
+                    <motion.div 
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1 ${
+                        isEven ? 'group-hover:rotate-6' : 'group-hover:-rotate-6'
+                      }`}
+                      style={{ 
+                        backgroundColor: `color-mix(in srgb, ${problem.color} 15%, transparent)`,
+                        border: `2px solid color-mix(in srgb, ${problem.color} 30%, transparent)`
+                      }}
+                    >
+                      <div
+                        className="w-8 h-8"
+                        style={{ color: problem.color }}
+                        aria-hidden="true"
+                      >
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          {problem.icon === 'search' && (
+                            <>
+                              <circle cx="11" cy="11" r="8"/>
+                              <path d="m21 21-4.35-4.35"/>
+                            </>
+                          )}
+                          {problem.icon === 'trust' && (
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                          )}
+                          {problem.icon === 'control' && (
+                            <>
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </>
+                          )}
+                          {problem.icon === 'growth' && (
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                          )}
+                        </svg>
+                      </div>
+                    </motion.div>
+                  </div>
 
-                {/* Title */}
-                <h3 className="text-[21px] font-semibold mb-3 leading-tight">
-                  {problem.title}
-                </h3>
-
-                {/* Description */}
-                <p className="text-[16px] leading-[1.6] text-gray-600 dark:text-gray-300">
-                  {problem.description}
-                </p>
-              </motion.article>
-            </motion.div>
-          ))}
+                  {/* Content */}
+                  <div className={`flex-1 pt-2 ${isEven ? 'text-left' : 'text-right'} group-hover:cursor-pointer`}>
+                    <h3 className="text-[24px] font-semibold mb-3 leading-tight text-neutral-900 dark:text-white group-hover:text-primary-600 transition-colors duration-300">
+                      {problem.title}
+                    </h3>
+                    <p className="text-[17px] leading-[1.7] text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-800 dark:group-hover:text-neutral-200 transition-colors duration-300">
+                      {problem.description}
+                    </p>
+                  </div>
+                </article>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

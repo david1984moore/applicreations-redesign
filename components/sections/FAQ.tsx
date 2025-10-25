@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeIn, staggerChildren } from '@/lib/animations';
+import { Button } from '@/components/ui/Button';
 
 interface FAQItem {
   question: string;
@@ -32,7 +33,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: "What happens after my site launches?",
-    answer: "After launch, your site is yours to keep forever. You'll have 30 days of included support for any tweaks or questions. After that, you can manage updates yourself or work with us on an as-needed basis. We also offer monthly maintenance packages if you prefer hands-off management."
+    answer: "After launch, your site is yours to keep forever. You'll have included support for any tweaks or questions (30-90 days depending on your package*). After that, you can manage updates yourself or choose from our comprehensive hosting & maintenance packages starting at $75/month with work credits included."
   },
   {
     question: "Can I see examples of your work?",
@@ -103,7 +104,7 @@ function FAQAccordion({ item, index }: { item: FAQItem; index: number }) {
 
 export default function FAQ() {
   return (
-    <section className="py-24 bg-white dark:bg-neutral-900">
+    <section className="py-32 bg-white dark:bg-neutral-900">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -148,25 +149,9 @@ export default function FAQ() {
           <p className="text-neutral-600 dark:text-neutral-400 mb-4">
             Still have questions?
           </p>
-          <a
-            href="#contact"
-            className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold transition-colors"
-          >
-            Get in touch
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </a>
+          <Button variant="primary" size="md" href="#contact">
+            Contact Us
+          </Button>
         </motion.div>
       </div>
     </section>
