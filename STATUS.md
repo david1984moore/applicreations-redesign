@@ -1,6 +1,6 @@
 # Project Status
 
-**Current Task:** Removed Introspect questionnaire tool - Deleted all quote tool components and updated CTAs to use contact links
+**Current Task:** Updated pricing across site with new base prices and feature selection limits
 
 **⚠️ CRITICAL: NO DELAWARE REFERENCES** - Site must be generic/national, not location-specific. All copy must be truthful.
 
@@ -39,6 +39,21 @@
 ---
 
 ## Session Log
+
+### Session 15 - Current Session
+**Time:** Current session
+**Focus:** Pricing Updates
+**Completed:**
+- ✅ **Pricing Updates**: Updated all pricing tiers across site
+  - Starter Website: $2,500 → $1,900 (up to 3 feature selections, features priced separately)
+  - Professional Website: $4,500 → $3,250 (up to 5 feature selections, features priced separately)
+  - Custom Web App: Custom → $6,250 (up to 8 feature selections, 8 included in base price, additional priced separately)
+  - Updated Pricing component with new prices and feature selection limits
+  - Updated Services component pricing to match
+  - Added feature selection information to each tier's feature list
+- ✅ **Dev Server Configuration**: Updated package.json to run dev server on port 3004
+
+**Next:** Continue with remaining tasks
 
 ### Session 14 - October 25, 2025
 **Time:** Current session
