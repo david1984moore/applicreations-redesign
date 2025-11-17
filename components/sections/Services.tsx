@@ -33,7 +33,7 @@ const services = [
         />
       </svg>
     ),
-    price: 'Starting at $2,500',
+    price: 'Starting at $1,900',
     cta: 'View Examples',
     ctaHref: '/demos',
   },
@@ -65,7 +65,7 @@ const services = [
         />
       </svg>
     ),
-    price: 'Starting at $4,500',
+    price: 'Starting at $6,250',
     cta: 'See What\'s Possible',
     ctaHref: '/demos',
   },
