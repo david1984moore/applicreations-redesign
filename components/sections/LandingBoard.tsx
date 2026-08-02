@@ -178,43 +178,43 @@ export function LandingBoard() {
             </div>
           </div>
 
-          {/* LOCKED How it works — staggered steps; Begin Introspect right; Going live footer */}
+          {/* How it works — desktop spacing LOCKED via lg:; mobile type/padding bumped for readability */}
           <motion.div
             id="introspect"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.28 }}
-            className="relative shrink-0 rounded-xl border border-primary-400/40 bg-fade-next text-white px-5 py-[0.625rem] sm:px-6 sm:py-[0.75rem]"
+            className="relative shrink-0 rounded-xl border border-primary-400/40 bg-fade-next text-white px-5 py-3.5 sm:px-6 sm:py-4 lg:py-[0.75rem]"
           >
-            <div className="flex flex-col gap-[0.625rem]">
-              <div className="flex flex-col gap-0.5">
-                <p className="text-sm font-bold tracking-[0.14em] uppercase text-primary-100/90 text-center">
+            <div className="flex flex-col gap-3 lg:gap-[0.625rem]">
+              <div className="flex flex-col gap-1 lg:gap-0.5">
+                <p className="text-base font-bold tracking-[0.14em] uppercase text-primary-100/90 text-center lg:text-sm">
                   How it works
                 </p>
-                <h2 className="font-display text-lg sm:text-xl leading-[1.15] tracking-tight text-center">
+                <h2 className="font-display text-xl sm:text-2xl lg:text-xl leading-[1.2] lg:leading-[1.15] tracking-tight text-center">
                   Three simple steps to get your website…
                 </h2>
               </div>
 
               <div className="relative pr-0 sm:pr-56 overflow-x-hidden lg:overflow-visible">
-                <ol className="flex flex-col gap-[0.375rem] text-left">
+                <ol className="flex flex-col gap-2.5 lg:gap-[0.375rem] text-left">
                   {processSteps.map((step, index) => (
                     <li
                       key={step.n}
-                      className="flex gap-2 max-w-[min(100%,20rem)] max-lg:!ml-0"
+                      className="flex gap-2.5 lg:gap-2 max-w-none lg:max-w-[min(100%,20rem)] max-lg:!ml-0"
                       style={{ marginLeft: `min(${index * 34}%, calc(100% - 20rem))` }}
                     >
-                      <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[oklch(78%_0.08_310/0.45)] bg-[oklch(58%_0.14_310)] text-white">
-                        <step.Icon className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+                      <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[oklch(78%_0.08_310/0.45)] bg-[oklch(58%_0.14_310)] text-white lg:h-8 lg:w-8">
+                        <step.Icon className="h-5 w-5 lg:h-4 lg:w-4" strokeWidth={1.6} aria-hidden />
                       </span>
                       <div className="min-w-0">
-                        <p className="flex items-baseline gap-1.5 text-sm font-semibold text-white leading-tight">
-                          <span className="font-display text-xl font-semibold tabular-nums text-[oklch(86%_0.08_310)] leading-none">
+                        <p className="flex items-baseline gap-1.5 text-base font-semibold text-white leading-tight lg:text-sm">
+                          <span className="font-display text-2xl font-semibold tabular-nums text-[oklch(86%_0.08_310)] leading-none lg:text-xl">
                             {step.n}
                           </span>
                           {step.label}
                         </p>
-                        <p className="mt-0.5 text-[0.8125rem] leading-snug text-primary-50/90">
+                        <p className="mt-1 text-[0.9375rem] leading-snug text-primary-50/90 lg:mt-0.5 lg:text-[0.8125rem]">
                           {step.detail}
                         </p>
                       </div>
@@ -223,7 +223,7 @@ export function LandingBoard() {
                 </ol>
 
                 {/* CTA — mobile: solid shaded button; lg+: spectrum-flip from the dot */}
-                <div className="mt-3 flex justify-center sm:mt-0 sm:absolute sm:right-0 sm:top-[32%] sm:-translate-y-1/2">
+                <div className="mt-4 flex justify-center sm:mt-0 sm:absolute sm:right-0 sm:top-[32%] sm:-translate-y-1/2">
                   <Link
                     href="/introspect"
                     className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl px-8 py-3 font-sans text-base font-bold tracking-tight shadow-[0_12px_28px_-12px_rgba(0,0,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 bg-[oklch(58%_0.14_310)] text-white ring-1 ring-white/25 focus-visible:ring-white/60 focus-visible:ring-offset-primary-700 lg:bg-[oklch(98%_0.012_85)] lg:text-primary-800 lg:ring-white/70"
@@ -241,8 +241,8 @@ export function LandingBoard() {
                 </div>
               </div>
 
-              <div className="border-t border-white/15 pt-[0.375rem]">
-                <p className="text-[0.75rem] leading-snug text-primary-100/80">
+              <div className="border-t border-white/15 pt-2.5 lg:pt-[0.375rem]">
+                <p className="text-[0.875rem] leading-snug text-primary-100/80 lg:text-[0.75rem]">
                   <span className="font-bold text-white">Going live:</span> Your website package
                   covers the <span className="font-bold text-white">build only</span> — designing
                   and delivering the site. To put it on the internet, you’ll need to{' '}
