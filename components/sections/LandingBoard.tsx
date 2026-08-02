@@ -79,7 +79,7 @@ export function LandingBoard() {
                         initial={{ opacity: 0, scale: 0.86 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.6, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-                        className="pointer-events-none absolute z-10 left-1/2 lg:left-[32%] top-0 -translate-x-1/2 -translate-y-[48%] inline-block h-11 w-11 sm:h-12 sm:w-12 lg:h-14 lg:w-14"
+                        className="pointer-events-none absolute z-10 left-[32%] lg:left-[32%] top-0 -translate-x-1/2 -translate-y-[48%] inline-block h-11 w-11 sm:h-12 sm:w-12 lg:h-14 lg:w-14"
                         aria-hidden
                       >
                         <Image
@@ -95,8 +95,8 @@ export function LandingBoard() {
                     </h1>
 
                     {/* Tagline sits under the name; w-0 min-w-full so it doesn't widen the brand column */}
-                    <div className="w-0 min-w-full overflow-visible flex justify-center lg:justify-start">
-                      <p className="mt-2.5 ml-0 lg:ml-[8.5rem] w-max max-w-full text-sm sm:text-base font-[700] italic tracking-[0.12em] uppercase text-primary-600 whitespace-nowrap text-center lg:text-left">
+                    <div className="w-0 min-w-full overflow-visible flex justify-start lg:justify-start">
+                      <p className="mt-2.5 ml-[4.75rem] sm:ml-[5.75rem] lg:ml-[8.5rem] w-max max-w-full text-sm sm:text-base font-[700] italic tracking-[0.12em] uppercase text-primary-600 whitespace-nowrap text-left lg:text-left">
                         Custom apps and websites
                       </p>
                     </div>
