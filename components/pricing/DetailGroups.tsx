@@ -91,7 +91,7 @@ function styleFor(label: string): GroupStyle {
 
 function splitOptional(item: string): { optional: boolean; text: string } {
   const match = item.match(/^Optional:\s*(.*)$/i)
-  if (match) return { optional: true, text: match[1] }
+  if (match?.[1] != null) return { optional: true, text: match[1] }
   return { optional: false, text: item }
 }
 

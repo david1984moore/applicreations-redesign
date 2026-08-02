@@ -55,7 +55,9 @@ function GallerySlideshow({
     setPaused(true)
   }
 
-  const shot = shots[index]
+  const shot = shots[index] ?? shots[0]
+  if (!shot) return null
+
   const src = gallerySrc(shot)
   const shape = galleryShotShape(shot, defaultShape)
   const isPhone = shape === 'phone'
