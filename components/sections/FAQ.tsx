@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { fadeIn, staggerChildren } from '@/lib/animations';
+import { motion } from 'framer-motion';
+import { fadeIn, staggerChildren, slideInFromTop } from '@/lib/animations';
 import { Button } from '@/components/ui/Button';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FAQItem {
   question: string;
@@ -45,77 +46,51 @@ const faqs: FAQItem[] = [
   }
 ];
 
-function FAQAccordion({ item, index }: { item: FAQItem; index: number }) {
-  const [isOpen, setIsOpen] = useState(false);
+function FAQItem({ item, index }: { item: FAQItem; index: number }) {
 
   return (
     <motion.div
-      variants={fadeIn}
-      className="border-b border-neutral-200 dark:border-neutral-700"
+      initial={{ opacity: 0, y: -50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ 
+        delay: index * 0.2, 
+        duration: 0.6,
+        ease: "easeOut"
+      }}
+      className="mb-6"
     >
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-6 flex items-start justify-between text-left gap-4 group hover:opacity-80 transition-opacity"
-        aria-expanded={isOpen}
-        aria-controls={`faq-answer-${index}`}
-      >
-        <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 pr-8">
-          {item.question}
-        </h3>
-        <span className="shrink-0 mt-1">
-          <svg
-            className={`w-5 h-5 text-primary-600 dark:text-primary-400 transition-transform duration-300 ${
-              isOpen ? 'rotate-180' : ''
-            }`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </span>
-      </button>
-      
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            id={`faq-answer-${index}`}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
-            <p className="pb-6 text-neutral-600 dark:text-neutral-400 leading-relaxed">
-              {item.answer}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="flex items-start gap-3">
+        <div className="w-2 h-2 bg-primary-600 dark:bg-primary-400 rounded-full mt-2 shrink-0"></div>
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+            {item.question}
+          </h3>
+          <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            {item.answer}
+          </p>
+        </div>
+      </div>
     </motion.div>
   );
 }
 
 export default function FAQ() {
+  const [showAllFAQs, setShowAllFAQs] = useState(false);
+  const displayedFAQs = showAllFAQs ? faqs : faqs.slice(0, 4);
+
   return (
-    <section className="py-32 bg-white dark:bg-neutral-900">
+    <section id="faq" className="py-8 bg-white dark:bg-neutral-900">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
           variants={staggerChildren}
-          className="text-center mb-16"
+          className="text-center mb-4"
         >
           <motion.h2
             variants={fadeIn}
-            className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-100 mb-4"
+            className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-2"
           >
             Frequently Asked Questions
           </motion.h2>
@@ -127,24 +102,40 @@ export default function FAQ() {
           </motion.p>
         </motion.div>
 
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
-          variants={staggerChildren}
-          className="space-y-0"
-        >
-          {faqs.map((faq, index) => (
-            <FAQAccordion key={index} item={faq} index={index} />
+        <div className="space-y-0">
+          {displayedFAQs.map((faq, index) => (
+            <FAQItem key={`faq-${index}-${displayedFAQs.length}`} item={faq} index={index} />
           ))}
-        </motion.div>
+        </div>
+
+        {/* Show More/Less Button */}
+        {faqs.length > 4 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-4"
+          >
+            <button
+              onClick={() => setShowAllFAQs(!showAllFAQs)}
+              className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors text-sm font-medium"
+            >
+              {showAllFAQs ? 'Show Less' : `Show ${faqs.length - 4} More Questions`}
+              {showAllFAQs ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </button>
+          </motion.div>
+        )}
 
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
           variants={fadeIn}
-          className="mt-16 text-center"
+          className="mt-6 text-center"
         >
           <p className="text-neutral-600 dark:text-neutral-400 mb-4">
             Still have questions?

@@ -32,6 +32,9 @@ Displays this list
 
 ## 🛠️ Utilities
 
+### `/dev` - Restart dev server
+Kills all terminal processes, starts fresh dev server on port 3002, ensures only one instance running
+
 ### `/format` - Fix AI format
 Reloads .cursorrules
 

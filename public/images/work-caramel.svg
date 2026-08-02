@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Caramel and Jo project preview">
+  <rect width="800" height="1000" fill="#f6f0e8"/>
+  <rect x="60" y="50" width="680" height="900" rx="36" fill="#1c1916"/>
+  <rect x="80" y="90" width="640" height="820" rx="24" fill="#fffaf4"/>
+  <rect x="120" y="140" width="280" height="36" rx="8" fill="#c4a484"/>
+  <rect x="120" y="200" width="480" height="18" rx="6" fill="#e8d9c4"/>
+  <rect x="120" y="230" width="360" height="14" rx="6" fill="#ecdcc8"/>
+  <rect x="120" y="300" width="560" height="280" rx="16" fill="#e2c9a8"/>
+  <rect x="120" y="620" width="170" height="170" rx="12" fill="#d4b896"/>
+  <rect x="310" y="620" width="170" height="170" rx="12" fill="#c9ad8a"/>
+  <rect x="500" y="620" width="180" height="170" rx="12" fill="#b99974"/>
+  <text x="400" y="930" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#6b5344">Caramel &amp; Jo</text>
+</svg>

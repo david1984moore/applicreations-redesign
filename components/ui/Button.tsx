@@ -12,15 +12,15 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "md", isLoading = false, disabled, children, href, ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center font-medium tracking-tight transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 whitespace-nowrap"
+  ({ className, variant = "primary", size = "md", isLoading = false, disabled, children, href, onClick, ...props }, ref) => {
+    const baseStyles = "inline-flex items-center justify-center font-medium tracking-tight transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 whitespace-nowrap"
     
     const variants = {
-      primary: "bg-primary text-white shadow-sm hover:brightness-110 hover:shadow-md active:scale-[0.98]",
-      secondary: "bg-white text-primary border border-primary/20 shadow-sm hover:border-primary/30 hover:shadow-md active:scale-[0.98]",
-      ghost: "bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200",
-      icon: "bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200 p-0",
-      outline: "bg-transparent text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 active:scale-[0.98]",
+      primary: "bg-primary text-white shadow-sm hover:bg-primary-600 active:scale-[0.98]",
+      secondary: "bg-white text-primary-700 border border-primary/25 shadow-sm hover:border-primary/40 hover:bg-primary-50 active:scale-[0.98]",
+      ghost: "bg-transparent text-gray-700 hover:bg-sand/60 active:bg-sand",
+      icon: "bg-transparent text-gray-700 hover:bg-sand/60 active:bg-sand p-0",
+      outline: "bg-transparent text-gray-800 border border-gray-300 hover:bg-sand/40 hover:border-gray-400 active:scale-[0.98]",
     }
     
     const sizes = {
@@ -71,6 +71,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         <NextLink
           href={href}
           className={classes}
+          onClick={onClick as unknown as React.MouseEventHandler<HTMLAnchorElement>}
         >
           {content}
         </NextLink>
@@ -83,6 +84,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={classes}
         disabled={disabled || isLoading}
+        onClick={onClick}
         {...props}
       >
         {content}

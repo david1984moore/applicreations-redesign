@@ -1,6 +1,6 @@
 # Project Status
 
-**Current Task:** Landing board SPACING LOCKED (Aug 1 2026 final) — next: simple Introspect form (Pass 2); do not restyle homepage layout
+**Current Task:** Introspect questionnaire Pass 2 — nav hides current page; subpage spacing compacted (pricing/about/contact/introspect); continue Introspect polish
 
 **⚠️ CRITICAL: NO DELAWARE REFERENCES** - Site must be generic/national, not location-specific. All copy must be truthful.
 
@@ -19,10 +19,10 @@
   - [x] 2.6: FAQ - REMOVED from homepage
   - [~] 2.7: Social Proof - SKIPPED (needs real testimonials)
 - [~] Phase 3: Supporting Pages - IN PROGRESS
-  - [ ] 3.1: Simple Introspect form (Pass 2) — parked
+  - [~] 3.1: Introspect questionnaire (Pass 2) — v1 built at `/introspect`
   - [x] 3.2: Portfolio/Demos Page - EXISTS (coastal restyle deferred)
-  - [ ] 3.3: Contact Page
-  - [ ] 3.4: About Page
+  - [x] 3.3: Contact Page
+  - [x] 3.4: About Page
 - [ ] Phase 4: Advanced Features
 - [ ] Phase 5: Post-Launch
 
@@ -39,6 +39,16 @@
 ---
 
 ## Session Log
+
+### Session 18 - August 2, 2026
+**Focus:** Introspect questionnaire (Pass 2)
+**Completed:**
+- ✅ `/introspect` multi-step flow: welcome → 7 question steps → success / next steps
+- ✅ Plain-language questions for non-tech owners (no sales framing)
+- ✅ Visual answers for site type, site depth, design feel, color palettes + text fields
+- ✅ Package recommendation helper (`lib/introspect.ts`) + `/api/introspect` (logs for now)
+- ✅ All Begin Introspect / nav CTAs point to `/introspect`
+- ⏸ Real email delivery + Start my website / Stop project client email still future
 
 ### Session 17 - August 1, 2026
 **Focus:** Landing board polish + final spacing lock

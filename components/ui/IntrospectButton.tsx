@@ -7,7 +7,7 @@ import { Button, type ButtonProps } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 
 const INTROSPECT_BLURB =
-  "A few short questions about your business or project — your name, what you do, how long you've been at it, and some design preference questions."
+  "A short questionnaire about your business — who you are, what you do, and how you'd like your site to feel. We use your answers to build a preview of your website."
 
 const TIP_WIDTH = 288
 const TIP_GAP = 12
@@ -30,7 +30,7 @@ export function IntrospectButton({
   className,
   popoverSide = 'bottom',
   popoverAlign = 'center',
-  href = '#introspect',
+  href = '/introspect',
   onClick,
   ...props
 }: IntrospectButtonProps) {

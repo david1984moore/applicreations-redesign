@@ -2,6 +2,8 @@ export type PlanId = "basic" | "pro" | "business";
 
 export interface PlanDetailGroup {
   label: string;
+  /** Optional line under the label (e.g. “Common examples:”) */
+  lead?: string;
   items: string[];
 }
 
@@ -15,7 +17,7 @@ export interface PricingPlan {
   summary: string;
   /** Parallel detail groups — same labels across plans for easy scanning */
   details: PlanDetailGroup[];
-  /** Flat feature list (homepage / legacy consumers) */
+  /** Flat feature list (homepage / glance chips) */
   features: string[];
   highlighted?: boolean;
   cta: string;
@@ -49,119 +51,119 @@ export const BASIC_SUPPORT = {
 /** @deprecated Use BASIC_SUPPORT */
 export const BASIC_HOSTING = BASIC_SUPPORT;
 
-/** Shared detail labels so package cards line up for comparison */
+/** Shared detail labels so package rows line up for comparison */
 export const PACKAGE_DETAIL_LABELS = [
-  "Site scope",
-  "Content & design",
-  "Customer tools",
-  "Behind the scenes",
-  "Support after launch",
+  "How big is the site",
+  "What it looks like",
+  "How customers use it",
+  "How you manage it",
+  "Help after it’s live",
 ] as const;
 
 export const SUPPORT_DETAIL_LABELS = [
-  "Coverage",
-  "What we handle",
-  "How you reach us",
-  "Best for",
+  "What’s included",
+  "What we fix or update",
+  "How you contact us",
+  "Who it’s for",
 ] as const;
 
 export const supportPlans: SupportPlan[] = [
   {
     id: "support",
-    name: "Support",
+    name: "Basic Support",
     price: 50,
     priceLabel: "$50/month",
-    summary:
-      "A monthly care plan for everyday site needs — fixes, small updates, and someone to call when something looks off.",
+    summary: "Monthly help after your site is live — we fix things and make small updates for you.",
     whyItHelps:
-      "Once your site is live, menus change, photos need swapping, and the occasional glitch pops up. Support keeps those from becoming your problem.",
+      "Hours change, photos need swapping, and sometimes a page stops working. We take care of that so you don’t have to figure it out alone.",
     details: [
       {
-        label: "Coverage",
+        label: "What’s included",
         items: [
-          "Business-hours help for issues and small changes",
-          "Keeps your live site maintained after launch",
+          "Help during normal business hours",
+          "We keep your live website working after it goes online",
         ],
       },
       {
-        label: "What we handle",
+        label: "What we fix or update",
         items: [
-          "Fixes when a page, form, or link stops working",
-          "Small content and layout updates (hours, photos, copy tweaks)",
-          "Guidance when you’re unsure how to change something",
+          "Pages, forms, or buttons that stop working",
+          "Small changes like hours, photos, or wording",
+          "Plain answers when you’re not sure how to change something",
         ],
       },
       {
-        label: "How you reach us",
-        items: ["Email support with a clear response window"],
+        label: "How you contact us",
+        items: ["Email — we’ll tell you how quickly we usually reply"],
       },
       {
-        label: "Best for",
+        label: "Who it’s for",
         items: [
-          "Owners who want peace of mind without managing the tech themselves",
-          "Pairs with any website package",
+          "Owners who don’t want to handle the tech themselves",
+          "Works with any website package",
         ],
       },
     ],
     features: [
+      "Help during normal business hours",
       "Fixes when something breaks",
-      "Small content & layout updates",
-      "Email support",
-      "Available as an add-on to any package",
+      "Small updates",
+      "Email help",
+      "Works with any package",
     ],
     highlighted: false,
-    cta: "Ask about Support",
-    ctaHref: "/#introspect",
+    cta: "Ask about Basic Support",
+    ctaHref: "/introspect",
   },
   {
     id: "ultimate",
     name: "Ultimate Support",
     price: 250,
     priceLabel: "$250/month",
-    summary:
-      "Round-the-clock coverage when downtime costs you customers — priority hosting plus faster response and escalation.",
+    summary: "Help any time of day or night when a down website means lost sales.",
     whyItHelps:
-      "“Uptime” just means your site stays online. Ultimate is for businesses that can’t afford to wait until morning if something goes down overnight.",
+      "If your site goes down overnight and you can’t wait until morning, someone is available around the clock.",
     details: [
       {
-        label: "Coverage",
+        label: "What’s included",
         items: [
-          "Everything in Support, plus 24/7 on-call help",
-          "Priority hosting so your site gets preferential infrastructure attention",
+          "Everything in Basic Support",
+          "Help any hour of the day or night",
+          "Your site gets first attention when something goes wrong",
         ],
       },
       {
-        label: "What we handle",
+        label: "What we fix or update",
         items: [
-          "Urgent outages and critical bugs any time of day",
-          "Faster turnaround on fixes and updates",
-          "Escalation when an issue needs deeper engineering attention",
+          "Website down or major problems, day or night",
+          "Faster fixes and updates",
+          "Extra help when a problem needs more work",
         ],
       },
       {
-        label: "How you reach us",
+        label: "How you contact us",
         items: [
-          "Priority response channel",
-          "On-call path for after-hours emergencies",
+          "A faster way to reach us",
+          "A way to reach us after hours in an emergency",
         ],
       },
       {
-        label: "Best for",
+        label: "Who it’s for",
         items: [
-          "Busy shops, restaurants, and teams that take orders online",
-          "Anyone for whom an offline site means lost sales",
+          "Busy shops that take orders online",
+          "Anyone who loses money when the website is down",
         ],
       },
     ],
     features: [
-      "Everything in Support",
-      "24/7 on-call support",
-      "Priority hosting",
-      "Priority response & escalation",
+      "Everything in Basic Support",
+      "Help day or night",
+      "First in line for fixes",
+      "Faster replies",
     ],
     highlighted: true,
     cta: "Ask about Ultimate",
-    ctaHref: "/#introspect",
+    ctaHref: "/introspect",
   },
 ];
 
@@ -172,44 +174,47 @@ export const plans: PricingPlan[] = [
     price: 600,
     priceLabel: "$600",
     shortSummary: "A one-page website",
-    summary:
-      "A polished one-page website built around your business. We’ll shape the sections to what you actually need — common starting points include your story, hours, social links, and a product or photo gallery.",
+    summary: "A clear one-page website built around your business.",
     details: [
       {
-        label: "Site scope",
-        items: ["One focused page, designed around your goals"],
+        label: "How big is the site",
+        items: ["One page — everything visitors need in one place"],
       },
       {
-        label: "Content & design",
+        label: "What it looks like",
         items: [
-          "Sections tailored to your business — not a fixed template checklist",
-          "Common examples: name & story, hours, services, gallery, social links",
-          "Mobile-friendly layout and clear contact paths",
+          "Designed for your business, not a fill-in-the-blank template",
+          "Can include your story, hours, what you offer, and a photo gallery",
+          "Looks good on phones and computers",
         ],
       },
       {
-        label: "Customer tools",
+        label: "How customers use it",
+        lead: "Common examples:",
         items: [
-          "Ways for visitors to reach you (contact, links, calls-to-action)",
-          "Optional embeds when they fit (maps, booking widgets, and similar)",
+          "A contact form so people can message you",
+          "Your phone number and email on the page",
+          "Links to your social media",
+          "Optional: a map to your location",
+          "Optional: a tool for customers to set appointments",
         ],
       },
       {
-        label: "Behind the scenes",
-        items: ["Launch-ready site handed off cleanly"],
+        label: "How you manage it",
+        items: [
+          "We walk you through how to use your website before we’re done",
+          "We make sure you’re comfortable with it before we call the project finished",
+        ],
       },
       {
-        label: "Support after launch",
-        items: [
-          "Build only — ongoing help available as a separate monthly add-on",
-        ],
+        label: "Help after it’s live",
+        items: ["This package covers building the website"],
       },
     ],
     features: [
-      "1-page",
-      "Tailored sections",
-      "Contact paths",
-      "Support add-on",
+      "1 page",
+      "Built for your business",
+      "Contact options for your customers",
     ],
     highlighted: false,
     cta: "More",
@@ -221,47 +226,48 @@ export const plans: PricingPlan[] = [
     price: 1000,
     priceLabel: "$1,000",
     shortSummary: "Up to five pages",
-    summary:
-      "Everything you’d expect from Basic, grown into a fuller site — up to five pages — with room for tools like accounts, ordering, and an admin area when your business needs them.",
+    summary: "A fuller website — up to five pages — with room for logins, online orders, and a page you use to make updates.",
     details: [
       {
-        label: "Site scope",
-        items: ["Up to 5 pages (for example: Home, About, Menu/Services, Gallery, Contact)"],
-      },
-      {
-        label: "Content & design",
+        label: "How big is the site",
         items: [
-          "Everything Basic covers, expanded across multiple pages",
-          "Room to organize offers, stories, and details without cramming one screen",
+          "Up to 5 pages",
+          "Example pages: Home, About, Menu or Services, Gallery, Contact",
         ],
       },
       {
-        label: "Customer tools",
+        label: "What it looks like",
         items: [
-          "Customer accounts when your workflow needs them",
-          "Ordering or request flows suited to how you sell",
-          "Clear paths from browse → inquire or buy",
+          "Everything Basic includes, spread across multiple pages",
+          "Space to show more without crowding one page",
         ],
       },
       {
-        label: "Behind the scenes",
+        label: "How customers use it",
         items: [
-          "Admin page so you can manage day-to-day updates",
-          "Structured handoff so you’re not guessing how things work",
+          "Customer login accounts when you need them",
+          "Online ordering that matches how you sell",
+          "Request forms when people need to ask for something",
+          "Clear steps from looking around to contacting you or buying",
         ],
       },
       {
-        label: "Support after launch",
+        label: "How you manage it",
         items: [
-          "Build only — ongoing help available as a separate monthly add-on",
+          "A private page where you can change everyday things yourself",
+          "We show you how everything works before we’re done",
+          "We make sure you’re comfortable using it before we call the project finished",
         ],
+      },
+      {
+        label: "Help after it’s live",
+        items: ["This package covers building the website"],
       },
     ],
     features: [
       "Up to 5 pages",
-      "Accounts & ordering",
-      "Admin page",
-      "Support add-on",
+      "Logins & online orders",
+      "Admin page for updating",
     ],
     highlighted: true,
     cta: "More",
@@ -272,51 +278,53 @@ export const plans: PricingPlan[] = [
     name: "Business",
     price: 3000,
     priceLabel: "$3,000",
-    shortSummary: "Custom apps tailored to your business",
-    summary:
-      "Built for established teams in active growth. Starts from what Pro covers, then adds custom-built applications shaped around how your business actually runs — workflows and tools unique to you, not a one-size site.",
+    shortSummary: "Custom tools built for how you work",
+    summary: "Custom tools built around how your team actually works — more than a normal website.",
     details: [
       {
-        label: "Site scope",
+        label: "How big is the site",
         items: [
-          "Custom scope beyond a standard multi-page site",
-          "Web presence plus application features tailored to your operations",
+          "6+ pages. Bigger than a normal multi-page website, requiring complex infrastructure architecture.",
+          "Your public website plus custom tools for how your business runs",
         ],
       },
       {
-        label: "Content & design",
+        label: "What it looks like",
         items: [
-          "Everything Basic and Pro cover where it still applies",
-          "Interfaces designed around your team’s real processes",
+          "Everything from Basic and Pro that still applies",
+          "Screens built around how your team works day to day",
         ],
       },
       {
-        label: "Customer tools",
+        label: "How customers use it",
         items: [
-          "Custom flows for customers, staff, or both",
-          "Features built to match how you take orders, bookings, or requests",
+          "Custom steps for customers, your staff, or both",
+          "Built around how you take orders",
+          "Built around how you set appointments",
+          "Built around how you handle requests",
         ],
       },
       {
-        label: "Behind the scenes",
+        label: "How you manage it",
         items: [
-          "Custom applications and admin tools for your business",
-          "Built with room to grow as your team does",
+          "Custom tools so you and your team can run the business from the site",
+          "Built so it can grow with you as needs change",
+          "We make sure you’re comfortable using it before we call the project finished",
         ],
       },
       {
-        label: "Support after launch",
+        label: "Help after it’s live",
         items: [
-          "Personalized support as part of the engagement",
-          "Ongoing monthly plans available when you want year-round coverage",
+          "Help from Applicreations is part of the project",
+          "You can also add a monthly plan for year-round help",
         ],
       },
     ],
     features: [
-      "Custom apps",
-      "Your workflows",
-      "Growing teams",
-      "Support included",
+      "Custom tools",
+      "Built for your process",
+      "Grows with your team",
+      "Help included",
     ],
     highlighted: false,
     cta: "More",
@@ -330,4 +338,114 @@ export function formatMoney(amount: number): string {
     currency: "USD",
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+/** sessionStorage key for pricing → Introspect handoff */
+export const PRICING_SELECTION_STORAGE_KEY = "applicreations-pricing-selection";
+
+export type PricingSelectionHandoff = {
+  planId: PlanId | null;
+  supportId: SupportPlanId | null;
+};
+
+/** Map website package → Introspect siteDepth (step 6 proxy). */
+export function planIdToSiteDepth(
+  planId: PlanId
+): "basics" | "a-few-pages" | "fuller-site" {
+  switch (planId) {
+    case "basic":
+      return "basics";
+    case "pro":
+      return "a-few-pages";
+    case "business":
+      return "fuller-site";
+  }
+}
+
+export function isPlanId(value: unknown): value is PlanId {
+  return value === "basic" || value === "pro" || value === "business";
+}
+
+export function isSupportPlanId(value: unknown): value is SupportPlanId {
+  return value === "support" || value === "ultimate";
+}
+
+export function buildIntrospectHandoffHref(
+  planId: PlanId | null,
+  supportId: SupportPlanId | null
+): string {
+  const params = new URLSearchParams();
+  params.set("from", "pricing");
+  if (planId) params.set("plan", planId);
+  if (supportId) params.set("support", supportId);
+  return `/introspect?${params.toString()}`;
+}
+
+export function writePricingSelectionHandoff(
+  planId: PlanId | null,
+  supportId: SupportPlanId | null
+): void {
+  try {
+    const payload: PricingSelectionHandoff = { planId, supportId };
+    sessionStorage.setItem(PRICING_SELECTION_STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+export function readPricingSelectionHandoff(): PricingSelectionHandoff | null {
+  try {
+    const raw = sessionStorage.getItem(PRICING_SELECTION_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PricingSelectionHandoff>;
+    return {
+      planId: isPlanId(parsed.planId) ? parsed.planId : null,
+      supportId: isSupportPlanId(parsed.supportId) ? parsed.supportId : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Plain-text synopsis for the client’s mailbox (mailto / API log). */
+export function formatSelectionForEmail(
+  plan: PricingPlan | null,
+  support: SupportPlan | null
+): { subject: string; body: string } {
+  const oneTime = plan?.price ?? 0;
+  const monthly = support?.price ?? 0;
+  const totalLine = [
+    plan ? `${formatMoney(oneTime)} one-time` : null,
+    support ? `${formatMoney(monthly)}/mo` : null,
+  ]
+    .filter(Boolean)
+    .join(" + ");
+
+  const lines = [
+    "Your Applicreations selection",
+    "",
+    plan
+      ? `Website package: ${plan.name} — ${plan.priceLabel} one-time`
+      : "Website package: (none selected)",
+    support
+      ? `Monthly care: ${support.name} — ${support.priceLabel}`
+      : "Monthly care: (none selected)",
+    "",
+    `Estimated total: ${totalLine || "$0"}`,
+    "",
+    "$0 due today — nothing is due until after your free preview is delivered.",
+    "This is only an estimate of what to expect; final scope is confirmed together.",
+    "",
+    "— Applicreations",
+    "https://applicreations.com/pricing",
+  ];
+
+  return {
+    subject: plan
+      ? `Your Applicreations selection — ${plan.name}${support ? ` + ${support.name}` : ""}`
+      : support
+        ? `Your Applicreations selection — ${support.name}`
+        : "Your Applicreations selection",
+    body: lines.join("\n"),
+  };
 }

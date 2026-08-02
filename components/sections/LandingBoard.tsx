@@ -25,73 +25,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ClipboardList, Eye, Globe2 } from 'lucide-react'
+import { BrandNavLinks } from '@/components/ui/BrandNavLinks'
 import { plans, BASIC_SUPPORT } from '@/lib/pricing'
-
-function IconIntrospect({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
-      <path
-        d="M6.2 11.2c0-3.1 2.3-5.2 4.8-5.2s4.8 2.1 4.8 4.8c0 2.4-1.6 3.5-3.2 4.4-1.3.7-2.1 1.6-2.1 3.5v1.2"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="11" cy="24.6" r="1.45" fill="currentColor" />
-      <path
-        d="M18.5 15.5 22.2 19.2 28.2 11.5"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function IconProjects({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
-      <rect x="4.5" y="8" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.9" />
-      <rect x="11.5" y="12" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M11.5 15.5h16" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
-  )
-}
-
-function IconContact({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
-      <rect x="4.5" y="8.5" width="23" height="15" rx="2" stroke="currentColor" strokeWidth="1.9" />
-      <path
-        d="M5.5 10.5 16 17.5 26.5 10.5"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-const brandActions = [
-  {
-    href: '#introspect',
-    label: 'Introspect',
-    icon: IconIntrospect,
-  },
-  {
-    href: '/demos',
-    label: 'Projects',
-    icon: IconProjects,
-  },
-  {
-    href: '/contact',
-    label: 'Contact',
-    icon: IconContact,
-    id: 'contact',
-  },
-] as const
 
 const processSteps = [
   {
@@ -171,29 +106,9 @@ export function LandingBoard() {
                 {/* Nav — own band under brand; never collapses into the name */}
                 <nav
                   aria-label="Primary"
-                  className="flex flex-1 items-center justify-center gap-8 sm:gap-10 min-h-[5.75rem] mt-8 lg:mt-6 py-2 w-0 min-w-full"
+                  className="flex flex-1 items-center justify-center gap-6 sm:gap-8 min-h-[5.75rem] mt-8 lg:mt-6 py-2 w-0 min-w-full"
                 >
-                  {brandActions.map(({ href, label, icon: Icon, ...rest }) => {
-                    const id = 'id' in rest ? rest.id : undefined
-                    const className =
-                      'group flex flex-col items-center gap-1.5 text-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
-                    const content = (
-                      <>
-                        <span className="inline-flex text-gray-900 transition-transform duration-200 group-hover:-translate-y-0.5">
-                          <Icon className="h-9 w-9" />
-                        </span>
-                        <span className="text-[0.9375rem] font-bold tracking-tight text-gray-900 group-hover:text-gray-700">
-                          {label}
-                        </span>
-                      </>
-                    )
-
-                    return (
-                      <Link key={label} id={id} href={href} className={className}>
-                        {content}
-                      </Link>
-                    )
-                  })}
+                  <BrandNavLinks variant="landing" />
                 </nav>
               </div>
             </div>
@@ -215,7 +130,7 @@ export function LandingBoard() {
                     href="/pricing"
                     className="justify-self-end cursor-pointer text-[0.9375rem] font-bold tracking-tight text-gray-900 hover:text-gray-700 shrink-0"
                   >
-                    Full details →
+                    Full pricing details →
                   </a>
                 </div>
 
@@ -302,8 +217,8 @@ export function LandingBoard() {
 
                 {/* LOCKED CTA — dot + label centered as one unit; spectrum-flip grows from the dot */}
                 <div className="mt-3 flex justify-center sm:mt-0 sm:absolute sm:right-0 sm:top-[32%] sm:-translate-y-1/2">
-                  <a
-                    href="mailto:hello@applicreations.com?subject=Introspect%20—%20new%20inquiry"
+                  <Link
+                    href="/introspect"
                     className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl bg-[oklch(98%_0.012_85)] px-8 py-3 font-sans text-base font-bold tracking-tight text-primary-800 shadow-[0_12px_28px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-primary-700"
                   >
                     <span className="relative inline-flex items-center gap-3">
@@ -315,7 +230,7 @@ export function LandingBoard() {
                         Begin Introspect
                       </span>
                     </span>
-                  </a>
+                  </Link>
                 </div>
               </div>
 

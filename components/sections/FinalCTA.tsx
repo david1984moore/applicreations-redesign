@@ -6,131 +6,55 @@ import { fadeIn, staggerChildren } from '@/lib/animations';
 
 export default function FinalCTA() {
   return (
-    <section className="relative py-32 overflow-hidden">
-      {/* Subtle gradient background */}
-      <div className="absolute inset-0 bg-linear-to-br from-primary-600/80 to-primary-700/80 dark:from-primary-700/80 dark:to-primary-800/80" />
-      {/* Frosted overlay */}
-      <div className="absolute inset-0 backdrop-blur-sm bg-primary-600/20" />
-      
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <section id="contact" className="relative py-20 md:py-24 overflow-hidden coastal-grain">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-primary-800" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,oklch(78%_0.06_230/0.25),transparent_50%)]" />
+
+      <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <motion.div
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
+          viewport={{ once: true, margin: '-80px' }}
           variants={staggerChildren}
         >
           <motion.h2
             variants={fadeIn}
-            className="text-4xl md:text-5xl font-semibold text-white mb-6"
+            className="font-display text-3xl md:text-4xl text-white mb-4"
           >
-            Ready to Grow Your Business Online?
+            Ready when you are
           </motion.h2>
-          
+
           <motion.p
             variants={fadeIn}
-            className="text-xl text-primary-50 mb-12 max-w-2xl mx-auto leading-relaxed"
+            className="text-lg text-primary-50 mb-8 max-w-xl mx-auto leading-relaxed"
           >
-            Let&apos;s build a website that works as hard as you do. Use our quote tool to design your perfect site and get instant pricing - no pressure, no obligations.
+            Reach out anytime. We&apos;ll listen first, then help you choose the path that fits —
+            Basic, Pro, or Business.
           </motion.p>
 
           <motion.div
             variants={fadeIn}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center"
           >
             <Button
-              href="#contact"
+              href="mailto:hello@applicreations.com"
               variant="secondary"
               size="lg"
               className="w-full sm:w-auto"
             >
-              Get Instant Quote
+              Email us
             </Button>
             <Button
-              href="/demos"
+              href="/introspect"
               variant="outline"
               size="lg"
-              className="w-full sm:w-auto text-white border-white/60 hover:bg-white/10 hover:border-white/80"
+              className="w-full sm:w-auto text-white border-white/50 hover:bg-white/10 hover:border-white/80"
             >
-              See Demo Sites
+              Introspect
             </Button>
-          </motion.div>
-
-          <motion.div
-            variants={fadeIn}
-            className="grid grid-cols-1 md:grid-cols-3 gap-10 pt-12 border-t border-primary-500/30"
-          >
-            {/* Trust indicator 1 */}
-            <div className="flex flex-col items-center">
-              <svg
-                className="w-10 h-10 text-primary-200/90 mb-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <h3 className="text-lg font-medium text-white mb-2">
-                Quick Turnaround
-              </h3>
-              <p className="text-primary-100 text-sm">
-                Most sites launch in 2-4 weeks
-              </p>
-            </div>
-
-            {/* Trust indicator 2 */}
-            <div className="flex flex-col items-center">
-              <svg
-                className="w-10 h-10 text-primary-200/90 mb-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-              <h3 className="text-lg font-medium text-white mb-2">
-                You Own Everything
-              </h3>
-              <p className="text-primary-100 text-sm">
-                Full ownership, no platform lock-in
-              </p>
-            </div>
-
-            {/* Trust indicator 3 */}
-            <div className="flex flex-col items-center">
-              <svg
-                className="w-10 h-10 text-primary-200/90 mb-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
-              <h3 className="text-lg font-medium text-white mb-2">
-                Ongoing Support
-              </h3>
-              <p className="text-primary-100 text-sm">
-                30 days included*, ongoing packages available
-              </p>
-            </div>
           </motion.div>
         </motion.div>
       </div>
     </section>
   );
 }
-
