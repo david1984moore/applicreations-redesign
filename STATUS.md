@@ -1,6 +1,6 @@
 # Project Status
 
-**Current Task:** Updated pricing across site with new base prices and feature selection limits
+**Current Task:** Landing board SPACING LOCKED (Aug 1 2026 final) — next: simple Introspect form (Pass 2); do not restyle homepage layout
 
 **⚠️ CRITICAL: NO DELAWARE REFERENCES** - Site must be generic/national, not location-specific. All copy must be truthful.
 
@@ -9,19 +9,18 @@
 ## Progress Tracking
 
 ### Overall Status
-- [x] Phase 1: Foundation & Design System - COMPLETE
-- [x] Phase 2: Homepage Construction - COMPLETE ✅
-  - [x] 2.1: Hero Section - COMPLETE
-  - [x] 2.2: Problem Section - COMPLETE
-  - [x] 2.3: Solution Section - COMPLETE
-  - [x] 2.4: Services Section - COMPLETE
-  - [x] 2.5: Pricing Section - COMPLETE
-  - [~] 2.6: Social Proof Section - SKIPPED (needs real testimonials/stats)
-  - [x] 2.7: FAQ Section - COMPLETE
-  - [x] 2.8: Final CTA Section - COMPLETE
+- [x] Phase 1: Foundation & Design System - COMPLETE (coastal tokens Jul 2026)
+- [x] Phase 2: Homepage Construction - COMPLETE ✅ → Coastal one-pager rebuild Jul 2026
+  - [x] 2.1: Hero Section - COMPLETE (brand-first coastal)
+  - [x] 2.2: Our Work preview - COMPLETE
+  - [x] 2.3: Pricing (Basic $600 / Pro $1,000 / Business $3,000) - COMPLETE
+  - [x] 2.4: Introspect teaser - COMPLETE (form deferred to Pass 2)
+  - [x] 2.5: Final CTA / Contact - COMPLETE
+  - [x] 2.6: FAQ - REMOVED from homepage
+  - [~] 2.7: Social Proof - SKIPPED (needs real testimonials)
 - [~] Phase 3: Supporting Pages - IN PROGRESS
-  - [x] 3.1: Quote Tool - REMOVED (Introspect questionnaire deleted)
-  - [x] 3.2: Portfolio/Demos Page - COMPLETE ✅
+  - [ ] 3.1: Simple Introspect form (Pass 2) — parked
+  - [x] 3.2: Portfolio/Demos Page - EXISTS (coastal restyle deferred)
   - [ ] 3.3: Contact Page
   - [ ] 3.4: About Page
 - [ ] Phase 4: Advanced Features
@@ -35,13 +34,41 @@
 - [x] 1.5: Animation utilities (Framer Motion)
 - [x] 1.6: Development environment polish
 - [x] 1.7: Build pipeline verified
+- [x] 1.8: Coastal redesign tokens + Fraunces / Source Sans 3
 
 ---
 
 ## Session Log
 
-### Session 15 - Current Session
-**Time:** Current session
+### Session 17 - August 1, 2026
+**Focus:** Landing board polish + final spacing lock
+**Completed:**
+- ✅ Simplified website pricing cards (name → larger price → one short summary → Learn more)
+- ✅ Brand/nav spacing approved: nav centered under “Applicreations”, even vertical rhythm to How it works
+- ✅ How it works unclipped on short laptops (vh-clamped shell padding; explicit rem inside card)
+- ✅ **SPACING + LAYOUT LOCKED (final)** — user-approved Aug 1 evening
+  - Reference: `docs/landing-board-locked.png`
+  - Recipe documented in `LandingBoard.tsx` file header
+  - Shell: `lg:pt-[clamp(1.5rem,5.5vh,5rem)]` / `lg:pb-[clamp(0.75rem,3vh,2.5rem)]`
+  - Gap pricing↔HIW: `lg:gap-[clamp(0.75rem,2vh,1.25rem)]`
+  - Staggered steps + Begin Introspect right + Going live footer — frozen
+  - Begin Introspect CTA locked: dot + sans-bold label centered as one unit, spectrum-flip from dot, top-[32%]
+  - No spacing/format restyles without explicit ask
+**Next:** Pass 2 Introspect form; optional `/demos` restyle; keep landing composition frozen
+
+### Session 16 - July 29, 2026
+**Focus:** Coastal Landing Redesign Pass 1
+**Completed:**
+- ✅ Coastal design system (sky/sand/paper tokens, Fraunces + Source Sans 3)
+- ✅ Condensed homepage: Hero → OurWorkPreview → Pricing → IntrospectTeaser → FinalCTA
+- ✅ Pricing centralized in `lib/pricing.ts` (Basic $600, Pro $1,000, Business $3,000; Basic hosting $50/mo)
+- ✅ Always-visible nav with logo, Work/Pricing/Contact, Introspect CTA, mobile menu
+- ✅ FAQ and long middle sections removed from homepage
+- ✅ SVG placeholders in `public/images/` (swap for real photos later)
+- ✅ Introspect form parked in SCOPE.md for Pass 2
+**Next:** Build simple Introspect form; optional `/demos` coastal restyle; replace image placeholders
+
+### Session 15
 **Focus:** Pricing Updates
 **Completed:**
 - ✅ **Pricing Updates**: Updated all pricing tiers across site

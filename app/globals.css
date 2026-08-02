@@ -1,34 +1,41 @@
 @import "tailwindcss";
 
-/* Design System - Custom Properties */
+/* Smooth scrolling for navigation */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Design System — Off-white tan + logo blue */
 :root {
-  /* Colors - Light Mode - Vibrant Blue with Character */
-  --color-primary: oklch(58% 0.20 240);
-  --color-primary-hover: oklch(68% 0.22 240);
-  --color-accent: oklch(72% 0.18 160);
-  --color-accent-hover: oklch(62% 0.20 160);
-  --color-background: oklch(99% 0.005 240);
-  --color-surface: oklch(97% 0.01 240);
-  --color-text: oklch(18% 0.02 240);
-  --color-text-secondary: oklch(48% 0.03 240);
-  --color-border: oklch(88% 0.03 240);
-  
+  /* Blue primary (complements butterfly; not navy) */
+  --color-primary: oklch(50% 0.13 255);
+  --color-primary-hover: oklch(44% 0.14 255);
+  --color-accent: oklch(68% 0.10 230);
+  --color-accent-hover: oklch(60% 0.11 230);
+
+  /* Off-white tan paper */
+  --color-background: oklch(98% 0.012 85);
+  --color-surface: oklch(95% 0.02 80);
+  --color-text: oklch(28% 0.02 50);
+  --color-text-secondary: oklch(48% 0.02 55);
+  --color-border: oklch(88% 0.02 80);
+
   /* Spacing (8-point grid) */
-  --space-1: 0.5rem;   /* 8px */
-  --space-2: 1rem;     /* 16px */
-  --space-3: 1.5rem;   /* 24px */
-  --space-4: 2rem;     /* 32px */
-  --space-5: 2.5rem;   /* 40px */
-  --space-6: 3rem;     /* 48px */
-  
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-5: 2.5rem;
+  --space-6: 3rem;
+
   /* Typography */
-  --text-base: 1rem;       /* 16px */
-  --text-lg: 1.125rem;     /* 18px */
-  --text-xl: 1.313rem;     /* 21px */
-  --text-2xl: 1.75rem;     /* 28px */
-  --text-3xl: 2.375rem;    /* 38px */
-  --text-4xl: 3.188rem;    /* 51px */
-  
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.313rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.375rem;
+  --text-4xl: 3.188rem;
+
   /* Animation */
   --duration-fast: 150ms;
   --duration-normal: 250ms;
@@ -37,92 +44,65 @@
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-[data-theme="dark"] {
-  /* Colors - Dark Mode */
-  --color-background: oklch(12% 0.03 240);
-  --color-surface: oklch(18% 0.03 240);
-  --color-text: oklch(96% 0.01 240);
-  --color-text-secondary: oklch(78% 0.02 240);
-  --color-primary: oklch(72% 0.20 240);
-  --color-primary-hover: oklch(82% 0.22 240);
-  --color-accent: oklch(75% 0.18 160);
-  --color-accent-hover: oklch(65% 0.20 160);
-  --color-border: oklch(28% 0.04 240);
-}
-
-/* Tailwind v4 Theme Configuration */
+/* Tailwind v4 Theme */
 @theme {
-  /* Primary Blue - Bold & Distinctive */
-  --color-blue-deep: oklch(52% 0.20 240);
-  --color-blue-sky: oklch(72% 0.18 240);
-  --color-blue-navy: oklch(38% 0.22 240);
-  
-  /* Accent Teal - Fresh & Modern */
-  --color-cyan: oklch(68% 0.16 190);
-  --color-cyan-light: oklch(78% 0.14 190);
-  --color-cyan-dark: oklch(58% 0.18 190);
-  
-  /* Warm Accent - Vibrant Green for highlights */
-  --color-accent-warm: oklch(72% 0.18 160);
-  --color-accent-warm-light: oklch(82% 0.15 160);
-  --color-accent-warm-dark: oklch(62% 0.20 160);
-  
-  /* Semantic Colors */
-  --color-action: oklch(58% 0.20 240);
-  --color-error: oklch(62% 0.24 27);
-  --color-warning: oklch(76% 0.19 75);
-  --color-success: oklch(68% 0.18 160);
-  
-  /* Gray Scale - Cool blue tint */
-  --color-gray-50: oklch(97% 0.01 240);
-  --color-gray-100: oklch(95% 0.01 240);
-  --color-gray-200: oklch(88% 0.02 240);
-  --color-gray-300: oklch(81% 0.02 240);
-  --color-gray-400: oklch(69% 0.02 240);
-  --color-gray-500: oklch(59% 0.02 240);
-  --color-gray-600: oklch(49% 0.03 240);
-  --color-gray-700: oklch(39% 0.03 240);
-  --color-gray-800: oklch(25% 0.03 240);
-  --color-gray-900: oklch(15% 0.03 240);
-  
-  /* Blue Scale for backgrounds */
-  --color-blue-50: oklch(96% 0.05 240);
-  
-  /* Component Colors */
-  --color-background: oklch(99% 0.005 240);
-  --color-foreground: oklch(18% 0.02 240);
-  --color-card: oklch(100% 0 0);
-  --color-card-foreground: oklch(18% 0.02 240);
-  --color-muted: oklch(95% 0.01 240);
-  --color-muted-foreground: oklch(48% 0.03 240);
-  --color-border: oklch(88% 0.03 240);
-  --color-primary: oklch(58% 0.20 240);
-  
-  /* Primary Blue Scale - Bold & Distinctive */
-  --color-primary-50: oklch(96% 0.05 240);
-  --color-primary-100: oklch(90% 0.10 240);
-  --color-primary-200: oklch(83% 0.14 240);
-  --color-primary-300: oklch(73% 0.16 240);
-  --color-primary-400: oklch(63% 0.18 240);
-  --color-primary-500: oklch(58% 0.20 240);
-  --color-primary-600: oklch(52% 0.20 240);
-  --color-primary-700: oklch(43% 0.18 240);
-  --color-primary-800: oklch(33% 0.16 240);
-  --color-primary-900: oklch(23% 0.14 240);
-  
-  /* Neutral Color Scale (for FAQ and other components) */
-  --color-neutral-50: oklch(97% 0.01 240);
-  --color-neutral-100: oklch(95% 0.01 240);
-  --color-neutral-200: oklch(88% 0.02 240);
-  --color-neutral-300: oklch(81% 0.02 240);
-  --color-neutral-400: oklch(69% 0.02 240);
-  --color-neutral-500: oklch(59% 0.02 240);
-  --color-neutral-600: oklch(49% 0.03 240);
-  --color-neutral-700: oklch(39% 0.03 240);
-  --color-neutral-800: oklch(25% 0.03 240);
-  --color-neutral-900: oklch(15% 0.03 240);
-  
-  /* Spacing - 8-point grid */
+  --color-sky-soft: oklch(82% 0.07 230);
+  --color-sky-deep: oklch(50% 0.13 255);
+  --color-sky-navy: oklch(38% 0.10 260);
+  --color-sand: oklch(90% 0.03 80);
+  --color-sand-deep: oklch(72% 0.06 75);
+  --color-paper: oklch(98% 0.012 85);
+  --color-seafoam: oklch(72% 0.06 200);
+
+  --color-action: oklch(50% 0.13 255);
+  --color-error: oklch(55% 0.18 25);
+  --color-warning: oklch(72% 0.12 75);
+  --color-success: oklch(55% 0.10 160);
+
+  --color-gray-50: oklch(97% 0.01 85);
+  --color-gray-100: oklch(94% 0.015 80);
+  --color-gray-200: oklch(88% 0.02 80);
+  --color-gray-300: oklch(80% 0.02 75);
+  --color-gray-400: oklch(68% 0.02 60);
+  --color-gray-500: oklch(55% 0.02 55);
+  --color-gray-600: oklch(45% 0.02 50);
+  --color-gray-700: oklch(36% 0.02 50);
+  --color-gray-800: oklch(28% 0.02 50);
+  --color-gray-900: oklch(20% 0.02 45);
+
+  --color-blue-50: oklch(96% 0.02 250);
+
+  --color-background: oklch(98% 0.012 85);
+  --color-foreground: oklch(28% 0.02 50);
+  --color-card: oklch(99% 0.008 85);
+  --color-card-foreground: oklch(28% 0.02 50);
+  --color-muted: oklch(94% 0.02 80);
+  --color-muted-foreground: oklch(48% 0.02 55);
+  --color-border: oklch(88% 0.02 80);
+  --color-primary: oklch(50% 0.13 255);
+
+  --color-primary-50: oklch(96% 0.025 255);
+  --color-primary-100: oklch(92% 0.04 255);
+  --color-primary-200: oklch(84% 0.07 255);
+  --color-primary-300: oklch(72% 0.10 255);
+  --color-primary-400: oklch(60% 0.12 255);
+  --color-primary-500: oklch(52% 0.13 255);
+  --color-primary-600: oklch(50% 0.13 255);
+  --color-primary-700: oklch(43% 0.12 255);
+  --color-primary-800: oklch(36% 0.10 255);
+  --color-primary-900: oklch(28% 0.08 255);
+
+  --color-neutral-50: oklch(97% 0.01 85);
+  --color-neutral-100: oklch(94% 0.015 80);
+  --color-neutral-200: oklch(88% 0.02 80);
+  --color-neutral-300: oklch(80% 0.02 75);
+  --color-neutral-400: oklch(68% 0.02 60);
+  --color-neutral-500: oklch(55% 0.02 55);
+  --color-neutral-600: oklch(45% 0.02 50);
+  --color-neutral-700: oklch(36% 0.02 50);
+  --color-neutral-800: oklch(28% 0.02 50);
+  --color-neutral-900: oklch(20% 0.02 45);
+
   --spacing-1: 0.5rem;
   --spacing-2: 1rem;
   --spacing-3: 1.5rem;
@@ -133,8 +113,7 @@
   --spacing-10: 5rem;
   --spacing-12: 6rem;
   --spacing-16: 8rem;
-  
-  /* Typography - Perfect Fourth (1.333) scale */
+
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -143,15 +122,16 @@
   --font-size-2xl: 1.75rem;
   --font-size-3xl: 2.375rem;
   --font-size-4xl: 3.188rem;
-  
-  /* Border Radius - Distinctive geometric feel */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+
+  --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
-  
-  /* Animation Durations */
+
   --duration-instant: 100ms;
   --duration-fast: 150ms;
   --duration-normal: 250ms;
@@ -159,30 +139,84 @@
   --duration-slow: 400ms;
 }
 
-/* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  * {
+    animation-duration: 0.3s !important;
+    transition-duration: 0.3s !important;
+  }
+
+  *[data-complex-animation] {
+    animation: none !important;
+    transform: none !important;
   }
 }
 
-/* System Font Stack */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
-               'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
   font-weight: 400;
-  line-height: 1.7;
+  line-height: 1.65;
   background: var(--color-background);
   color: var(--color-text);
 }
 
-/* Typography Refinements */
+/* Desktop landing: one composition, no page scroll */
+@media (min-width: 1024px) {
+  html:has(.landing-board),
+  body:has(.landing-board) {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+.font-display {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+.font-caramel {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+}
+
+.font-mi-gente {
+  font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Touch-friendly horizontal galleries without visible scrollbars */
+.gallery-swipe {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.gallery-swipe::-webkit-scrollbar {
+  display: none;
+}
+
+/* Soft tan wash with light blue accents */
+.coastal-wash {
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 0%, oklch(93% 0.03 230 / 0.4), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 20%, oklch(93% 0.03 80 / 0.55), transparent 50%),
+    var(--color-background);
+}
+
+.coastal-grain {
+  position: relative;
+}
+
+.coastal-grain::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
 h1, h2, h3, h4, h5, h6 {
-  letter-spacing: 0.015em;
+  letter-spacing: -0.01em;
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-weight: 550;
 }
 
 .font-bold {
@@ -191,4 +225,42 @@ h1, h2, h3, h4, h5, h6 {
 
 .font-semibold {
   font-weight: 500;
+}
+
+/* Near-imperceptible directional fade — L→R ↔ R→L over ~90s */
+@property --fade-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 90deg;
+}
+
+@keyframes fade-direction-switch {
+  0%,
+  100% {
+    --fade-angle: 90deg;
+  }
+  50% {
+    --fade-angle: 270deg;
+  }
+}
+
+.bg-fade-pro {
+  --fade-from: oklch(98% 0.015 215);
+  --fade-to: oklch(91% 0.04 210);
+  background: linear-gradient(var(--fade-angle), var(--fade-from), var(--fade-to));
+  animation: fade-direction-switch 90s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.bg-fade-next {
+  --fade-from: var(--color-primary-600);
+  --fade-to: var(--color-primary-800);
+  background: linear-gradient(var(--fade-angle), var(--fade-from), var(--fade-to));
+  animation: fade-direction-switch 90s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-fade-pro,
+  .bg-fade-next {
+    animation: none;
+  }
 }
