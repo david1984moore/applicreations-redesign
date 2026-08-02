@@ -7,7 +7,6 @@ import {
   useState,
 } from 'react'
 import { Button } from '@/components/ui/Button'
-import { SITE_VIEWPORT_BELOW_NAV_CLASS } from '@/components/ui/Navigation'
 
 type FormState = {
   name: string
@@ -100,10 +99,8 @@ export function ContactBoard() {
   }
 
   return (
-    <section
-      className={`contact-board relative bg-paper ${SITE_VIEWPORT_BELOW_NAV_CLASS} overflow-hidden flex flex-col justify-center`}
-    >
-      <div className="relative z-10 w-full max-w-2xl mx-auto px-4 sm:px-6 py-2 sm:py-2.5">
+    <section className="contact-board relative bg-paper overflow-x-hidden flex flex-col justify-start lg:justify-center lg:h-[calc(100svh-var(--spacing-12))] lg:overflow-hidden">
+      <div className="relative z-10 w-full max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-2.5 lg:py-2.5">
         <div className="relative rounded-xl border border-gray-200/80 bg-white/80 backdrop-blur-sm px-5 py-4 sm:px-6 sm:py-[1.125rem]">
           <p className="text-xs font-bold tracking-[0.12em] uppercase text-primary-600 text-center mb-2.5">
             Contact

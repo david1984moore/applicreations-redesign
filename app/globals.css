@@ -160,6 +160,16 @@ body {
   overflow-x: hidden;
 }
 
+/* Mobile: kill horizontal rubber-band / sideways drag while scrolling */
+@media (max-width: 1023px) {
+  html,
+  body {
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+    max-width: 100%;
+  }
+}
+
 /* Desktop landing: one composition, no page scroll */
 @media (min-width: 1024px) {
   html:has(.landing-board),

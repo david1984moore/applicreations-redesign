@@ -119,7 +119,7 @@ export function BrandNavLinks({
   const router = useRouter()
   const items = variant === 'landing' ? LANDING_NAV_ITEMS : BRAND_NAV_ITEMS
   const resolvedIconSize =
-    iconSize ?? (variant === 'landing' ? 'h-6 w-6' : 'h-4 w-4')
+    iconSize ?? (variant === 'landing' ? 'h-5 w-5 lg:h-6 lg:w-6' : 'h-4 w-4')
 
   // Warm the RSC payloads so nav clicks (esp. Contact) don't sit on the old page
   useEffect(() => {
@@ -146,7 +146,7 @@ export function BrandNavLinks({
 
         const labelClass =
           variant === 'landing'
-            ? 'text-[0.9375rem] font-bold tracking-tight text-gray-900 group-hover:text-gray-700'
+            ? 'text-[0.8125rem] lg:text-[0.9375rem] font-bold tracking-tight text-gray-900 group-hover:text-gray-700'
             : 'text-[0.625rem] font-medium tracking-tight text-gray-900 group-hover:text-gray-600'
 
         return (
