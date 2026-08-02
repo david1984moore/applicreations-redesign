@@ -671,7 +671,7 @@ export function IntrospectBoard() {
   return (
     <section
       className={cn(
-        // overflow-x visible so the top Back control can sit left of the question column
+        // overflow-x hidden; desktop top Back sits left of the question column via absolute + translate
         'relative bg-paper coastal-wash overflow-x-hidden',
         // Desktop: welcome/success fit one screen. Mobile: content height only (no empty band).
         lockViewport && 'lg:h-[calc(100svh-var(--spacing-12))] lg:overflow-hidden'
@@ -691,11 +691,11 @@ export function IntrospectBoard() {
       >
         {(phase === 'questions' || phase === 'review') && (
           <div className="relative mx-auto w-full max-w-2xl">
-            {/* Sits left of the question column so progress aligns with the form */}
+            {/* Desktop (lg+) only — fully removed on mobile; bottom Back remains */}
             <button
               type="button"
               onClick={goBack}
-              className="mb-2 inline-flex h-9 items-center gap-1 rounded-md py-1.5 pl-1 pr-2 text-sm font-medium text-gray-700 hover:bg-sand/60 active:bg-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 cursor-pointer sm:absolute sm:mb-0 sm:left-0 sm:top-1/2 sm:-translate-x-[calc(100%+1.25rem)] sm:-translate-y-1/2"
+              className="hidden lg:absolute lg:inline-flex h-9 items-center gap-1 rounded-md py-1.5 pl-1 pr-2 text-sm font-medium text-gray-700 hover:bg-sand/60 active:bg-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 cursor-pointer lg:left-0 lg:top-1/2 lg:-translate-x-[calc(100%+1.25rem)] lg:-translate-y-1/2"
             >
               <svg
                 viewBox="0 0 24 24"
