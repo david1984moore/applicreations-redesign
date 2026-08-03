@@ -2,16 +2,19 @@ import { NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email'
 import {
   formatSelectionForEmail,
+  getPlans,
+  getSupportPlans,
   isPlanId,
   isSupportPlanId,
-  plans,
-  supportPlans,
 } from '@/lib/pricing'
+import { isLocale, type Locale } from '@/lib/i18n/config'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 type PricingSelectionBody = {
   email?: unknown
   planId?: unknown
   supportId?: unknown
+  locale?: unknown
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -22,7 +25,7 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email)
 }
 
-function selectionHtml(textBody: string): string {
+function selectionHtml(textBody: string, questionsFooter: string): string {
   const lines = textBody.split('\n')
   const paragraphs = lines
     .map((line) => {
@@ -41,8 +44,10 @@ function selectionHtml(textBody: string): string {
       </p>
       ${paragraphs}
       <p style="margin:20px 0 0;font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;line-height:1.4;color:#6b6560;">
-        Questions? Reply to this email or write
-        <a href="mailto:hello@applicreations.com" style="color:#6b3fa0;">hello@applicreations.com</a>.
+        ${escapeHtml(questionsFooter).replace(
+          'hello@applicreations.com',
+          '<a href="mailto:hello@applicreations.com" style="color:#6b3fa0;">hello@applicreations.com</a>'
+        )}
       </p>
     </div>
   </body>
@@ -63,36 +68,43 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as PricingSelectionBody
   } catch {
-    return NextResponse.json({ message: 'Invalid request body.' }, { status: 400 })
+    const dict = getDictionary('en')
+    return NextResponse.json(
+      { message: dict.api.pricingSelection.invalidBody },
+      { status: 400 }
+    )
   }
+
+  const locale: Locale = isLocale(body.locale) ? body.locale : 'en'
+  const dict = getDictionary(locale)
+  const messages = dict.api.pricingSelection
 
   const email = isNonEmptyString(body.email) ? body.email.trim() : ''
   if (!isValidEmail(email)) {
-    return NextResponse.json({ message: 'Please enter a valid email.' }, { status: 400 })
+    return NextResponse.json({ message: messages.emailInvalid }, { status: 400 })
   }
 
   const planId = isPlanId(body.planId) ? body.planId : null
   const supportId = isSupportPlanId(body.supportId) ? body.supportId : null
 
   if (!planId && !supportId) {
-    return NextResponse.json(
-      { message: 'Please select a package or support plan first.' },
-      { status: 400 }
-    )
+    return NextResponse.json({ message: messages.selectionRequired }, { status: 400 })
   }
 
+  const plans = getPlans(dict, locale)
+  const supportPlans = getSupportPlans(dict, locale)
   const plan = planId ? plans.find((p) => p.id === planId) ?? null : null
   const support = supportId
     ? supportPlans.find((p) => p.id === supportId) ?? null
     : null
 
-  const { subject, body: text } = formatSelectionForEmail(plan, support)
+  const { subject, body: text } = formatSelectionForEmail(plan, support, dict, locale)
 
   const result = await sendEmail({
     to: email,
     subject,
     text,
-    html: selectionHtml(text),
+    html: selectionHtml(text, messages.emailQuestions ?? ''),
   })
 
   if (!result.ok) {
@@ -111,12 +123,13 @@ export async function POST(request: Request) {
     email,
     planId,
     supportId,
+    locale,
     id: result.id,
     receivedAt: new Date().toISOString(),
   })
 
   return NextResponse.json({
     ok: true,
-    message: 'Sent! Check your inbox for your selection summary.',
+    message: messages.success,
   })
 }

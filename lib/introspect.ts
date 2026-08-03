@@ -1,5 +1,13 @@
 import type { PlanId, SupportPlanId } from '@/lib/pricing'
-import { isPlanId, isSupportPlanId, plans, supportPlans } from '@/lib/pricing'
+import {
+  getPlans,
+  getSupportPlans,
+  isPlanId,
+  isSupportPlanId,
+} from '@/lib/pricing'
+import type { Dictionary } from '@/lib/i18n/dictionaries/types'
+import { en } from '@/lib/i18n/dictionaries/en'
+import { interpolate } from '@/lib/i18n/interpolate'
 
 export type SiteDepth = 'basics' | 'a-few-pages' | 'fuller-site'
 
@@ -252,208 +260,160 @@ export function mergeDraftAnswers(parsed: LegacyDraft): IntrospectAnswers {
   return merged
 }
 
-export const SITE_DEPTH_OPTIONS: {
+const COLOR_SWATCHES: Record<ColorPalette, string[]> = {
+  'ocean-blues': ['#0B3D5C', '#2E7DA6', '#7EB8D4', '#E8F4F8'],
+  'coastal-teal': ['#1A4A4A', '#2A9D8F', '#A8DADC', '#F1FAEE'],
+  'warm-earth': ['#4A2C0A', '#B87333', '#E8C4A0', '#FAF3EB'],
+  'sunset-coral': ['#8B3A2A', '#E07A5F', '#F2CC8F', '#FDF6F0'],
+  'fresh-greens': ['#1B4332', '#40916C', '#95D5B2', '#F0FAF4'],
+  'soft-neutrals': ['#3D3D3D', '#8A8580', '#D4CFC8', '#F7F5F2'],
+  'charcoal-gold': ['#1C1C1C', '#C9A227', '#E8D5A3', '#F5F2EA'],
+  'soft-blush': ['#5C3D4A', '#C97B84', '#F2D5D8', '#FDF8F7'],
+  'bright-cheerful': ['#C45C26', '#E9B44C', '#3D8BDB', '#FFF8E7'],
+  'deep-jewel': ['#1B263B', '#415A77', '#778DA9', '#E0E1DD'],
+  custom: ['#2D2D2D', '#6B6B6B', '#A8A8A8', '#EDEDED'],
+}
+
+const SITE_DEPTH_IDS: SiteDepth[] = ['basics', 'a-few-pages', 'fuller-site']
+const DESIGN_FEEL_ORDER: DesignFeel[] = [
+  'clean-simple',
+  'warm-friendly',
+  'bold-modern',
+  'classic-calm',
+  'playful-fun',
+  'elegant-refined',
+  'rustic-natural',
+  'dark-dramatic',
+  'airy-light',
+  'editorial',
+]
+const COLOR_PALETTE_ORDER: ColorPalette[] = [
+  'ocean-blues',
+  'coastal-teal',
+  'warm-earth',
+  'sunset-coral',
+  'fresh-greens',
+  'soft-neutrals',
+  'charcoal-gold',
+  'soft-blush',
+  'bright-cheerful',
+  'deep-jewel',
+  'custom',
+]
+
+export function getSiteDepthOptions(dict: Dictionary = en): {
   id: SiteDepth
   title: string
   description: string
-}[] = [
-  {
-    id: 'basics',
-    title: 'The basics',
-    description:
-      'One clear page: who you are, what you offer, hours or details that matter, and how people reach you.',
-  },
-  {
-    id: 'a-few-pages',
-    title: 'A few pages and some tools',
-    description:
-      'A small set of pages with room to breathe — for example Home, About, Services or Menu, Gallery, and Contact.',
-  },
-  {
-    id: 'fuller-site',
-    title: 'The ultimate site, custom tools and more',
-    description:
-      'Multiple pages plus things people (or you) interact with — like ordering, booking, accounts, or tools to update the site. Custom features built around how you work fit here too.',
-  },
-]
+}[] {
+  return SITE_DEPTH_IDS.map((id) => ({
+    id,
+    title: dict.introspectOptions.siteDepth[id].title,
+    description: dict.introspectOptions.siteDepth[id].description,
+  }))
+}
 
-export const DESIGN_FEEL_OPTIONS: {
+export function getDesignFeelOptions(dict: Dictionary = en): {
   id: DesignFeel
   title: string
   description: string
-}[] = [
-  {
-    id: 'clean-simple',
-    title: 'Clean & simple',
-    description: 'Open space, easy reading',
-  },
-  {
-    id: 'warm-friendly',
-    title: 'Warm & friendly',
-    description: 'Welcoming, neighborhood feel',
-  },
-  {
-    id: 'bold-modern',
-    title: 'Bold & modern',
-    description: 'Strong contrast, clear shapes',
-  },
-  {
-    id: 'classic-calm',
-    title: 'Classic & calm',
-    description: 'Steady, polished, timeless',
-  },
-  {
-    id: 'playful-fun',
-    title: 'Playful & fun',
-    description: 'Lighthearted, energetic',
-  },
-  {
-    id: 'elegant-refined',
-    title: 'Elegant & refined',
-    description: 'Quiet luxury, careful detail',
-  },
-  {
-    id: 'rustic-natural',
-    title: 'Rustic & natural',
-    description: 'Organic, grounded, handmade',
-  },
-  {
-    id: 'dark-dramatic',
-    title: 'Dark & dramatic',
-    description: 'Moody, high impact',
-  },
-  {
-    id: 'airy-light',
-    title: 'Airy & light',
-    description: 'Bright, breezy, open',
-  },
-  {
-    id: 'editorial',
-    title: 'Editorial',
-    description: 'Magazine-like, expressive type',
-  },
-]
+}[] {
+  return DESIGN_FEEL_ORDER.map((id) => ({
+    id,
+    title: dict.introspectOptions.designFeels[id].title,
+    description: dict.introspectOptions.designFeels[id].description,
+  }))
+}
 
-export const COLOR_PALETTE_OPTIONS: {
+export function getColorPaletteOptions(dict: Dictionary = en): {
   id: ColorPalette
   title: string
   swatches: string[]
-}[] = [
-  {
-    id: 'ocean-blues',
-    title: 'Ocean blues',
-    swatches: ['#0B3D5C', '#2E7DA6', '#7EB8D4', '#E8F4F8'],
-  },
-  {
-    id: 'coastal-teal',
-    title: 'Coastal teal',
-    swatches: ['#1A4A4A', '#2A9D8F', '#A8DADC', '#F1FAEE'],
-  },
-  {
-    id: 'warm-earth',
-    title: 'Warm earth',
-    swatches: ['#4A2C0A', '#B87333', '#E8C4A0', '#FAF3EB'],
-  },
-  {
-    id: 'sunset-coral',
-    title: 'Sunset coral',
-    swatches: ['#8B3A2A', '#E07A5F', '#F2CC8F', '#FDF6F0'],
-  },
-  {
-    id: 'fresh-greens',
-    title: 'Fresh greens',
-    swatches: ['#1B4332', '#40916C', '#95D5B2', '#F0FAF4'],
-  },
-  {
-    id: 'soft-neutrals',
-    title: 'Soft neutrals',
-    swatches: ['#3D3D3D', '#8A8580', '#D4CFC8', '#F7F5F2'],
-  },
-  {
-    id: 'charcoal-gold',
-    title: 'Charcoal & gold',
-    swatches: ['#1C1C1C', '#C9A227', '#E8D5A3', '#F5F2EA'],
-  },
-  {
-    id: 'soft-blush',
-    title: 'Soft blush',
-    swatches: ['#5C3D4A', '#C97B84', '#F2D5D8', '#FDF8F7'],
-  },
-  {
-    id: 'bright-cheerful',
-    title: 'Bright & cheerful',
-    swatches: ['#C45C26', '#E9B44C', '#3D8BDB', '#FFF8E7'],
-  },
-  {
-    id: 'deep-jewel',
-    title: 'Deep jewel',
-    swatches: ['#1B263B', '#415A77', '#778DA9', '#E0E1DD'],
-  },
-  {
-    id: 'custom',
-    title: 'I have my own',
-    swatches: ['#2D2D2D', '#6B6B6B', '#A8A8A8', '#EDEDED'],
-  },
-]
+}[] {
+  return COLOR_PALETTE_ORDER.map((id) => ({
+    id,
+    title: dict.introspectOptions.colorPalettes[id].title,
+    swatches: COLOR_SWATCHES[id],
+  }))
+}
 
-export const YES_NO_UNSURE: { id: YesNoUnsure; label: string }[] = [
-  { id: 'yes', label: 'Yes' },
-  { id: 'no', label: 'No' },
-  { id: 'unsure', label: 'Not sure' },
-]
+export function getYesNoUnsure(dict: Dictionary = en): {
+  id: YesNoUnsure
+  label: string
+}[] {
+  return [
+    { id: 'yes', label: dict.introspectOptions.yesNoUnsure.yes },
+    { id: 'no', label: dict.introspectOptions.yesNoUnsure.no },
+    { id: 'unsure', label: dict.introspectOptions.yesNoUnsure.unsure },
+  ]
+}
+
+/** English defaults — prefer get*Options(dict) in UI */
+export const SITE_DEPTH_OPTIONS = getSiteDepthOptions(en)
+export const DESIGN_FEEL_OPTIONS = getDesignFeelOptions(en)
+export const COLOR_PALETTE_OPTIONS = getColorPaletteOptions(en)
+export const YES_NO_UNSURE = getYesNoUnsure(en)
 
 /** Map questionnaire answers to a suggested package for Applicreations review. */
-export function recommendPlan(answers: IntrospectAnswers): {
+export function recommendPlan(
+  answers: IntrospectAnswers,
+  dict: Dictionary = en
+): {
   planId: PlanId
   reason: string
 } {
+  const plans = getPlans(dict)
+  const r = dict.introspectOptions.recommend
+
   if (answers.selectedPlanId) {
     const name =
       plans.find((p) => p.id === answers.selectedPlanId)?.name ?? answers.selectedPlanId
     return {
       planId: answers.selectedPlanId,
-      reason: `Client already chose ${name} on the pricing page.`,
+      reason: interpolate(r.choseOnPricing, { name }),
     }
   }
 
   const actionText = answers.visitorActions.join(' ').toLowerCase()
-  const wantsInteractive = /order|shop|buy|purchase|account|login|book|reserv|cart|checkout/.test(
-    actionText
-  )
+  const wantsInteractive =
+    /order|shop|buy|purchase|account|login|book|reserv|cart|checkout|pedido|comprar|cuenta|reserv/.test(
+      actionText
+    )
 
   if (answers.siteDepth === 'fuller-site') {
-    return {
-      planId: 'business',
-      reason:
-        'You described a fuller site with interactive pieces or custom tools — that usually fits Business.',
-    }
+    return { planId: 'business', reason: r.business }
   }
 
   if (answers.siteDepth === 'a-few-pages' || wantsInteractive || answers.needsPhotosTaken === 'yes') {
     return {
       planId: 'pro',
       reason: wantsInteractive
-        ? 'You want visitors to do more than read (order, book, accounts, etc.) — that usually fits Pro.'
+        ? r.proInteractive
         : answers.siteDepth === 'a-few-pages'
-          ? 'A multi-page site usually fits Pro.'
-          : 'A site that needs new photos or more room to grow usually fits Pro.',
+          ? r.proPages
+          : r.proPhotos,
     }
   }
 
-  return {
-    planId: 'basic',
-    reason: 'A clear one-page site with the essentials usually fits Basic.',
-  }
+  return { planId: 'basic', reason: r.basic }
 }
 
 export function formatAnswersForEmail(
   answers: IntrospectAnswers,
-  recommendation: { planId: PlanId; reason: string }
+  recommendation: { planId: PlanId; reason: string },
+  dict: Dictionary = en
 ): string {
+  const L = dict.introspectOptions.emailLabels
+  const depthOptions = getSiteDepthOptions(dict)
+  const designOptions = getDesignFeelOptions(dict)
+  const colorOptions = getColorPaletteOptions(dict)
+  const plans = getPlans(dict)
+  const supportPlans = getSupportPlans(dict)
+
   const depthLabel =
-    SITE_DEPTH_OPTIONS.find((o) => o.id === answers.siteDepth)?.title ||
+    depthOptions.find((o) => o.id === answers.siteDepth)?.title ||
     answers.siteDepth ||
-    '(not answered)'
+    L.notAnswered
 
   const pricingPlanLabel = answers.selectedPlanId
     ? plans.find((p) => p.id === answers.selectedPlanId)?.name ?? answers.selectedPlanId
@@ -464,75 +424,71 @@ export function formatAnswersForEmail(
     : null
 
   const lines = [
-    `Recommended package: ${recommendation.planId.toUpperCase()}`,
-    `Why: ${recommendation.reason}`,
+    `${L.recommendedPackage}: ${recommendation.planId.toUpperCase()}`,
+    `${L.why}: ${recommendation.reason}`,
     '',
     ...(pricingPlanLabel || pricingSupportLabel
       ? [
-          `Pricing page selection: ${
-            [pricingPlanLabel && `${pricingPlanLabel} package`, pricingSupportLabel]
+          `${L.pricingSelection}: ${
+            [pricingPlanLabel && `${pricingPlanLabel} ${L.package}`, pricingSupportLabel]
               .filter(Boolean)
-              .join(' + ') || '(none)'
+              .join(' + ') || L.none
           }`,
           '',
         ]
       : []),
-    `Name: ${answers.fullName}`,
-    `Email: ${answers.email}`,
-    `Phone: ${answers.phone}`,
-    `Business / project: ${answers.businessName}`,
-    `Location: ${answers.location}`,
+    `${L.name}: ${answers.fullName}`,
+    `${L.email}: ${answers.email}`,
+    `${L.phone}: ${answers.phone}`,
+    `${L.businessProject}: ${answers.businessName}`,
+    `${L.location}: ${answers.location}`,
     '',
-    `What it does / offers: ${answers.aboutBusiness}`,
+    `${L.whatItDoes}: ${answers.aboutBusiness}`,
     '',
-    `Online presence: ${answers.hasOnlinePresence || '(not answered)'}`,
-    `Website: ${answers.websiteUrl.trim() || '(none)'}`,
-    `Social links: ${
-      answers.socialMediaLinks.map((l) => l.trim()).filter(Boolean).join(', ') || '(none)'
+    `${L.onlinePresence}: ${answers.hasOnlinePresence || L.notAnswered}`,
+    `${L.website}: ${answers.websiteUrl.trim() || L.none}`,
+    `${L.socialLinks}: ${
+      answers.socialMediaLinks.map((l) => l.trim()).filter(Boolean).join(', ') || L.none
     }`,
-    `Admired sites: ${
-      answers.admiredWebsiteLinks.map((l) => l.trim()).filter(Boolean).join(', ') || '(none)'
-    }`,
-    '',
-    `Has logo: ${answers.hasLogo || '(not answered)'}`,
-    `Logo upload: ${answers.logoFileName.trim() || '(none)'}`,
-    `Has photos: ${answers.hasPhotos || '(not answered)'}`,
-    `Photo uploads: ${
-      answers.photoFileNames.map((n) => n.trim()).filter(Boolean).join(', ') || '(none)'
-    }`,
-    `Needs photos taken: ${answers.needsPhotosTaken || '(not answered)'}`,
-    '',
-    `What people should be able to do: ${
-      answers.visitorActions.map((a) => a.trim()).filter(Boolean).join('; ') || '(none)'
+    `${L.admiredSites}: ${
+      answers.admiredWebsiteLinks.map((l) => l.trim()).filter(Boolean).join(', ') || L.none
     }`,
     '',
-    `How developed: ${
-      answers.selectedPlanId ? `${depthLabel} (from pricing selection)` : depthLabel
+    `${L.hasLogo}: ${answers.hasLogo || L.notAnswered}`,
+    `${L.logoUpload}: ${answers.logoFileName.trim() || L.none}`,
+    `${L.hasPhotos}: ${answers.hasPhotos || L.notAnswered}`,
+    `${L.photoUploads}: ${
+      answers.photoFileNames.map((n) => n.trim()).filter(Boolean).join(', ') || L.none
     }`,
-    `Design feel: ${
+    `${L.needsPhotosTaken}: ${answers.needsPhotosTaken || L.notAnswered}`,
+    '',
+    `${L.visitorActions}: ${
+      answers.visitorActions.map((a) => a.trim()).filter(Boolean).join('; ') || L.none
+    }`,
+    '',
+    `${L.howDeveloped}: ${
+      answers.selectedPlanId ? `${depthLabel} ${L.fromPricingSelection}` : depthLabel
+    }`,
+    `${L.designFeel}: ${
       answers.designFeelNoPreference
-        ? 'No preference — you decide'
+        ? L.noPreference
         : answers.designFeels
-            .map((id) => DESIGN_FEEL_OPTIONS.find((o) => o.id === id)?.title || id)
-            .join(', ') || '(not answered)'
+            .map((id) => designOptions.find((o) => o.id === id)?.title || id)
+            .join(', ') || L.notAnswered
     }`,
-    `Color palette: ${
+    `${L.colorPalette}: ${
       answers.colorPaletteFromLogo
-        ? 'Match colors from my logo'
+        ? L.matchLogo
         : answers.colorPaletteNoPreference
-          ? 'No preference — you decide'
+          ? L.noPreference
           : answers.colorPalettes
-              .map((id) => COLOR_PALETTE_OPTIONS.find((o) => o.id === id)?.title || id)
-              .join(', ') || '(not answered)'
+              .map((id) => colorOptions.find((o) => o.id === id)?.title || id)
+              .join(', ') || L.notAnswered
     }`,
-    `Color notes: ${answers.colorNotes || '(none)'}`,
+    `${L.colorNotes}: ${answers.colorNotes || L.none}`,
     '',
-    `Things to steer clear of: ${
-      answers.designAvoidances.trim() || '(none)'
-    }`,
-    `Anything else about the business: ${
-      answers.businessExtras.trim() || '(none)'
-    }`,
+    `${L.steerClearOf}: ${answers.designAvoidances.trim() || L.none}`,
+    `${L.anythingElse}: ${answers.businessExtras.trim() || L.none}`,
   ]
 
   return lines.join('\n')
@@ -563,19 +519,22 @@ export function phoneDigits(phone: string): string {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i
 
 /** Live email check — quiet until the user has typed something meaningful. */
-export function liveEmailError(email: string): string | undefined {
+export function liveEmailError(
+  email: string,
+  messages: Dictionary['introspectValidation'] = en.introspectValidation
+): string | undefined {
   const t = email.trim()
   if (!t) return undefined
   if (!t.includes('@')) {
-    if (t.length >= 4) return 'Please include an @ in your email'
+    if (t.length >= 4) return messages.liveEmailAt
     return undefined
   }
   const [, domain = ''] = t.split('@')
   if (!domain.includes('.')) {
-    return 'Please enter a complete email (like jane@example.com)'
+    return messages.liveEmailComplete
   }
   if (!EMAIL_RE.test(t)) {
-    return 'Please enter a valid email (like jane@example.com)'
+    return messages.liveEmailValid
   }
   return undefined
 }
@@ -591,42 +550,54 @@ export const ABOUT_BUSINESS_MIN = 10
 /** Step 2 — location (city/area; one character is never enough). */
 export const LOCATION_MIN = 3
 
-export function businessNameError(value: string): string | undefined {
+export function businessNameError(
+  value: string,
+  messages: Dictionary['introspectValidation'] = en.introspectValidation
+): string | undefined {
   const t = value.trim()
   if (t.length < BUSINESS_NAME_MIN) {
-    return 'Please enter the name of your business or project'
+    return messages.businessName
   }
   return undefined
 }
 
-export function aboutBusinessError(value: string): string | undefined {
+export function aboutBusinessError(
+  value: string,
+  messages: Dictionary['introspectValidation'] = en.introspectValidation
+): string | undefined {
   const t = value.trim()
   if (t.length === 0) {
-    return 'Please tell us what your business or project does'
+    return messages.aboutBusinessEmpty
   }
   if (t.length < ABOUT_BUSINESS_MIN) {
-    return 'Please add a bit more — a short sentence helps us get started'
+    return messages.aboutBusinessShort
   }
   return undefined
 }
 
-export function locationError(value: string): string | undefined {
+export function locationError(
+  value: string,
+  messages: Dictionary['introspectValidation'] = en.introspectValidation
+): string | undefined {
   const t = value.trim()
   if (t.length === 0) {
-    return 'Please tell us where you are located'
+    return messages.locationEmpty
   }
   if (t.length < LOCATION_MIN) {
-    return 'Please enter a real place — city, town, or area you serve'
+    return messages.locationShort
   }
   return undefined
 }
 
 /** Hard fail: too short or not enough letters. */
-export function nameHardError(name: string): string | undefined {
+export function nameHardError(
+  name: string,
+  messages: Dictionary['introspectValidation'] = en.introspectValidation
+): string | undefined {
   const t = name.trim()
-  if (t.length < 2) return 'Please enter your name'
-  const letters = (t.match(/[A-Za-z]/g) || []).length
-  if (letters < 2) return 'Please enter a real name (letters, not just numbers or symbols)'
+  if (t.length < 2) return messages.nameHardShort
+  const letters = (t.match(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g) || []).length
+  if (letters < 2) return messages.nameHardLetters
   return undefined
 }
 
@@ -638,12 +609,15 @@ export function nameLooksSuspicious(name: string): boolean {
   const t = name.trim()
   if (nameHardError(t)) return false
   if (/\d/.test(t)) return true
-  // Allow letters, spaces, hyphens, apostrophes, periods
-  if (/[^A-Za-z\s.'-]/.test(t)) return true
+  // Allow letters (incl. Spanish), spaces, hyphens, apostrophes, periods
+  if (/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s.'-]/.test(t)) return true
   // Mostly consonants / no space and very short random-looking: optional
-  if (t.length >= 3 && !/[aeiouAEIOU]/.test(t) && !/\s/.test(t)) return true
+  if (t.length >= 3 && !/[aeiouAEIOUáéíóúüÁÉÍÓÚÜ]/.test(t) && !/\s/.test(t)) return true
   return false
 }
 
-export const NAME_SOFT_WARNING =
-  "Hey — are you sure that's your name? Just double-checking."
+export const NAME_SOFT_WARNING = en.introspectValidation.nameSoftWarning
+
+export function nameSoftWarning(dict: Dictionary = en): string {
+  return dict.introspectValidation.nameSoftWarning
+}

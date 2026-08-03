@@ -4,6 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BrandNavLinks } from '@/components/ui/BrandNavLinks'
+import { useLocale } from '@/components/i18n/LocaleProvider'
+import { stripLocale } from '@/lib/i18n/paths'
 
 /**
  * Keep in sync with spacer + page scroll offsets.
@@ -16,7 +18,8 @@ export const SITE_VIEWPORT_BELOW_NAV_CLASS =
 
 export function Navigation() {
   const pathname = usePathname()
-  const onHome = pathname === '/'
+  const { dict, href } = useLocale()
+  const onHome = stripLocale(pathname || '/') === '/'
 
   // Landing uses its own brand chrome — no global nav
   if (onHome) return null
@@ -27,13 +30,13 @@ export function Navigation() {
         <nav className="max-w-[90rem] mx-auto px-3 sm:px-6 lg:px-8">
           <div className={`flex items-center justify-between ${SITE_NAV_HEIGHT_CLASS}`}>
             <Link
-              href="/"
+              href={href('/')}
               className="flex items-center cursor-pointer group z-10 shrink-0"
-              aria-label="Applicreations home"
+              aria-label={dict.nav.homeAria}
             >
               <Image
                 src="/logo-mark.png"
-                alt="Applicreations"
+                alt={dict.brand.name}
                 width={40}
                 height={40}
                 className="h-9 w-9 object-contain"

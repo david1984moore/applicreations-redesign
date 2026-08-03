@@ -10,10 +10,13 @@ import {
   type IntrospectAnswers,
 } from '@/lib/introspect'
 import type { PlanId } from '@/lib/pricing'
+import { isLocale, type Locale } from '@/lib/i18n/config'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 type IntrospectBody = {
   answers?: Partial<IntrospectAnswers>
   recommendation?: { planId?: PlanId; reason?: string }
+  locale?: unknown
 }
 
 type UploadMeta = {
@@ -41,6 +44,7 @@ async function parseRequest(request: Request): Promise<{
     const form = await request.formData()
     const answersRaw = form.get('answers')
     const recommendationRaw = form.get('recommendation')
+    const localeRaw = form.get('locale')
 
     let answers: Partial<IntrospectAnswers> | undefined
     let recommendation: IntrospectBody['recommendation']
@@ -83,7 +87,14 @@ async function parseRequest(request: Request): Promise<{
       }
     }
 
-    return { body: { answers, recommendation }, uploads }
+    return {
+      body: {
+        answers,
+        recommendation,
+        locale: typeof localeRaw === 'string' ? localeRaw : undefined,
+      },
+      uploads,
+    }
   }
 
   const body = (await request.json()) as IntrospectBody
@@ -97,8 +108,13 @@ export async function POST(request: Request) {
   try {
     ;({ body, uploads } = await parseRequest(request))
   } catch {
-    return NextResponse.json({ message: 'Invalid request body.' }, { status: 400 })
+    const dict = getDictionary('en')
+    return NextResponse.json({ message: dict.api.introspect.invalidBody }, { status: 400 })
   }
+
+  const locale: Locale = isLocale(body.locale) ? body.locale : 'en'
+  const dict = getDictionary(locale)
+  const messages = dict.api.introspect
 
   const answers: IntrospectAnswers = {
     ...emptyAnswers,
@@ -118,45 +134,42 @@ export async function POST(request: Request) {
   }
 
   if (!isNonEmptyString(answers.fullName) || answers.fullName.trim().length < 2) {
-    return NextResponse.json({ message: 'Please enter your name.' }, { status: 400 })
+    return NextResponse.json({ message: messages.nameRequired }, { status: 400 })
   }
 
   if (!isValidEmail(answers.email.trim())) {
-    return NextResponse.json({ message: 'Please enter a valid email.' }, { status: 400 })
+    return NextResponse.json({ message: messages.emailInvalid }, { status: 400 })
   }
 
   if (phoneDigits(answers.phone).length < 10) {
-    return NextResponse.json(
-      { message: 'Please enter a full 10-digit phone number.' },
-      { status: 400 }
-    )
+    return NextResponse.json({ message: messages.phoneInvalid }, { status: 400 })
   }
 
-  const businessErr = businessNameError(answers.businessName)
+  const businessErr = businessNameError(answers.businessName, dict.introspectValidation)
   if (businessErr) {
     return NextResponse.json({ message: businessErr }, { status: 400 })
   }
 
-  const aboutErr = aboutBusinessError(answers.aboutBusiness)
+  const aboutErr = aboutBusinessError(answers.aboutBusiness, dict.introspectValidation)
   if (aboutErr) {
     return NextResponse.json({ message: aboutErr }, { status: 400 })
   }
 
-  const locErr = locationError(answers.location)
+  const locErr = locationError(answers.location, dict.introspectValidation)
   if (locErr) {
     return NextResponse.json({ message: locErr }, { status: 400 })
   }
 
-  const recommendation = recommendPlan(answers)
-  const summary = formatAnswersForEmail(answers, recommendation)
+  const recommendation = recommendPlan(answers, dict)
+  const summary = formatAnswersForEmail(answers, recommendation, dict)
 
-  // Email delivery (Resend/SendGrid) and Google Drive transfer can plug in here later.
   console.info('[introspect]', {
     name: answers.fullName.trim(),
     email: answers.email.trim(),
     businessName: answers.businessName.trim(),
     recommendation,
     uploads,
+    locale,
     receivedAt: new Date().toISOString(),
     summary,
   })
@@ -164,7 +177,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     recommendation,
-    message: 'Thanks! We received your Introspect answers.',
+    message: messages.success,
     uploadCount: uploads.length,
   })
 }

@@ -4,14 +4,15 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
+import { useLocale } from '@/components/i18n/LocaleProvider'
 import { IconContact } from '@/components/ui/BrandNavLinks'
 import { DetailGroups } from '@/components/pricing/DetailGroups'
 import { SelectToggle } from '@/components/pricing/SelectToggle'
 import { SelectionSummary } from '@/components/pricing/SelectionSummary'
 import { SpectrumFlipCta } from '@/components/ui/SpectrumFlipCta'
 import {
-  plans,
-  supportPlans,
+  getPlans,
+  getSupportPlans,
   type PlanId,
   type SupportPlanId,
 } from '@/lib/pricing'
@@ -20,7 +21,15 @@ import { cn } from '@/lib/utils'
 const PLAN_IDS = new Set<string>(['basic', 'pro', 'business'])
 const SUPPORT_IDS = new Set<string>(['support', 'ultimate'])
 
-export default function PricingPage() {
+const introLinkClass =
+  'font-medium text-primary-700 hover:text-primary-800 underline underline-offset-2'
+
+export default function PricingPageClient() {
+  const { dict, t, href, locale } = useLocale()
+  const p = dict.pricingPage
+  const plans = getPlans(dict, locale)
+  const supportPlans = getSupportPlans(dict, locale)
+
   const [selectedPlanId, setSelectedPlanId] = useState<PlanId | null>(null)
   const [selectedSupportId, setSelectedSupportId] = useState<SupportPlanId | null>(
     null
@@ -81,12 +90,12 @@ export default function PricingPage() {
                 transition={{ duration: 0.35 }}
               >
                 <h1 className="font-display text-2xl sm:text-3xl text-gray-900 text-center">
-                  Pricing
+                  {p.title}
                 </h1>
               </motion.div>
             </section>
 
-            <section className="pb-5" aria-label="Website packages">
+            <section className="pb-5" aria-label={p.websitePackagesAria}>
               <div className="flex flex-col gap-2.5">
                 {plans.map((plan, index) => {
                   const isSelected = selectedPlanId === plan.id
@@ -113,7 +122,7 @@ export default function PricingPage() {
                             </h2>
                             <ul
                               className="flex flex-wrap gap-1.5 mt-2.5"
-                              aria-label={`${plan.name} highlights`}
+                              aria-label={t(p.highlightsAria, { name: plan.name })}
                             >
                               {plan.features.map((feature) => (
                                 <li
@@ -128,7 +137,7 @@ export default function PricingPage() {
                           <p className="font-display text-xl sm:text-2xl text-primary-700 shrink-0 text-right whitespace-nowrap">
                             {plan.priceLabel}
                             <span className="ml-1.5 text-xs font-sans font-normal text-gray-500">
-                              one-time
+                              {p.oneTime}
                             </span>
                           </p>
                         </div>
@@ -141,7 +150,7 @@ export default function PricingPage() {
                             aria-controls={`${plan.id}-details`}
                             className="cursor-pointer inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800 self-start"
                           >
-                            What&apos;s included
+                            {p.whatsIncluded}
                             <ChevronDown
                               className={cn(
                                 'h-4 w-4 transition-transform duration-200',
@@ -180,13 +189,16 @@ export default function PricingPage() {
                 })}
               </div>
               <p className="mt-2.5 text-xs text-gray-500 leading-snug">
-                Example: Basic ({plans[0]?.priceLabel}) + Basic Support (
-                {supportPlans[0]?.priceLabel}) — choose both to see a simple total.
+                {t(p.exampleTotal, {
+                  basicPrice: plans[0]?.priceLabel ?? '',
+                  supportPrice: supportPlans[0]?.priceLabel ?? '',
+                })}
               </p>
             </section>
 
             <section
-              className="border-t border-gray-200 py-5"
+              id="hosting-support"
+              className="scroll-mt-16 border-t border-gray-200 py-5"
               aria-labelledby="hosting-support-heading"
             >
               <motion.div
@@ -199,46 +211,46 @@ export default function PricingPage() {
                   id="hosting-support-heading"
                   className="font-display text-xl sm:text-2xl text-gray-900 mb-1"
                 >
-                  Hosting &amp; support
+                  {p.hostingSupportHeading}
                 </h2>
                 <p className="text-sm text-gray-600 leading-snug max-w-2xl">
-                  When we host your site, it runs on{' '}
+                  {p.hostingIntroBeforeRender}{' '}
                   <a
                     href="https://render.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium text-primary-700 hover:text-primary-800 underline underline-offset-2"
+                    className={introLinkClass}
                   >
-                    Render
+                    {p.hostingIntroRender}
                   </a>
-                  . You can browse their{' '}
+                  {p.hostingIntroAfterRender}{' '}
                   <a
                     href="https://render.com/docs/service-types"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium text-primary-700 hover:text-primary-800 underline underline-offset-2"
+                    className={introLinkClass}
                   >
-                    hosting services
+                    {p.hostingIntroServices}
                   </a>
-                  , including{' '}
+                  {p.hostingIntroIncluding}{' '}
                   <a
                     href="https://render.com/docs/static-sites"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium text-primary-700 hover:text-primary-800 underline underline-offset-2"
+                    className={introLinkClass}
                   >
-                    static sites
+                    {p.hostingIntroStaticSites}
                   </a>{' '}
-                  and{' '}
+                  {p.hostingIntroAnd}{' '}
                   <a
                     href="https://render.com/docs/web-services"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium text-primary-700 hover:text-primary-800 underline underline-offset-2"
+                    className={introLinkClass}
                   >
-                    web services
+                    {p.hostingIntroWebServices}
                   </a>
-                  .
+                  {p.hostingIntroEnd}
                 </p>
               </motion.div>
 
@@ -268,7 +280,7 @@ export default function PricingPage() {
                             </h3>
                             <ul
                               className="flex flex-wrap gap-1.5 mt-2.5"
-                              aria-label={`${plan.name} highlights`}
+                              aria-label={t(p.highlightsAria, { name: plan.name })}
                             >
                               {plan.features.map((feature) => (
                                 <li
@@ -293,7 +305,7 @@ export default function PricingPage() {
                             aria-controls={`${plan.id}-details`}
                             className="cursor-pointer inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800 self-start"
                           >
-                            What&apos;s included
+                            {p.whatsIncluded}
                             <ChevronDown
                               className={cn(
                                 'h-4 w-4 transition-transform duration-200',
@@ -339,25 +351,22 @@ export default function PricingPage() {
             <section className="border-t border-gray-200 bg-white/50 py-5 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 lg:rounded-xl">
               <div className="text-center">
                 <h2 className="font-sans text-lg sm:text-xl font-semibold tracking-tight text-gray-900 mb-1">
-                  Not sure which fits?
+                  {p.notSureHeading}
                 </h2>
-                <p className="text-sm text-gray-600 mb-3 leading-snug">
-                  Answer a few short questions and we&apos;ll help you choose — or email us with
-                  what you&apos;ve picked.
-                </p>
+                <p className="text-sm text-gray-600 mb-3 leading-snug">{p.notSureBody}</p>
                 <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5 justify-center">
-                  <SpectrumFlipCta href="/introspect" size="md">
-                    Introspect
+                  <SpectrumFlipCta href={href('/introspect')} size="md">
+                    {p.introspectCta}
                   </SpectrumFlipCta>
                   <Link
-                    href="/contact"
+                    href={href('/contact')}
                     className="group flex flex-col items-center gap-1 rounded-md px-3 py-1.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
                   >
                     <span className="inline-flex text-gray-900 transition-colors duration-200 group-hover:text-gray-600">
                       <IconContact className="h-7 w-7" />
                     </span>
                     <span className="text-sm font-semibold tracking-tight text-gray-900 group-hover:text-gray-600">
-                      Contact
+                      {p.contactCta}
                     </span>
                   </Link>
                 </div>

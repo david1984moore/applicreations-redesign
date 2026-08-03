@@ -1,3 +1,9 @@
+import type { Dictionary } from '@/lib/i18n/dictionaries/types'
+import { en } from '@/lib/i18n/dictionaries/en'
+import { withLocale } from '@/lib/i18n/paths'
+import type { Locale } from '@/lib/i18n/config'
+import { defaultLocale } from '@/lib/i18n/config'
+
 export type GalleryShape = 'phone' | 'wide'
 
 export type GalleryShot =
@@ -31,6 +37,49 @@ export interface Project {
   href: string
 }
 
+type ProjectBase = Omit<
+  Project,
+  'caption' | 'description' | 'features' | 'packageLabel' | 'gallery' | 'href'
+> & {
+  gallery?: { src: string; shape?: GalleryShape }[]
+}
+
+const PROJECT_BASE: ProjectBase[] = [
+  {
+    id: 'caramel-jo',
+    title: 'Caramel & Jo',
+    image: '/images/caramel-jo/homepage.jpg',
+    gallery: [
+      { src: '/images/caramel-jo/homepage.jpg' },
+      { src: '/images/caramel-jo/menu.jpg' },
+      { src: '/images/caramel-jo/product-berry.jpg' },
+      { src: '/images/caramel-jo/product-key-lime.jpg' },
+    ],
+    galleryShape: 'phone',
+    accent: '#c4a484',
+    brandFont: 'caramel',
+    siteUrl: 'https://caramelandjo.com/',
+  },
+  {
+    id: 'mi-gente',
+    title: 'Mi Gente Bonita Market',
+    shortTitle: 'Mi Gente Bonita',
+    image: '/images/mi-gente/homepage.jpg',
+    gallery: [
+      { src: '/images/mi-gente/homepage.jpg', shape: 'phone' },
+      { src: '/images/mi-gente/menu.jpg', shape: 'phone' },
+      { src: '/images/mi-gente/contact.png', shape: 'phone' },
+      { src: '/images/mi-gente/about.jpg', shape: 'phone' },
+      { src: '/images/mi-gente/products.jpg', shape: 'phone' },
+    ],
+    galleryShape: 'phone',
+    accent: '#6a93a8',
+    brandFont: 'mi-gente',
+    logo: '/images/mi-gente/logo.png',
+    siteUrl: 'https://migentebonitamarket.com/',
+  },
+]
+
 export function gallerySrc(shot: GalleryShot): string {
   return typeof shot === 'string' ? shot : shot.src
 }
@@ -48,62 +97,27 @@ export function galleryShotLabel(shot: GalleryShot): string | undefined {
   return shot.label
 }
 
-/** Real client work — homepage preview + /demos detail */
-export const projects: Project[] = [
-  {
-    id: "caramel-jo",
-    title: "Caramel & Jo",
-    caption: "A warm bakery site that feels at home on a phone.",
-    description:
-      "Custom website for a bakery brand — clear story, product presence, and a layout that stays friendly on small screens.",
-    features: [
-      "Mobile-first layout",
-      "Brand-forward homepage",
-      "Product gallery & cart",
-      "Simple email ordering system",
-      "Bilingual EN / ES",
-    ],
-    image: "/images/caramel-jo/homepage.jpg",
-    gallery: [
-      { src: "/images/caramel-jo/homepage.jpg", label: "Homepage" },
-      { src: "/images/caramel-jo/menu.jpg", label: "Menu" },
-      { src: "/images/caramel-jo/product-berry.jpg", label: "Product — berry tart" },
-      { src: "/images/caramel-jo/product-key-lime.jpg", label: "Product — key lime" },
-    ],
-    galleryShape: "phone",
-    accent: "#c4a484",
-    brandFont: "caramel",
-    packageLabel: "Pro package · $1,000",
-    siteUrl: "https://caramelandjo.com/",
-    href: "/demos#caramel-jo",
-  },
-  {
-    id: "mi-gente",
-    title: "Mi Gente Bonita Market",
-    shortTitle: "Mi Gente Bonita",
-    caption: "A friendly market presence with room to grow.",
-    description:
-      "Neighborhood market site built for clarity — who they are, what they offer, and an easy path for customers to engage.",
-    features: [
-      "Business info, hours & locations",
-      "Product photo gallery",
-      "Bilingual EN / ES",
-      "Call, directions & social links",
-    ],
-    image: "/images/mi-gente/homepage.jpg",
-    gallery: [
-      { src: "/images/mi-gente/homepage.jpg", shape: "phone", label: "Homepage" },
-      { src: "/images/mi-gente/menu.jpg", shape: "phone", label: "Menu & hours" },
-      { src: "/images/mi-gente/contact.png", shape: "phone", label: "Contact" },
-      { src: "/images/mi-gente/about.jpg", shape: "phone", label: "About" },
-      { src: "/images/mi-gente/products.jpg", shape: "phone", label: "Products" },
-    ],
-    galleryShape: "phone",
-    accent: "#6a93a8",
-    brandFont: "mi-gente",
-    logo: "/images/mi-gente/logo.png",
-    packageLabel: "Pro package · $1,000",
-    siteUrl: "https://migentebonitamarket.com/",
-    href: "/demos#mi-gente",
-  },
-]
+export function getProjects(
+  dict: Dictionary = en,
+  locale: Locale = defaultLocale
+): Project[] {
+  return PROJECT_BASE.map((base) => {
+    const copy = dict.projects[base.id]
+    const gallery = base.gallery?.map((shot) => ({
+      ...shot,
+      label: copy?.galleryLabels?.[shot.src],
+    }))
+    return {
+      ...base,
+      caption: copy?.caption ?? '',
+      description: copy?.description ?? '',
+      features: copy?.features ?? [],
+      packageLabel: copy?.packageLabel ?? '',
+      gallery,
+      href: withLocale(`/demos#${base.id}`, locale),
+    }
+  })
+}
+
+/** English defaults — prefer getProjects(dict) in UI */
+export const projects: Project[] = getProjects(en)

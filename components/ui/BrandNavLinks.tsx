@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { LanguageToggle } from '@/components/i18n/LanguageToggle'
+import { useLocale } from '@/components/i18n/LocaleProvider'
+import { stripLocale } from '@/lib/i18n/paths'
 import { cn } from '@/lib/utils'
 
 function IconIntrospect({ className }: { className?: string }) {
@@ -86,21 +89,16 @@ export function IconContact({ className }: { className?: string }) {
   )
 }
 
-export const BRAND_NAV_ITEMS = [
-  { href: '/introspect', label: 'Introspect', icon: IconIntrospect, match: '/introspect' },
-  { href: '/demos', label: 'Projects', icon: IconProjects, match: '/demos' },
-  { href: '/pricing', label: 'Pricing', icon: IconPricing, match: '/pricing' },
-  { href: '/about', label: 'About', icon: IconAbout, match: '/about' },
-  { href: '/contact', label: 'Contact', icon: IconContact, match: '/contact' },
+const NAV_DEFS = [
+  { href: '/introspect', key: 'introspect' as const, icon: IconIntrospect, match: '/introspect' },
+  { href: '/demos', key: 'projects' as const, icon: IconProjects, match: '/demos' },
+  { href: '/pricing', key: 'pricing' as const, icon: IconPricing, match: '/pricing' },
+  { href: '/about', key: 'about' as const, icon: IconAbout, match: '/about' },
+  { href: '/contact', key: 'contact' as const, icon: IconContact, match: '/contact' },
 ] as const
 
 /** Landing page items — no Pricing (section + full pricing details link on board) */
-export const LANDING_NAV_ITEMS = [
-  { href: '/introspect', label: 'Introspect', icon: IconIntrospect, match: '/introspect' },
-  { href: '/demos', label: 'Projects', icon: IconProjects, match: '/demos' },
-  { href: '/about', label: 'About', icon: IconAbout, match: '/about' },
-  { href: '/contact', label: 'Contact', icon: IconContact, match: '/contact' },
-] as const
+const LANDING_KEYS = new Set(['introspect', 'projects', 'about', 'contact'])
 
 type BrandNavLinksProps = {
   variant?: 'landing' | 'subpage'
@@ -117,11 +115,20 @@ export function BrandNavLinks({
 }: BrandNavLinksProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const items = variant === 'landing' ? LANDING_NAV_ITEMS : BRAND_NAV_ITEMS
+  const { dict, href: localizedHref } = useLocale()
+  const barePath = stripLocale(pathname || '/')
+
+  const items = NAV_DEFS.filter((item) =>
+    variant === 'landing' ? LANDING_KEYS.has(item.key) : true
+  ).map((item) => ({
+    ...item,
+    label: dict.nav[item.key],
+    href: localizedHref(item.href),
+  }))
+
   const resolvedIconSize =
     iconSize ?? (variant === 'landing' ? 'h-5 w-5 lg:h-6 lg:w-6' : 'h-4 w-4')
 
-  // Warm the RSC payloads so nav clicks (esp. Contact) don't sit on the old page
   useEffect(() => {
     for (const item of items) {
       if (item.href.startsWith('/')) router.prefetch(item.href)
@@ -133,14 +140,13 @@ export function BrandNavLinks({
       {items.map(({ href, label, icon: Icon, match }) => {
         const active =
           variant === 'subpage' &&
-          (pathname === match || pathname.startsWith(`${match}/`))
+          (barePath === match || barePath.startsWith(`${match}/`))
 
         const linkClass =
           variant === 'landing'
             ? 'group flex flex-col items-center gap-1.5 text-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
             : cn(
                 'group flex flex-col items-center gap-0.5 text-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2',
-                // Hide current page without removing it from the DOM (stable markup)
                 active && 'hidden'
               )
 
@@ -151,7 +157,7 @@ export function BrandNavLinks({
 
         return (
           <Link
-            key={label}
+            key={match}
             href={href}
             prefetch
             aria-current={active ? 'page' : undefined}
@@ -165,6 +171,11 @@ export function BrandNavLinks({
           </Link>
         )
       })}
+      <LanguageToggle variant={variant} />
     </div>
   )
 }
+
+/** @deprecated Prefer dict.nav — kept for any stray imports */
+export const BRAND_NAV_ITEMS = NAV_DEFS
+export const LANDING_NAV_ITEMS = NAV_DEFS.filter((i) => LANDING_KEYS.has(i.key))

@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server'
+import { isLocale, type Locale } from '@/lib/i18n/config'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 
 type ContactBody = {
   name?: unknown
   email?: unknown
   phone?: unknown
   message?: unknown
+  locale?: unknown
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -21,8 +24,12 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as ContactBody
   } catch {
-    return NextResponse.json({ message: 'Invalid request body.' }, { status: 400 })
+    const dict = getDictionary('en')
+    return NextResponse.json({ message: dict.api.contact.invalidBody }, { status: 400 })
   }
+
+  const locale: Locale = isLocale(body.locale) ? body.locale : 'en'
+  const messages = getDictionary(locale).api.contact
 
   const name = isNonEmptyString(body.name) ? body.name.trim() : ''
   const email = isNonEmptyString(body.email) ? body.email.trim() : ''
@@ -30,45 +37,38 @@ export async function POST(request: Request) {
   const message = typeof body.message === 'string' ? body.message.trim() : ''
 
   if (name.length < 2) {
-    return NextResponse.json({ message: 'Please enter your name.' }, { status: 400 })
+    return NextResponse.json({ message: messages.nameRequired }, { status: 400 })
   }
 
   if (!isValidEmail(email)) {
-    return NextResponse.json({ message: 'Please enter a valid email.' }, { status: 400 })
+    return NextResponse.json({ message: messages.emailInvalid }, { status: 400 })
   }
 
   const phoneDigits = phone.replace(/\D/g, '')
   if (phoneDigits.length < 10) {
-    return NextResponse.json(
-      { message: 'Please enter a valid phone number.' },
-      { status: 400 }
-    )
+    return NextResponse.json({ message: messages.phoneInvalid }, { status: 400 })
   }
 
   if (message.length < 10) {
     return NextResponse.json(
       {
-        message:
-          message.length === 0
-            ? 'Please enter a message.'
-            : 'Please add a bit more detail to your message.',
+        message: message.length === 0 ? messages.messageEmpty : messages.messageShort,
       },
       { status: 400 }
     )
   }
 
-  // Email delivery (Resend/SendGrid) can plug in here later.
-  // For now we accept and log so the form UX works end-to-end in local/dev.
   console.info('[contact]', {
     name,
     email,
     phone: phone || null,
     message,
+    locale,
     receivedAt: new Date().toISOString(),
   })
 
   return NextResponse.json({
     ok: true,
-    message: 'Thanks! We will respond soon.',
+    message: messages.success,
   })
 }

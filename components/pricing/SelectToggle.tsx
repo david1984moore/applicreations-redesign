@@ -1,6 +1,7 @@
 'use client'
 
 import { Check } from 'lucide-react'
+import { useLocale } from '@/components/i18n/LocaleProvider'
 import { cn } from '@/lib/utils'
 
 interface SelectToggleProps {
@@ -16,14 +17,15 @@ export function SelectToggle({
   onToggle,
   className,
 }: SelectToggleProps) {
-  const chooseLabel = `Choose ${label}`
+  const { dict, t } = useLocale()
+  const chooseLabel = t(dict.pricingPage.choose, { name: label })
 
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-pressed={selected}
-      aria-label={selected ? `Chosen ${label}` : chooseLabel}
+      aria-label={selected ? t(dict.pricingPage.chosenAria, { name: label }) : chooseLabel}
       className={cn(
         'inline-flex w-full sm:w-auto items-center justify-center rounded-lg border px-4 py-2.5 text-sm font-semibold cursor-pointer',
         'transition-colors duration-200',
@@ -56,7 +58,7 @@ export function SelectToggle({
           aria-hidden
         >
           <Check className="h-4 w-4 shrink-0" strokeWidth={3} />
-          Chosen
+          {dict.pricingPage.chosen}
         </span>
       </span>
     </button>

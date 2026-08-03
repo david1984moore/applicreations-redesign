@@ -23,33 +23,28 @@
  */
 import Image from 'next/image'
 import Link from 'next/link'
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { ClipboardList, Eye, Globe2 } from 'lucide-react'
+import { useLocale } from '@/components/i18n/LocaleProvider'
 import { BrandNavLinks } from '@/components/ui/BrandNavLinks'
-import { plans, BASIC_SUPPORT } from '@/lib/pricing'
-
-const processSteps = [
-  {
-    n: '1',
-    label: 'Introspect',
-    detail: 'A few easy questions about your business — just tell us what you do.',
-    Icon: ClipboardList,
-  },
-  {
-    n: '2',
-    label: 'Live preview',
-    detail: 'A practice site you can open, click through, and try yourself.',
-    Icon: Eye,
-  },
-  {
-    n: '3',
-    label: 'Working website',
-    detail: 'We review with you, finish the build, and deliver the real site.',
-    Icon: Globe2,
-  },
-] as const
+import { getBasicSupport, getPlans } from '@/lib/pricing'
 
 export function LandingBoard() {
+  const { dict, t, href, locale } = useLocale()
+  const plans = useMemo(() => getPlans(dict, locale), [dict, locale])
+  const basicSupport = useMemo(() => getBasicSupport(dict), [dict])
+
+  const processSteps = useMemo(
+    () =>
+      [
+        { n: '1', ...dict.landing.steps.introspect, Icon: ClipboardList },
+        { n: '2', ...dict.landing.steps.livePreview, Icon: Eye },
+        { n: '3', ...dict.landing.steps.workingWebsite, Icon: Globe2 },
+      ] as const,
+    [dict]
+  )
+
   return (
     <section className="landing-board relative flex flex-col overflow-x-hidden lg:h-[100svh] lg:overflow-hidden">
       {/* Atmosphere */}
@@ -91,13 +86,13 @@ export function LandingBoard() {
                           className="!h-full !w-full object-contain"
                         />
                       </motion.span>
-                      Applicreations
+                      {dict.brand.name}
                     </h1>
 
                     {/* Tagline sits under the name; w-0 min-w-full so it doesn't widen the brand column */}
                     <div className="w-0 min-w-full overflow-visible flex justify-start lg:justify-start">
                       <p className="mt-2.5 ml-[4.75rem] sm:ml-[5.75rem] lg:ml-[8.5rem] w-max max-w-full text-sm sm:text-base font-[700] italic tracking-[0.12em] uppercase text-primary-600 whitespace-nowrap text-left lg:text-left">
-                        Custom apps and websites
+                        {dict.landing.tagline}
                       </p>
                     </div>
                   </div>
@@ -124,19 +119,19 @@ export function LandingBoard() {
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] items-center gap-3 mb-2">
                   <span className="hidden lg:block" aria-hidden />
                   <p className="text-sm font-bold tracking-[0.12em] uppercase text-primary-600 text-center">
-                    Website Pricing
+                    {dict.landing.websitePricing}
                   </p>
-                  <a
-                    href="/pricing"
+                  <Link
+                    href={href('/pricing')}
                     className="hidden lg:block justify-self-end cursor-pointer text-[0.9375rem] font-bold tracking-tight text-gray-900 hover:text-gray-700 shrink-0"
                   >
-                    Full pricing details →
-                  </a>
+                    {dict.landing.fullPricingDetails}
+                  </Link>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {plans.map((plan) => (
-                    <a
+                    <Link
                       key={plan.id}
                       href={plan.ctaHref}
                       className="relative flex flex-col items-center text-center rounded-lg px-3 py-2.5 bg-paper/70 border border-gray-200 cursor-pointer outline-none transition-colors hover:border-gray-300 hover:bg-paper focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
@@ -155,25 +150,25 @@ export function LandingBoard() {
                       <span className="mt-1.5 text-[0.9375rem] font-bold tracking-tight text-gray-900">
                         {plan.cta} →
                       </span>
-                    </a>
+                    </Link>
                   ))}
                 </div>
 
                 <p className="mt-2 text-sm text-center">
-                  <a
-                    href="/pricing#support"
+                  <Link
+                    href={href('/pricing#support')}
                     className="cursor-pointer font-medium text-gray-900 hover:text-gray-700"
                   >
-                    *Hosting &amp; support from {BASIC_SUPPORT.priceLabel}
-                  </a>
+                    {t(dict.landing.hostingFrom, { price: basicSupport.priceLabel })}
+                  </Link>
                 </p>
 
-                <a
-                  href="/pricing"
+                <Link
+                  href={href('/pricing')}
                   className="lg:hidden mt-2.5 text-center cursor-pointer text-[0.875rem] font-bold tracking-tight text-gray-900 hover:text-gray-700"
                 >
-                  Full pricing details →
-                </a>
+                  {dict.landing.fullPricingDetails}
+                </Link>
               </motion.div>
             </div>
           </div>
@@ -189,10 +184,10 @@ export function LandingBoard() {
             <div className="flex flex-col gap-3 lg:gap-[0.625rem]">
               <div className="flex flex-col gap-1 lg:gap-0.5">
                 <p className="text-base font-bold tracking-[0.14em] uppercase text-primary-100/90 text-center lg:text-sm">
-                  How it works
+                  {dict.landing.howItWorks}
                 </p>
                 <h2 className="font-display text-xl sm:text-2xl lg:text-xl leading-[1.2] lg:leading-[1.15] tracking-tight text-center">
-                  Three simple steps to get your website…
+                  {dict.landing.threeSteps}
                 </h2>
               </div>
 
@@ -225,7 +220,7 @@ export function LandingBoard() {
                 {/* CTA — mobile: solid shaded button; lg+: spectrum-flip from the dot */}
                 <div className="mt-4 flex justify-center sm:mt-0 sm:absolute sm:right-0 sm:top-[32%] sm:-translate-y-1/2">
                   <Link
-                    href="/introspect"
+                    href={href('/introspect')}
                     className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl px-8 py-3 font-sans text-base font-bold tracking-tight shadow-[0_12px_28px_-12px_rgba(0,0,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 bg-[oklch(58%_0.14_310)] text-white ring-1 ring-white/25 focus-visible:ring-white/60 focus-visible:ring-offset-primary-700 lg:bg-[oklch(98%_0.012_85)] lg:text-primary-800 lg:ring-white/70"
                   >
                     <span className="relative inline-flex items-center gap-3">
@@ -234,7 +229,7 @@ export function LandingBoard() {
                         <span className="relative z-20 block h-2 w-2 rounded-full bg-[oklch(58%_0.14_310)] transition-colors duration-200 ease-in-out group-hover:bg-white group-focus-visible:bg-white" />
                       </span>
                       <span className="relative z-10 lg:transition-colors lg:duration-200 lg:ease-in-out lg:group-hover:text-white lg:group-focus-visible:text-white">
-                        Begin Introspect
+                        {dict.landing.beginIntrospect}
                       </span>
                     </span>
                   </Link>
@@ -243,26 +238,24 @@ export function LandingBoard() {
 
               <div className="border-t border-white/15 pt-2.5 lg:pt-[0.375rem]">
                 <p className="text-[0.875rem] leading-snug text-primary-100/80 lg:text-[0.75rem]">
-                  <span className="font-bold text-white">Going live:</span> Your website package
-                  covers the <span className="font-bold text-white">build only</span> — designing
-                  and delivering the site. To put it on the internet, you’ll need to{' '}
-                  <span className="font-bold text-white">purchase a domain</span> (your web
-                  address, like <span className="font-bold text-white">www.joescafe.com</span> —
-                  you can buy one at{' '}
-                  <a
-                    href="https://www.namecheap.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-bold text-white underline underline-offset-2 decoration-white/55 hover:decoration-white"
-                  >
-                    Namecheap
-                  </a>
-                  ) and <span className="font-bold text-white">hosting</span>. Most clients choose
-                  our hosting &amp; support from {BASIC_SUPPORT.priceLabel} so we get the site
-                  live, keep it online, and handle technical issues. Without a hosting &amp;
-                  support plan,{' '}
-                  <span className="font-bold text-white">you are responsible</span>{' '}
-                  for getting the site online and keeping it running.
+                  <span className="font-bold text-white">{dict.landing.goingLiveLabel}</span>{' '}
+                  {dict.landing.goingLive.split('Namecheap').map((part, i, arr) =>
+                    i < arr.length - 1 ? (
+                      <span key={i}>
+                        {part}
+                        <a
+                          href="https://www.namecheap.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-white underline underline-offset-2 decoration-white/55 hover:decoration-white"
+                        >
+                          Namecheap
+                        </a>
+                      </span>
+                    ) : (
+                      <span key={i}>{part}</span>
+                    )
+                  )}
                 </p>
               </div>
             </div>

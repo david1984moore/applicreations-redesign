@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -88,12 +89,12 @@ export function Pricing() {
           className="mt-10 text-center text-sm text-gray-600 max-w-xl mx-auto"
         >
           Need ongoing help after launch?{' '}
-          <a
+          <Link
             href="/pricing#support"
             className="cursor-pointer font-medium text-primary-700 hover:text-primary-800"
           >
             See hosting &amp; support options
-          </a>
+          </Link>
           .
         </motion.p>
       </div>

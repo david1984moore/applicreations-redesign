@@ -28,26 +28,28 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react'
+import { useLocale } from '@/components/i18n/LocaleProvider'
 import { Button } from '@/components/ui/Button'
 import { Progress } from '@/components/ui/Progress'
+import type { Dictionary } from '@/lib/i18n/dictionaries/types'
 import {
   aboutBusinessError,
   businessNameError,
-  COLOR_PALETTE_OPTIONS,
-  DESIGN_FEEL_OPTIONS,
   emptyAnswers,
   formatPhoneUS,
+  getColorPaletteOptions,
+  getDesignFeelOptions,
+  getSiteDepthOptions,
+  getYesNoUnsure,
   isValidEmail,
   liveEmailError,
   locationError,
   mergeDraftAnswers,
-  NAME_SOFT_WARNING,
   nameHardError,
   nameLooksSuspicious,
+  nameSoftWarning,
   phoneDigits,
   recommendPlan,
-  SITE_DEPTH_OPTIONS,
-  YES_NO_UNSURE,
   type ColorPalette,
   type DesignFeel,
   type IntrospectAnswers,
@@ -71,9 +73,6 @@ const UPLOAD_ACCEPT = 'image/jpeg,image/png,image/webp,image/svg+xml,.jpg,.jpeg,
 const MAX_LOGO_BYTES = 5 * 1024 * 1024
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
 const MAX_PHOTOS = 12
-
-const UPLOAD_SECURITY_NOTICE =
-  "Uploads are optional. Uploads are protected by Google's infrastructure-level encryption (AES-256 at rest, TLS in transit). Applicreations keeps the folder access restricted to Applicreations only, and files are deleted from the shared folder within 30 days of project completion."
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -105,11 +104,6 @@ const DESIGN_FEEL_ICONS: Record<DesignFeel, LucideIcon> = {
 
 type Phase = 'welcome' | 'questions' | 'review' | 'success'
 
-function yesNoLabel(value: YesNoUnsure | ''): string {
-  if (!value) return '—'
-  return YES_NO_UNSURE.find((o) => o.id === value)?.label ?? value
-}
-
 function listOrDash(items: string[]): string {
   const cleaned = items.map((s) => s.trim()).filter(Boolean)
   return cleaned.length > 0 ? cleaned.join(', ') : '—'
@@ -135,66 +129,71 @@ function textareaClass(error?: string) {
 
 type FieldErrors = Partial<Record<keyof IntrospectAnswers, string>>
 
-function validateStep(step: number, answers: IntrospectAnswers): FieldErrors {
+function validateStep(
+  step: number,
+  answers: IntrospectAnswers,
+  dict: Dictionary
+): FieldErrors {
   const errors: FieldErrors = {}
+  const ui = dict.introspectUi
+  const v = dict.introspectValidation
 
   if (step === 1) {
-    const nameErr = nameHardError(answers.fullName)
+    const nameErr = nameHardError(answers.fullName, v)
     if (nameErr) errors.fullName = nameErr
     if (!isValidEmail(answers.email)) {
-      errors.email = 'Please enter a valid email (like jane@example.com)'
+      errors.email = v.liveEmailValid
     }
     const digits = phoneDigits(answers.phone)
     if (digits.length < 10) {
-      errors.phone = 'Please enter a full 10-digit phone number'
+      errors.phone = ui.phoneFullError
     }
   }
 
   if (step === 2) {
-    const bizErr = businessNameError(answers.businessName)
+    const bizErr = businessNameError(answers.businessName, v)
     if (bizErr) errors.businessName = bizErr
-    const aboutErr = aboutBusinessError(answers.aboutBusiness)
+    const aboutErr = aboutBusinessError(answers.aboutBusiness, v)
     if (aboutErr) errors.aboutBusiness = aboutErr
-    const locErr = locationError(answers.location)
+    const locErr = locationError(answers.location, v)
     if (locErr) errors.location = locErr
   }
 
   if (step === 3) {
     if (!answers.hasOnlinePresence) {
-      errors.hasOnlinePresence = 'Please choose one'
+      errors.hasOnlinePresence = ui.chooseOne
     }
   }
 
   if (step === 4) {
-    if (!answers.hasLogo) errors.hasLogo = 'Please choose one'
-    if (!answers.hasPhotos) errors.hasPhotos = 'Please choose one'
-    if (!answers.needsPhotosTaken) errors.needsPhotosTaken = 'Please choose one'
+    if (!answers.hasLogo) errors.hasLogo = ui.chooseOne
+    if (!answers.hasPhotos) errors.hasPhotos = ui.chooseOne
+    if (!answers.needsPhotosTaken) errors.needsPhotosTaken = ui.chooseOne
   }
 
   if (step === 5) {
     const actions = answers.visitorActions.map((a) => a.trim()).filter(Boolean)
     if (actions.length === 0) {
-      errors.visitorActions = 'Please list at least one thing people should be able to do'
+      errors.visitorActions = ui.visitorActionsError
     }
   }
 
   if (step === 6) {
     if (!answers.siteDepth) {
-      errors.siteDepth = 'Please choose how full you want the site to be'
+      errors.siteDepth = ui.siteDepthError
     }
   }
 
   if (step === 7) {
     if (!answers.designFeelNoPreference && answers.designFeels.length === 0) {
-      errors.designFeels = 'Pick at least one design feel, or choose no preference'
+      errors.designFeels = ui.designFeelsError
     }
     if (
       !answers.colorPaletteNoPreference &&
       !answers.colorPaletteFromLogo &&
       answers.colorPalettes.length === 0
     ) {
-      errors.colorPalettes =
-        'Pick at least one color direction, match your logo, or choose no preference'
+      errors.colorPalettes = ui.colorPalettesError
     }
     if (
       !answers.colorPaletteNoPreference &&
@@ -202,7 +201,7 @@ function validateStep(step: number, answers: IntrospectAnswers): FieldErrors {
       answers.colorPalettes.includes('custom') &&
       answers.colorNotes.trim().length < 2
     ) {
-      errors.colorNotes = 'Tell us a bit about the colors you have in mind'
+      errors.colorNotes = ui.colorNotesError
     }
   }
 
@@ -213,6 +212,20 @@ function validateStep(step: number, answers: IntrospectAnswers): FieldErrors {
 
 export function IntrospectBoard() {
   const formId = useId()
+  const { dict, t, href, locale } = useLocale()
+  const ui = dict.introspectUi
+  const dash = dict.common.emptyDash
+
+  const yesNoUnsure = getYesNoUnsure(dict)
+  const siteDepthOptions = getSiteDepthOptions(dict)
+  const designFeelOptions = getDesignFeelOptions(dict)
+  const colorPaletteOptions = getColorPaletteOptions(dict)
+
+  const yesNoLabel = (value: YesNoUnsure | ''): string => {
+    if (!value) return dash
+    return yesNoUnsure.find((o) => o.id === value)?.label ?? value
+  }
+
   const [phase, setPhase] = useState<Phase>('welcome')
   const [step, setStep] = useState(1)
   const [answers, setAnswers] = useState<IntrospectAnswers>(emptyAnswers)
@@ -221,9 +234,7 @@ export function IntrospectBoard() {
   const [nameConfirmPending, setNameConfirmPending] = useState(false)
   const [status, setStatus] = useState<'idle' | 'submitting' | 'error'>('idle')
   const [serverMessage, setServerMessage] = useState('')
-  const [recommendation, setRecommendation] = useState<ReturnType<
-    typeof recommendPlan
-  > | null>(null)
+  const [, setRecommendation] = useState<ReturnType<typeof recommendPlan> | null>(null)
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [photoFiles, setPhotoFiles] = useState<File[]>([])
   const [uploadErrors, setUploadErrors] = useState<{ logo?: string; photos?: string }>({})
@@ -319,21 +330,19 @@ export function IntrospectBoard() {
       setAnswers((prev) => ({ ...prev, [field]: value }))
 
       if (field === 'email') {
-        const live = liveEmailError(value)
+        const live = liveEmailError(value, dict.introspectValidation)
         setErrors((prev) => ({ ...prev, email: live }))
         return
       }
       if (field === 'phone') {
         const digits = phoneDigits(value)
         const phoneErr =
-          digits.length >= 4 && digits.length < 10
-            ? 'Keep typing — a full number looks like (555) 123-4567'
-            : undefined
+          digits.length >= 4 && digits.length < 10 ? ui.phoneKeepTyping : undefined
         setErrors((prev) => ({ ...prev, phone: phoneErr }))
         return
       }
       if (field === 'fullName') {
-        const hard = nameHardError(value)
+        const hard = nameHardError(value, dict.introspectValidation)
         // Only show hard errors live once they've typed something short/odd
         if (hard && value.trim().length >= 2) {
           setErrors((prev) => ({ ...prev, fullName: hard }))
@@ -344,26 +353,35 @@ export function IntrospectBoard() {
       }
 
       if (field === 'businessName') {
-        const t = value.trim()
+        const trimmed = value.trim()
         setErrors((prev) => ({
           ...prev,
-          businessName: t.length > 0 ? businessNameError(value) : undefined,
+          businessName:
+            trimmed.length > 0
+              ? businessNameError(value, dict.introspectValidation)
+              : undefined,
         }))
         return
       }
       if (field === 'aboutBusiness') {
-        const t = value.trim()
+        const trimmed = value.trim()
         setErrors((prev) => ({
           ...prev,
-          aboutBusiness: t.length > 0 ? aboutBusinessError(value) : undefined,
+          aboutBusiness:
+            trimmed.length > 0
+              ? aboutBusinessError(value, dict.introspectValidation)
+              : undefined,
         }))
         return
       }
       if (field === 'location') {
-        const t = value.trim()
+        const trimmed = value.trim()
         setErrors((prev) => ({
           ...prev,
-          location: t.length > 0 ? locationError(value) : undefined,
+          location:
+            trimmed.length > 0
+              ? locationError(value, dict.introspectValidation)
+              : undefined,
         }))
         return
       }
@@ -402,7 +420,7 @@ export function IntrospectBoard() {
     if (file.size > MAX_LOGO_BYTES) {
       setUploadErrors((prev) => ({
         ...prev,
-        logo: 'Logo must be 5 MB or smaller',
+        logo: ui.logoTooLarge,
       }))
       return
     }
@@ -418,7 +436,7 @@ export function IntrospectBoard() {
     if (tooLarge) {
       setUploadErrors((prev) => ({
         ...prev,
-        photos: `"${tooLarge.name}" is over 10 MB — please choose a smaller file`,
+        photos: t(ui.photoTooLarge, { name: tooLarge.name }),
       }))
       return
     }
@@ -438,7 +456,7 @@ export function IntrospectBoard() {
     setAnswers((a) => ({ ...a, photoFileNames: next.map((f) => f.name) }))
     setUploadErrors((e) => ({
       ...e,
-      photos: hitLimit ? `You can upload up to ${MAX_PHOTOS} pictures` : undefined,
+      photos: hitLimit ? t(ui.photoLimit, { max: MAX_PHOTOS }) : undefined,
     }))
   }
 
@@ -543,11 +561,11 @@ export function IntrospectBoard() {
     return prev
   }
 
-  const stepErrors = validateStep(step, answers)
+  const stepErrors = validateStep(step, answers, dict)
   const canContinue = Object.keys(stepErrors).length === 0
 
   const goNext = () => {
-    const nextErrors = validateStep(step, answers)
+    const nextErrors = validateStep(step, answers, dict)
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
       setWarnings({})
@@ -555,7 +573,7 @@ export function IntrospectBoard() {
     }
 
     if (step === 1 && nameLooksSuspicious(answers.fullName) && !nameConfirmPending) {
-      setWarnings({ fullName: NAME_SOFT_WARNING })
+      setWarnings({ fullName: nameSoftWarning(dict) })
       setNameConfirmPending(true)
       return
     }
@@ -599,7 +617,7 @@ export function IntrospectBoard() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    const nextErrors = validateStep(TOTAL_STEPS, answers)
+    const nextErrors = validateStep(TOTAL_STEPS, answers, dict)
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
       setPhase('questions')
@@ -607,7 +625,7 @@ export function IntrospectBoard() {
       return
     }
 
-    const rec = recommendPlan(answers)
+    const rec = recommendPlan(answers, dict)
     setRecommendation(rec)
     setStatus('submitting')
     setServerMessage('')
@@ -616,6 +634,7 @@ export function IntrospectBoard() {
       const formData = new FormData()
       formData.append('answers', JSON.stringify(answers))
       formData.append('recommendation', JSON.stringify(rec))
+      formData.append('locale', locale)
       if (logoFile) formData.append('logo', logoFile, logoFile.name)
       for (const photo of photoFiles) {
         formData.append('photos', photo, photo.name)
@@ -629,7 +648,7 @@ export function IntrospectBoard() {
 
       if (!res.ok) {
         setStatus('error')
-        setServerMessage(data.message || 'Something went wrong. Please try again.')
+        setServerMessage(data.message || ui.errorGeneric)
         return
       }
 
@@ -644,7 +663,7 @@ export function IntrospectBoard() {
       setPhase('success')
     } catch {
       setStatus('error')
-      setServerMessage('Something went wrong. Please try again or email us directly.')
+      setServerMessage(ui.errorTryEmail)
     }
   }
 
@@ -654,19 +673,19 @@ export function IntrospectBoard() {
   const lockViewport = phase === 'welcome' || phase === 'success'
 
   const depthLabel =
-    SITE_DEPTH_OPTIONS.find((o) => o.id === answers.siteDepth)?.title || '—'
+    siteDepthOptions.find((o) => o.id === answers.siteDepth)?.title || dash
   const feelLabels = answers.designFeelNoPreference
-    ? 'No preference — you decide'
+    ? ui.noPreference
     : answers.designFeels
-        .map((id) => DESIGN_FEEL_OPTIONS.find((o) => o.id === id)?.title || id)
-        .join(', ') || '—'
+        .map((id) => designFeelOptions.find((o) => o.id === id)?.title || id)
+        .join(', ') || dash
   const colorLabels = answers.colorPaletteFromLogo
-    ? 'Match colors from my logo'
+    ? ui.matchLogoColors
     : answers.colorPaletteNoPreference
-      ? 'No preference — you decide'
+      ? ui.noPreference
       : answers.colorPalettes
-          .map((id) => COLOR_PALETTE_OPTIONS.find((o) => o.id === id)?.title || id)
-          .join(', ') || '—'
+          .map((id) => colorPaletteOptions.find((o) => o.id === id)?.title || id)
+          .join(', ') || dash
 
   return (
     <section
@@ -711,20 +730,25 @@ export function IntrospectBoard() {
                   strokeLinejoin="round"
                 />
               </svg>
-              Back
+              {ui.back}
             </button>
             <div className="min-w-0 space-y-1.5">
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <span>
-                  {phase === 'review' ? 'Review' : `Step ${step} of ${TOTAL_STEPS}`}
+                  {phase === 'review'
+                    ? ui.review
+                    : t(ui.stepOf, { step, total: TOTAL_STEPS })}
                 </span>
-                <Link href="/" className="text-primary-700 hover:underline underline-offset-2">
-                  Exit
+                <Link
+                  href={href('/')}
+                  className="text-primary-700 hover:underline underline-offset-2"
+                >
+                  {ui.exit}
                 </Link>
               </div>
               <Progress
                 value={progressValue}
-                aria-label="Questionnaire progress"
+                aria-label={ui.progressAria}
                 indicatorClassName="!bg-[oklch(58%_0.14_310)]"
               />
             </div>
@@ -743,29 +767,27 @@ export function IntrospectBoard() {
             >
               <div className="text-center space-y-2">
                 <p className="text-xs font-semibold tracking-[0.14em] uppercase text-primary-600">
-                  Introspect
+                  {ui.welcomeEyebrow}
                 </p>
                 <h1 className="font-mi-gente text-2xl sm:text-3xl text-gray-900 leading-tight">
-                  Welcome — let&apos;s learn about your project
+                  {ui.welcomeHeading}
                 </h1>
               </div>
 
               <div className="rounded-xl border border-gray-200/80 bg-white/75 px-4 py-3.5 sm:px-5 space-y-2.5">
-                <p className="text-sm font-semibold text-gray-900">What to expect</p>
+                <p className="text-sm font-semibold text-gray-900">{ui.whatToExpect}</p>
                 <ol className="space-y-2 text-sm sm:text-[0.95rem] text-gray-700 leading-snug">
                   <li className="flex gap-2.5">
                     <span className="font-display text-lg text-primary-600 leading-none mt-0.5 shrink-0">1</span>
-                    <span>Answer a few questions.</span>
+                    <span>{ui.expect1}</span>
                   </li>
                   <li className="flex gap-2.5">
                     <span className="font-display text-lg text-primary-600 leading-none mt-0.5 shrink-0">2</span>
-                    <span>Applicreations builds your free preview in 48 to 72 hours.</span>
+                    <span>{ui.expect2}</span>
                   </li>
                   <li className="flex gap-2.5">
                     <span className="font-display text-lg text-primary-600 leading-none mt-0.5 shrink-0">3</span>
-                    <span>
-                      You play with your preview website for 3 days and decide if it&apos;s a fit.
-                    </span>
+                    <span>{ui.expect3}</span>
                   </li>
                 </ol>
               </div>
@@ -785,7 +807,7 @@ export function IntrospectBoard() {
                       <span className="relative z-20 block h-2 w-2 rounded-full bg-[oklch(58%_0.14_310)] transition-colors duration-200 ease-in-out group-hover:bg-white group-focus-visible:bg-white" />
                     </span>
                     <span className="relative z-10 lg:transition-colors lg:duration-200 lg:ease-in-out lg:group-hover:text-white lg:group-focus-visible:text-white">
-                      Get Started
+                      {ui.getStarted}
                     </span>
                   </span>
                 </button>
@@ -811,9 +833,9 @@ export function IntrospectBoard() {
               )}
             >
               {step === 1 && (
-                <StepBlock title="First, a little about you">
+                <StepBlock title={ui.step1Title}>
                   <Field
-                    label="Your name"
+                    label={ui.nameLabel}
                     error={errors.fullName}
                     warning={warnings.fullName}
                     htmlFor={`${formId}-name`}
@@ -824,12 +846,12 @@ export function IntrospectBoard() {
                       value={answers.fullName}
                       onChange={update('fullName')}
                       autoComplete="name"
-                      placeholder="Jane Smith"
+                      placeholder={ui.namePlaceholder}
                       inputMode="text"
                       autoCapitalize="words"
                     />
                   </Field>
-                  <Field label="Email" error={errors.email} htmlFor={`${formId}-email`}>
+                  <Field label={ui.emailLabel} error={errors.email} htmlFor={`${formId}-email`}>
                     <input
                       id={`${formId}-email`}
                       type="email"
@@ -840,19 +862,19 @@ export function IntrospectBoard() {
                         if (answers.email.trim() && !isValidEmail(answers.email)) {
                           setErrors((prev) => ({
                             ...prev,
-                            email: 'Please enter a valid email (like jane@example.com)',
+                            email: dict.introspectValidation.liveEmailValid,
                           }))
                         }
                       }}
                       autoComplete="email"
-                      placeholder="jane@example.com"
+                      placeholder={ui.emailPlaceholder}
                       inputMode="email"
                       spellCheck={false}
                     />
                   </Field>
                   <Field
-                    label="Phone"
-                    hint="We'll text first if we contact you this way."
+                    label={ui.phoneLabel}
+                    hint={ui.phoneHint}
                     error={errors.phone}
                     htmlFor={`${formId}-phone`}
                   >
@@ -863,7 +885,7 @@ export function IntrospectBoard() {
                       value={answers.phone}
                       onChange={update('phone')}
                       autoComplete="tel-national"
-                      placeholder="(555) 123-4567"
+                      placeholder={ui.phonePlaceholder}
                       inputMode="numeric"
                       maxLength={14}
                       required
@@ -873,9 +895,9 @@ export function IntrospectBoard() {
               )}
 
               {step === 2 && (
-                <StepBlock title="Tell us about your business or project">
+                <StepBlock title={ui.step2Title}>
                   <Field
-                    label="Name of your business or project"
+                    label={ui.businessNameLabel}
                     error={errors.businessName}
                     htmlFor={`${formId}-biz`}
                   >
@@ -884,11 +906,11 @@ export function IntrospectBoard() {
                       className={fieldClass(errors.businessName)}
                       value={answers.businessName}
                       onChange={update('businessName')}
-                      placeholder="Joe's Cafe"
+                      placeholder={ui.businessNamePlaceholder}
                     />
                   </Field>
                   <Field
-                    label="What does it do or offer?"
+                    label={ui.aboutBusinessLabel}
                     error={errors.aboutBusiness}
                     htmlFor={`${formId}-about`}
                   >
@@ -897,11 +919,11 @@ export function IntrospectBoard() {
                       className={textareaClass(errors.aboutBusiness)}
                       value={answers.aboutBusiness}
                       onChange={update('aboutBusiness')}
-                      placeholder="A neighborhood cafe that serves breakfast, lunch, and coffee"
+                      placeholder={ui.aboutBusinessPlaceholder}
                     />
                   </Field>
                   <Field
-                    label="Where are you located?"
+                    label={ui.locationLabel}
                     error={errors.location}
                     htmlFor={`${formId}-loc`}
                   >
@@ -910,26 +932,23 @@ export function IntrospectBoard() {
                       className={fieldClass(errors.location)}
                       value={answers.location}
                       onChange={update('location')}
-                      placeholder="City, town, or area you serve"
+                      placeholder={ui.locationPlaceholder}
                     />
                   </Field>
                 </StepBlock>
               )}
 
               {step === 3 && (
-                <StepBlock
-                  title="Your online presence today"
-                  subtitle="It's fine if you don't have a website yet."
-                >
+                <StepBlock title={ui.step3Title} subtitle={ui.step3Subtitle}>
                   <ChoiceRow
-                    label="Do you already have a website or online pages?"
+                    label={ui.hasOnlineLabel}
                     error={errors.hasOnlinePresence}
-                    options={YES_NO_UNSURE}
+                    options={yesNoUnsure}
                     value={answers.hasOnlinePresence}
                     onChange={(v) => setChoice('hasOnlinePresence', v as YesNoUnsure)}
                   />
                   <Field
-                    label="Link to your current website (if any)"
+                    label={ui.websiteUrlLabel}
                     htmlFor={`${formId}-website`}
                   >
                     <input
@@ -938,45 +957,42 @@ export function IntrospectBoard() {
                       className={fieldClass()}
                       value={answers.websiteUrl}
                       onChange={update('websiteUrl')}
-                      placeholder="https://yourwebsite.com"
+                      placeholder={ui.websiteUrlPlaceholder}
                     />
                   </Field>
                   <LinkListField
-                    label="Links to your social media pages (if any)"
-                    hint="Facebook, Instagram, LinkedIn, and the like — one link per box."
+                    label={ui.socialLinksLabel}
+                    hint={ui.socialLinksHint}
                     links={answers.socialMediaLinks}
                     onChange={(links) => setLinkList('socialMediaLinks', links)}
-                    addLabel="Add another social link"
+                    addLabel={ui.addSocialLink}
                     inputPrefix={`${formId}-social`}
                   />
                   <LinkListField
-                    label="Websites you really admire"
-                    hint="Not required, but it helps us get a better feel for your design preferences."
+                    label={ui.admiredLabel}
+                    hint={ui.admiredHint}
                     links={answers.admiredWebsiteLinks}
                     onChange={(links) => setLinkList('admiredWebsiteLinks', links)}
-                    addLabel="Add another site"
+                    addLabel={ui.addAdmiredSite}
                     inputPrefix={`${formId}-admire`}
                   />
                 </StepBlock>
               )}
 
               {step === 4 && (
-                <StepBlock
-                  title="Logo and pictures"
-                  subtitle="We'll work with what you have — or help figure out photos later."
-                >
+                <StepBlock title={ui.step4Title} subtitle={ui.step4Subtitle}>
                   <ChoiceRow
-                    label="Do you already have a logo?"
+                    label={ui.hasLogoLabel}
                     error={errors.hasLogo}
-                    options={YES_NO_UNSURE}
+                    options={yesNoUnsure}
                     value={answers.hasLogo}
                     onChange={(v) => setChoice('hasLogo', v as YesNoUnsure)}
                   />
                   {answers.hasLogo === 'yes' && (
                     <AssetUploadField
                       id={`${formId}-logo-upload`}
-                      label="Upload your logo (optional)"
-                      hint="PNG, JPG, WebP, or SVG — up to 5 MB."
+                      label={ui.uploadLogoLabel}
+                      hint={ui.uploadLogoHint}
                       accept={UPLOAD_ACCEPT}
                       multiple={false}
                       files={logoFile ? [logoFile] : []}
@@ -986,17 +1002,17 @@ export function IntrospectBoard() {
                     />
                   )}
                   <ChoiceRow
-                    label="Do you have pictures you'd like on the site?"
+                    label={ui.hasPhotosLabel}
                     error={errors.hasPhotos}
-                    options={YES_NO_UNSURE}
+                    options={yesNoUnsure}
                     value={answers.hasPhotos}
                     onChange={(v) => setChoice('hasPhotos', v as YesNoUnsure)}
                   />
                   {answers.hasPhotos === 'yes' && (
                     <AssetUploadField
                       id={`${formId}-photos-upload`}
-                      label="Upload pictures (optional)"
-                      hint={`PNG, JPG, or WebP — up to ${MAX_PHOTOS} files, 10 MB each.`}
+                      label={ui.uploadPhotosLabel}
+                      hint={t(ui.uploadPhotosHint, { max: MAX_PHOTOS })}
                       accept={UPLOAD_ACCEPT}
                       multiple
                       files={photoFiles}
@@ -1010,13 +1026,13 @@ export function IntrospectBoard() {
                       role="note"
                       className="text-xs sm:text-sm text-gray-600 leading-relaxed rounded-md border border-success/20 bg-success/10 px-3.5 py-3"
                     >
-                      {UPLOAD_SECURITY_NOTICE}
+                      {ui.uploadSecurityNotice}
                     </p>
                   )}
                   <ChoiceRow
-                    label="Do you need new photos taken?"
+                    label={ui.needsPhotosLabel}
                     error={errors.needsPhotosTaken}
-                    options={YES_NO_UNSURE}
+                    options={yesNoUnsure}
                     value={answers.needsPhotosTaken}
                     onChange={(v) => setChoice('needsPhotosTaken', v as YesNoUnsure)}
                   />
@@ -1024,15 +1040,15 @@ export function IntrospectBoard() {
               )}
 
               {step === 5 && (
-                <StepBlock title="What should people be able to do on your website?">
+                <StepBlock title={ui.step5Title}>
                   <LinkListField
-                    hint="Examples: call you, see a menu, book a visit, buy something, check events."
+                    hint={ui.step5Hint}
                     links={answers.visitorActions}
                     onChange={(items) => setLinkList('visitorActions', items)}
-                    addLabel="Add another action"
+                    addLabel={ui.addAction}
                     inputPrefix={`${formId}-actions`}
                     inputType="text"
-                    placeholder="See our hours"
+                    placeholder={ui.actionPlaceholder}
                     error={errors.visitorActions}
                   />
                 </StepBlock>
@@ -1041,11 +1057,11 @@ export function IntrospectBoard() {
               {step === 6 && (
                 <StepBlock
                   compact
-                  title="How developed should it be?"
-                  subtitle="Pick the closest fit. We can refine this when we review your answers."
+                  title={ui.step6Title}
+                  subtitle={ui.step6Subtitle}
                 >
                   <div className="grid gap-2">
-                    {SITE_DEPTH_OPTIONS.map((opt) => {
+                    {siteDepthOptions.map((opt) => {
                       const selected = answers.siteDepth === opt.id
                       return (
                         <button
@@ -1079,19 +1095,19 @@ export function IntrospectBoard() {
                 <StepBlock
                   compact
                   centered
-                  title="Design feel and colors"
-                  subtitle="Choose all that apply — or leave it to us."
+                  title={ui.step7Title}
+                  subtitle={ui.step7Subtitle}
                 >
                   <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
                     <div>
                       <div className="mb-3 space-y-2 border-b border-gray-200/90 pb-2.5">
                         <h2 className="font-mi-gente text-lg sm:text-xl text-gray-900 leading-tight text-center">
-                          Design feel
+                          {ui.designFeelHeading}
                         </h2>
                         <SoftCheckbox
                           checked={Boolean(answers.designFeelNoPreference)}
                           onChange={toggleDesignFeelNoPreference}
-                          label="No preference — you decide"
+                          label={ui.noPreference}
                         />
                       </div>
                       <div
@@ -1101,7 +1117,7 @@ export function IntrospectBoard() {
                         )}
                         aria-disabled={Boolean(answers.designFeelNoPreference)}
                       >
-                        {DESIGN_FEEL_OPTIONS.map((opt) => {
+                        {designFeelOptions.map((opt) => {
                           const selected = answers.designFeels.includes(opt.id)
                           const Icon = DESIGN_FEEL_ICONS[opt.id]
                           return (
@@ -1147,18 +1163,18 @@ export function IntrospectBoard() {
                     <div>
                       <div className="mb-3 space-y-2 border-b border-gray-200/90 pb-2.5">
                         <h2 className="font-mi-gente text-lg sm:text-xl text-gray-900 leading-tight text-center">
-                          Colors
+                          {ui.colorsHeading}
                         </h2>
                         <div className="flex flex-col items-start gap-1.5">
                           <SoftCheckbox
                             checked={Boolean(answers.colorPaletteFromLogo)}
                             onChange={toggleColorPaletteFromLogo}
-                            label="Match colors from my logo"
+                            label={ui.matchLogoColors}
                           />
                           <SoftCheckbox
                             checked={Boolean(answers.colorPaletteNoPreference)}
                             onChange={toggleColorPaletteNoPreference}
-                            label="No preference — you decide"
+                            label={ui.noPreference}
                           />
                         </div>
                       </div>
@@ -1172,7 +1188,7 @@ export function IntrospectBoard() {
                           answers.colorPaletteNoPreference || answers.colorPaletteFromLogo
                         )}
                       >
-                        {COLOR_PALETTE_OPTIONS.map((opt) => {
+                        {colorPaletteOptions.map((opt) => {
                           const selected = answers.colorPalettes.includes(opt.id)
                           const colorsLocked =
                             answers.colorPaletteNoPreference || answers.colorPaletteFromLogo
@@ -1232,14 +1248,14 @@ export function IntrospectBoard() {
                             <Field
                               label={
                                 answers.colorPalettes.includes('custom')
-                                  ? 'Tell us about your colors'
-                                  : 'Anything else about colors or the look? (optional)'
+                                  ? ui.colorNotesLabelCustom
+                                  : ui.colorNotesLabelOptional
                               }
                               error={errors.colorNotes}
                               htmlFor={`${formId}-colors`}
                               hint={
                                 answers.colorPalettes.includes('custom')
-                                  ? 'Brand colors, colors to avoid, or a quick description.'
+                                  ? ui.colorNotesHint
                                   : undefined
                               }
                             >
@@ -1251,7 +1267,7 @@ export function IntrospectBoard() {
                                 )}
                                 value={answers.colorNotes}
                                 onChange={update('colorNotes')}
-                                placeholder="Deep blue and cream, like our storefront..."
+                                placeholder={ui.colorNotesPlaceholder}
                               />
                             </Field>
                           </div>
@@ -1262,27 +1278,27 @@ export function IntrospectBoard() {
               )}
 
               {step === 8 && (
-                <StepBlock title="Anything we should steer clear of?">
+                <StepBlock title={ui.step8Title}>
                   <textarea
                     id={`${formId}-avoid`}
-                    aria-label="Anything we should steer clear of"
+                    aria-label={ui.step8Aria}
                     className={textareaClass()}
                     value={answers.designAvoidances}
                     onChange={update('designAvoidances')}
-                    placeholder="Optional — looks you dislike, tones that feel wrong, or styles that don't fit…"
+                    placeholder={ui.step8Placeholder}
                   />
                 </StepBlock>
               )}
 
               {step === 9 && (
-                <StepBlock title="Is there anything else about your business that we should know?">
+                <StepBlock title={ui.step9Title}>
                   <textarea
                     id={`${formId}-extras`}
-                    aria-label="Anything else about your business"
+                    aria-label={ui.step9Aria}
                     className={textareaClass()}
                     value={answers.businessExtras}
                     onChange={update('businessExtras')}
-                    placeholder="Optional — hours, seasons, partners, must-haves…"
+                    placeholder={ui.step9Placeholder}
                   />
                 </StepBlock>
               )}
@@ -1322,7 +1338,7 @@ export function IntrospectBoard() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  Back
+                  {ui.back}
                 </button>
                 <Button
                   type="submit"
@@ -1332,10 +1348,10 @@ export function IntrospectBoard() {
                   className="!bg-[oklch(58%_0.14_310)] hover:!bg-[oklch(50%_0.14_310)] focus-visible:!ring-[oklch(58%_0.14_310)/0.35]"
                 >
                   {step === TOTAL_STEPS
-                    ? 'Continue to Review'
+                    ? ui.continueToReview
                     : nameConfirmPending && step === 1
-                      ? 'Yes, continue'
-                      : 'Continue'}
+                      ? ui.yesContinue
+                      : ui.continue}
                 </Button>
               </div>
             </motion.form>
@@ -1353,57 +1369,64 @@ export function IntrospectBoard() {
             >
               <div className="space-y-1">
                 <h1 className="font-mi-gente text-2xl text-gray-900 leading-tight">
-                  Review your answers
+                  {ui.reviewHeading}
                 </h1>
-                <p className="text-sm text-gray-600 leading-snug">
-                  Check everything below, then submit when it looks right.
-                </p>
+                <p className="text-sm text-gray-600 leading-snug">{ui.reviewSubtitle}</p>
               </div>
 
               <div className="space-y-4 text-sm">
-                <ReviewSection title="About you">
-                  <ReviewRow label="Name" value={answers.fullName || '—'} />
-                  <ReviewRow label="Email" value={answers.email || '—'} />
-                  <ReviewRow label="Phone" value={answers.phone || '—'} />
+                <ReviewSection title={ui.reviewAboutYou}>
+                  <ReviewRow label={ui.reviewName} value={answers.fullName || dash} />
+                  <ReviewRow label={ui.reviewEmail} value={answers.email || dash} />
+                  <ReviewRow label={ui.reviewPhone} value={answers.phone || dash} />
                 </ReviewSection>
 
-                <ReviewSection title="Your business">
-                  <ReviewRow label="Business / project" value={answers.businessName || '—'} />
-                  <ReviewRow label="Location" value={answers.location || '—'} />
-                  <ReviewRow label="What you do" value={answers.aboutBusiness || '—'} />
-                </ReviewSection>
-
-                <ReviewSection title="Online presence">
+                <ReviewSection title={ui.reviewYourBusiness}>
                   <ReviewRow
-                    label="Already online?"
+                    label={ui.reviewBusinessProject}
+                    value={answers.businessName || dash}
+                  />
+                  <ReviewRow label={ui.reviewLocation} value={answers.location || dash} />
+                  <ReviewRow
+                    label={ui.reviewWhatYouDo}
+                    value={answers.aboutBusiness || dash}
+                  />
+                </ReviewSection>
+
+                <ReviewSection title={ui.reviewOnlinePresence}>
+                  <ReviewRow
+                    label={ui.reviewAlreadyOnline}
                     value={yesNoLabel(answers.hasOnlinePresence)}
                   />
                   <ReviewRow
-                    label="Website"
-                    value={answers.websiteUrl.trim() || '—'}
+                    label={ui.reviewWebsite}
+                    value={answers.websiteUrl.trim() || dash}
                   />
                   <ReviewRow
-                    label="Social links"
+                    label={ui.reviewSocialLinks}
                     value={listOrDash(answers.socialMediaLinks)}
                   />
                   <ReviewRow
-                    label="Sites you admire"
+                    label={ui.reviewSitesAdmire}
                     value={listOrDash(answers.admiredWebsiteLinks)}
                   />
                 </ReviewSection>
 
-                <ReviewSection title="Logo & photos">
-                  <ReviewRow label="Has a logo" value={yesNoLabel(answers.hasLogo)} />
+                <ReviewSection title={ui.reviewLogoPhotos}>
+                  <ReviewRow label={ui.reviewHasLogo} value={yesNoLabel(answers.hasLogo)} />
                   {answers.hasLogo === 'yes' && (
                     <ReviewRow
-                      label="Logo file"
-                      value={logoFile?.name || answers.logoFileName || '—'}
+                      label={ui.reviewLogoFile}
+                      value={logoFile?.name || answers.logoFileName || dash}
                     />
                   )}
-                  <ReviewRow label="Has photos" value={yesNoLabel(answers.hasPhotos)} />
+                  <ReviewRow
+                    label={ui.reviewHasPhotos}
+                    value={yesNoLabel(answers.hasPhotos)}
+                  />
                   {answers.hasPhotos === 'yes' && (
                     <ReviewRow
-                      label="Photo files"
+                      label={ui.reviewPhotoFiles}
                       value={
                         photoFiles.length > 0
                           ? photoFiles.map((f) => f.name).join(', ')
@@ -1412,41 +1435,44 @@ export function IntrospectBoard() {
                     />
                   )}
                   <ReviewRow
-                    label="Need photos taken"
+                    label={ui.reviewNeedPhotos}
                     value={yesNoLabel(answers.needsPhotosTaken)}
                   />
                 </ReviewSection>
 
-                <ReviewSection title="What visitors should do">
+                <ReviewSection title={ui.reviewVisitorsShouldDo}>
                   <ReviewRow
-                    label="Actions"
+                    label={ui.reviewActions}
                     value={listOrDash(answers.visitorActions)}
                   />
                 </ReviewSection>
 
-                <ReviewSection title="Site scope">
-                  <ReviewRow label="How developed" value={depthLabel} />
+                <ReviewSection title={ui.reviewSiteScope}>
+                  <ReviewRow label={ui.reviewHowDeveloped} value={depthLabel} />
                 </ReviewSection>
 
-                <ReviewSection title="Design feel & colors">
-                  <ReviewRow label="Design feel" value={feelLabels} />
-                  <ReviewRow label="Colors" value={colorLabels} />
+                <ReviewSection title={ui.reviewDesignColors}>
+                  <ReviewRow label={ui.reviewDesignFeel} value={feelLabels} />
+                  <ReviewRow label={ui.reviewColors} value={colorLabels} />
                   {answers.colorNotes.trim() && (
-                    <ReviewRow label="Color notes" value={answers.colorNotes.trim()} />
+                    <ReviewRow
+                      label={ui.reviewColorNotes}
+                      value={answers.colorNotes.trim()}
+                    />
                   )}
                 </ReviewSection>
 
-                <ReviewSection title="Steer clear of">
+                <ReviewSection title={ui.reviewSteerClear}>
                   <ReviewRow
-                    label="Avoid"
-                    value={answers.designAvoidances.trim() || '—'}
+                    label={ui.reviewAvoid}
+                    value={answers.designAvoidances.trim() || dash}
                   />
                 </ReviewSection>
 
-                <ReviewSection title="Anything else">
+                <ReviewSection title={ui.reviewAnythingElse}>
                   <ReviewRow
-                    label="Notes"
-                    value={answers.businessExtras.trim() || '—'}
+                    label={ui.reviewNotes}
+                    value={answers.businessExtras.trim() || dash}
                   />
                 </ReviewSection>
               </div>
@@ -1477,7 +1503,7 @@ export function IntrospectBoard() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  Back
+                  {ui.back}
                 </button>
                 <Button
                   type="submit"
@@ -1485,7 +1511,7 @@ export function IntrospectBoard() {
                   disabled={status === 'submitting'}
                   className="!bg-[oklch(58%_0.14_310)] hover:!bg-[oklch(50%_0.14_310)] focus-visible:!ring-[oklch(58%_0.14_310)/0.35]"
                 >
-                  Submit Introspect
+                  {ui.submitIntrospect}
                 </Button>
               </div>
             </motion.form>
@@ -1501,42 +1527,32 @@ export function IntrospectBoard() {
             >
               <div className="text-center space-y-2.5">
                 <p className="text-xs font-semibold tracking-[0.14em] uppercase text-primary-600">
-                  You&apos;re all set
+                  {ui.successEyebrow}
                 </p>
                 <h1 className="font-mi-gente text-2xl sm:text-3xl text-gray-900 leading-tight">
-                  Thanks — we received your Introspect answers
+                  {ui.successHeading}
                 </h1>
               </div>
 
               <div className="rounded-xl border border-gray-200/80 bg-white/80 px-4 py-4 sm:px-5 space-y-3">
-                <p className="text-lg sm:text-xl font-bold text-gray-900 text-center">What happens next…</p>
+                <p className="text-lg sm:text-xl font-bold text-gray-900 text-center">
+                  {ui.successNextHeading}
+                </p>
                 <ol className="space-y-2.5 text-sm sm:text-[0.95rem] text-gray-700 leading-snug list-decimal list-inside">
-                  <li>
-                    Applicreations has started working on your <strong>free</strong> preview
-                    website.
-                  </li>
-                  <li>
-                    You will receive a link to the free preview website by email in less than{' '}
-                    <strong>72 hours</strong>.
-                  </li>
-                  <li>
-                    Explore your preview website for <strong>3</strong> days. Then select{' '}
-                    <strong>start my real website</strong> or <strong>stop project</strong>.
-                  </li>
-                  <li>
-                    If <strong>start my real website</strong> is selected, Applicreations will
-                    contact you to confirm the final project scope.
-                  </li>
+                  <li>{ui.successNext1}</li>
+                  <li>{ui.successNext2}</li>
+                  <li>{ui.successNext3}</li>
+                  <li>{ui.successNext4}</li>
                 </ol>
                 <p className="text-sm text-gray-600 leading-snug pt-2 border-t border-gray-100">
-                  *Please use the buttons in your email so that we know how to proceed.
+                  {ui.successFootnote}
                 </p>
               </div>
 
               <div className="flex items-center justify-center pt-1">
                 <Link
-                  href="/"
-                  aria-label="Applicreations home"
+                  href={href('/')}
+                  aria-label={ui.successHomeAria}
                   className="inline-flex shrink-0 rounded-md outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
                 >
                   <Image
@@ -1681,6 +1697,8 @@ function LinkListField({
   inputType?: 'url' | 'text'
   error?: string
 }) {
+  const { dict } = useLocale()
+
   const updateLink = (index: number, value: string) => {
     const next = [...links]
     next[index] = value
@@ -1723,9 +1741,9 @@ function LinkListField({
                 type="button"
                 onClick={() => removeLink(index)}
                 className="shrink-0 min-h-11 px-3 rounded-md border border-gray-300 text-sm text-gray-600 hover:border-gray-400 hover:text-gray-800 transition-colors cursor-pointer"
-                aria-label="Remove item"
+                aria-label={dict.introspectUi.removeItemAria}
               >
-                Remove
+                {dict.introspectUi.removeItem}
               </button>
             ) : null}
           </div>
@@ -1851,6 +1869,7 @@ function AssetUploadField({
   onFilesSelected: (files: FileList | null) => void
   onRemoveFile: (index: number) => void
 }) {
+  const { dict, t } = useLocale()
   const inputRef = useRef<HTMLInputElement>(null)
 
   return (
@@ -1890,11 +1909,11 @@ function AssetUploadField({
         <Upload className="h-4 w-4 shrink-0 text-[oklch(43%_0.12_280)]" aria-hidden />
         {multiple
           ? files.length > 0
-            ? 'Add more pictures'
-            : 'Choose pictures'
+            ? dict.introspectUi.addMorePictures
+            : dict.introspectUi.choosePictures
           : files.length > 0
-            ? 'Replace logo'
-            : 'Choose logo file'}
+            ? dict.introspectUi.replaceLogo
+            : dict.introspectUi.chooseLogoFile}
       </button>
 
       {files.length > 0 && (
@@ -1910,7 +1929,7 @@ function AssetUploadField({
                 type="button"
                 onClick={() => onRemoveFile(index)}
                 className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-gray-500 hover:bg-sand/70 hover:text-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 cursor-pointer"
-                aria-label={`Remove ${file.name}`}
+                aria-label={t(dict.introspectUi.removeFileAria, { name: file.name })}
               >
                 <X className="h-4 w-4" aria-hidden />
               </button>
