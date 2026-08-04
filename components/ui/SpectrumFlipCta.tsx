@@ -16,9 +16,9 @@ type SpectrumFlipCtaProps = {
 }
 
 /**
- * Purple spectrum-flip CTA — matches Begin Introspect / Get Started.
- * Mobile (< lg): solid shaded button, no dot animation.
- * Desktop (lg+): white button with purple spectrum-flip from the dot.
+ * Spectrum-flip CTA — matches Begin Introspect / Get Started.
+ * Mobile (< lg): solid soft turquoise, no dot animation.
+ * Desktop (lg+): white button with purple spectrum-flip from the dot (unchanged).
  */
 export function SpectrumFlipCta({
   children,
@@ -34,8 +34,8 @@ export function SpectrumFlipCta({
     'shadow-[0_8px_24px_-8px_rgba(0,0,0,0.28),0_2px_8px_-2px_rgba(0,0,0,0.12)]',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
     'disabled:opacity-45 disabled:pointer-events-none disabled:cursor-not-allowed',
-    // Mobile: solid purple; desktop: white + spectrum flip
-    'bg-[oklch(58%_0.14_310)] text-white ring-1 ring-[oklch(58%_0.14_310)/0.35] focus-visible:ring-[oklch(58%_0.14_310)/0.45]',
+    // Mobile: soft turquoise; desktop: white + purple spectrum flip (unchanged)
+    'bg-[oklch(50%_0.09_198)] text-white ring-1 ring-[oklch(50%_0.09_198)/0.35] focus-visible:ring-[oklch(50%_0.09_198)/0.45]',
     'lg:bg-white lg:text-primary-800 lg:ring-primary-300/70 lg:focus-visible:ring-primary/40',
     size === 'sm' ? 'px-5 py-2.5 text-sm' : 'px-8 py-3 text-base',
     className

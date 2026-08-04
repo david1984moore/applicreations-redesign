@@ -16,7 +16,7 @@ Each entry: Date, Decision, Rationale, Alternatives Considered
 
 ## October 21, 2025 - Framework Choice
 **Decision**: Next.js 14 with App Router
-**Rationale**: Per SCOPE.md requirements - modern React framework with excellent performance, SEO capabilities, and Vercel Edge deployment
+**Rationale**: Per SCOPE.md requirements - modern React framework with excellent performance, SEO capabilities, and Render deployment
 **Alternatives**: Vite + React (current stack) - rejected because redesign goals require server-side capabilities
 **Impact**: Complete rebuild required, not a refactor
 

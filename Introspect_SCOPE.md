@@ -137,7 +137,7 @@
 **Email Service:** SendGrid or Postmark (scope delivery)  
 **PDF Generation:** React-PDF or Puppeteer (scope document)  
 **Analytics:** Plausible or Simple Analytics (privacy-focused)  
-**Hosting:** Vercel (serverless, edge functions)  
+**Hosting:** Render (Web Service)  
 **Domain:** introspect.applicreations.com  
 
 **Design Constraints:**
@@ -196,7 +196,7 @@
 
 **Integration details needed:**
 - [ ] solutions@applicreations.com inbox setup (forwarding, monitoring)
-- [ ] Domain DNS configuration (introspect.applicreations.com → Vercel)
+- [ ] Domain DNS configuration (introspect.applicreations.com → Render)
 - [ ] Analytics account setup (Plausible or Simple Analytics)
 - [ ] Email service API keys (SendGrid/Postmark)
 - [ ] Error monitoring service (Sentry or LogRocket)

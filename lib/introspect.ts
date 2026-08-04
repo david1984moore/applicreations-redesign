@@ -76,6 +76,8 @@ export type IntrospectAnswers = {
   selectedPlanId: PlanId | ''
   /** Carried from /pricing when the client already chose monthly care. */
   selectedSupportId: SupportPlanId | ''
+  /** Carried from /pricing when the client chose one-time build & hand off. */
+  selectedBuildHandoff: boolean
 }
 
 export const emptyAnswers: IntrospectAnswers = {
@@ -106,6 +108,7 @@ export const emptyAnswers: IntrospectAnswers = {
   businessExtras: '',
   selectedPlanId: '',
   selectedSupportId: '',
+  selectedBuildHandoff: false,
 }
 
 type LegacyDraft = Partial<
@@ -214,6 +217,7 @@ export function mergeDraftAnswers(parsed: LegacyDraft): IntrospectAnswers {
     selectedSupportId: isSupportPlanId(parsed.selectedSupportId)
       ? parsed.selectedSupportId
       : '',
+    selectedBuildHandoff: parsed.selectedBuildHandoff === true,
   }
 
   if (websiteUrl === undefined && typeof currentWebsiteLinks === 'string') {
@@ -418,10 +422,12 @@ export function formatAnswersForEmail(
   const pricingPlanLabel = answers.selectedPlanId
     ? plans.find((p) => p.id === answers.selectedPlanId)?.name ?? answers.selectedPlanId
     : null
-  const pricingSupportLabel = answers.selectedSupportId
-    ? supportPlans.find((p) => p.id === answers.selectedSupportId)?.name ??
-      answers.selectedSupportId
-    : null
+  const pricingSupportLabel = answers.selectedBuildHandoff
+    ? dict.pricingPage.buildHandoffName
+    : answers.selectedSupportId
+      ? supportPlans.find((p) => p.id === answers.selectedSupportId)?.name ??
+        answers.selectedSupportId
+      : null
 
   const lines = [
     `${L.recommendedPackage}: ${recommendation.planId.toUpperCase()}`,
@@ -492,6 +498,93 @@ export function formatAnswersForEmail(
   ]
 
   return lines.join('\n')
+}
+
+/** Short branded confirmation for the client (not the full owner dump). */
+export function formatClientIntrospectEmail(
+  answers: IntrospectAnswers,
+  recommendation: { planId: PlanId; reason: string },
+  dict: Dictionary = en
+): {
+  subject: string
+  text: string
+  title: string
+  intro: string
+  rows: { label: string; value: string }[]
+  notes: string[]
+  signoff: string
+  linkHref: string
+  linkLabel: string
+  footer: string
+} {
+  const L = dict.introspectOptions.emailLabels
+  const api = dict.api.introspect
+  const plans = getPlans(dict)
+  const supportPlans = getSupportPlans(dict)
+
+  const recommendedName =
+    plans.find((p) => p.id === recommendation.planId)?.name ??
+    recommendation.planId.toUpperCase()
+
+  const pricingPlanLabel = answers.selectedPlanId
+    ? plans.find((p) => p.id === answers.selectedPlanId)?.name ?? answers.selectedPlanId
+    : null
+  const pricingSupportLabel = answers.selectedBuildHandoff
+    ? dict.pricingPage.buildHandoffName
+    : answers.selectedSupportId
+      ? supportPlans.find((p) => p.id === answers.selectedSupportId)?.name ??
+        answers.selectedSupportId
+      : null
+  const pricingSelection =
+    [pricingPlanLabel && `${pricingPlanLabel} ${L.package}`, pricingSupportLabel]
+      .filter(Boolean)
+      .join(' + ') || null
+
+  const rows: { label: string; value: string }[] = [
+    { label: L.name ?? 'Name', value: answers.fullName.trim() },
+    {
+      label: L.businessProject ?? 'Business / project',
+      value: answers.businessName.trim(),
+    },
+    { label: api.clientEmailRecommendedLabel, value: recommendedName },
+    ...(pricingSelection
+      ? [{ label: api.clientEmailPricingLabel, value: pricingSelection }]
+      : []),
+    {
+      label: L.howDeveloped ?? 'How developed',
+      value:
+        getSiteDepthOptions(dict).find((o) => o.id === answers.siteDepth)?.title ||
+        answers.siteDepth ||
+        L.notAnswered ||
+        '(not answered)',
+    },
+  ]
+
+  const text = [
+    api.clientEmailTitle,
+    '',
+    api.clientEmailIntro,
+    '',
+    ...rows.map((r) => `${r.label}: ${r.value}`),
+    '',
+    `${L.why}: ${recommendation.reason}`,
+    '',
+    api.clientEmailSignoff,
+    'https://applicreations.com/introspect',
+  ].join('\n')
+
+  return {
+    subject: api.clientEmailSubject,
+    text,
+    title: api.clientEmailTitle,
+    intro: api.clientEmailIntro,
+    rows,
+    notes: [`${L.why}: ${recommendation.reason}`],
+    signoff: api.clientEmailSignoff,
+    linkHref: 'https://applicreations.com/introspect',
+    linkLabel: api.clientEmailLinkLabel,
+    footer: api.emailQuestions,
+  }
 }
 
 /** Format as (XXX) XXX-XXXX while typing (US). Strips a leading country code 1. */

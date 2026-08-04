@@ -44,7 +44,7 @@ Applicreations is a web development company offering custom websites and web app
 
 ### Build & Deployment
 - **Next.js Build System** - Optimized production builds
-- **Vercel** - Hosting platform (implied from edge hosting mention)
+- **Render** - Hosting platform (Web Service for Next.js)
 - **Git** - Version control system
 
 ---

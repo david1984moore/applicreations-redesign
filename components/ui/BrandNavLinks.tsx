@@ -8,24 +8,31 @@ import { useLocale } from '@/components/i18n/LocaleProvider'
 import { stripLocale } from '@/lib/i18n/paths'
 import { cn } from '@/lib/utils'
 
+/** Shared ink-sketch stroke — round caps, slightly heavy for small sizes. */
+const sk = {
+  fill: 'none' as const,
+  stroke: 'currentColor',
+  strokeWidth: 1.85,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+}
+
 function IconIntrospect({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
+      {/* Sketchy ? */}
       <path
-        d="M6.2 11.2c0-3.1 2.3-5.2 4.8-5.2s4.8 2.1 4.8 4.8c0 2.4-1.6 3.5-3.2 4.4-1.3.7-2.1 1.6-2.1 3.5v1.2"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        {...sk}
+        d="M6.8 10.8c.2-3.4 2.6-5.6 5.2-5.4 2.8.2 4.6 2.4 4.5 5-.1 2.6-1.9 3.4-3.6 4.4-1.4.8-2.4 1.7-2.3 3.8v.9"
       />
-      <circle cx="11" cy="24.6" r="1.45" fill="currentColor" />
+      {/* Ink blot period */}
       <path
-        d="M18.5 15.5 22.2 19.2 28.2 11.5"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        fill="currentColor"
+        stroke="none"
+        d="M10.2 23.8c.1-1.1 1-1.8 2-1.7 1 .1 1.7 1 1.6 2-.1 1-1.1 1.7-2 1.6-.9-.1-1.6-1-1.6-1.9z"
       />
+      {/* Sketchy check — slightly crooked */}
+      <path {...sk} d="M17.8 16.2c1.4 1.2 2.8 2.6 3.8 3.4 2.2-3.2 4.6-6.4 7.2-8.8" />
     </svg>
   )
 }
@@ -33,9 +40,18 @@ function IconIntrospect({ className }: { className?: string }) {
 function IconProjects({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
-      <rect x="4.5" y="8" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.9" />
-      <rect x="11.5" y="12" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M11.5 15.5h16" stroke="currentColor" strokeWidth="1.7" />
+      {/* Back window — uneven rect */}
+      <path
+        {...sk}
+        d="M5.2 9.2c-.2-.8.4-1.6 1.3-1.7l13.8-.6c.9-.1 1.7.6 1.8 1.5l.5 10.2c.1.9-.6 1.7-1.5 1.8l-13.6.8c-.9.1-1.7-.6-1.8-1.5L5.2 9.2z"
+      />
+      {/* Front window — offset, imperfect */}
+      <path
+        {...sk}
+        d="M11.8 12.6c-.1-.7.5-1.4 1.2-1.5l14-.8c.8-.1 1.5.6 1.6 1.3l.7 11c.1.8-.5 1.5-1.3 1.6l-13.8.9c-.8.1-1.6-.5-1.7-1.3l-.7-11.2z"
+      />
+      {/* Title bar scribble */}
+      <path {...sk} strokeWidth={1.55} d="M12.4 15.4c4.6-.3 9.2-.5 14.2-.8" />
     </svg>
   )
 }
@@ -43,18 +59,12 @@ function IconProjects({ className }: { className?: string }) {
 function IconPricing({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
+      {/* Stem — not perfectly straight */}
+      <path {...sk} d="M15.6 3.8c.3 3.8.5 8.2.4 12.4.1 3.6.2 7.2.5 10.6" />
+      {/* Sketchy S of dollar */}
       <path
-        d="M16 3.5v23"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-      />
-      <path
-        d="M21 9.5c0-2.5-2.2-4.5-5-4.5s-5 2-5 4.5c0 3.8 10 2.2 10 8.5 0 2.5-2.2 4.5-5 4.5s-5-2-5-4.5"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        {...sk}
+        d="M21.4 9.2c.1-2.8-2.4-4.8-5.2-4.6-2.9.2-5 2.2-4.9 4.6.2 3.4 4.2 3.2 7.2 4.6 3.2 1.5 4.2 3.4 3.8 5.8-.5 2.9-3 4.8-6.1 4.6-3-.2-5.2-2.2-5.4-4.8"
       />
     </svg>
   )
@@ -63,12 +73,15 @@ function IconPricing({ className }: { className?: string }) {
 function IconAbout({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
-      <circle cx="16" cy="10.5" r="4.2" stroke="currentColor" strokeWidth="1.9" />
+      {/* Head — imperfect oval */}
       <path
-        d="M8.5 26c0-4.1 3.4-7.5 7.5-7.5s7.5 3.4 7.5 7.5"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
+        {...sk}
+        d="M16.2 5.4c2.6-.3 5.2 1.6 5.4 4.4.2 2.6-1.8 5-4.5 5.2-2.8.2-5.3-1.8-5.4-4.5-.2-2.8 2-5 4.5-5.1z"
+      />
+      {/* Shoulders — loose arc */}
+      <path
+        {...sk}
+        d="M7.8 26.4c.4-4.6 3.6-7.8 8.2-7.9 4.4-.1 8.2 2.8 8.8 7.4"
       />
     </svg>
   )
@@ -77,14 +90,13 @@ function IconAbout({ className }: { className?: string }) {
 export function IconContact({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden>
-      <rect x="4.5" y="8.5" width="23" height="15" rx="2" stroke="currentColor" strokeWidth="1.9" />
+      {/* Envelope — corners overshoot a bit */}
       <path
-        d="M5.5 10.5 16 17.5 26.5 10.5"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinejoin="round"
-        strokeLinecap="round"
+        {...sk}
+        d="M4.8 9.4c-.2-.7.3-1.4 1-1.5l20.6-1.2c.8-.1 1.5.6 1.5 1.4l.6 13.6c0 .8-.6 1.5-1.4 1.5H6.2c-.8 0-1.5-.6-1.5-1.4L4.8 9.4z"
       />
+      {/* Flap — slightly crooked V */}
+      <path {...sk} d="M5.6 9.2c3.6 3.2 7.2 5.8 10.6 7.2 3.2-1.6 7-4.4 10.8-7.6" />
     </svg>
   )
 }

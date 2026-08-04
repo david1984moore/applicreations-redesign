@@ -146,8 +146,62 @@ function TubeX() {
   )
 }
 
-function DetailItemList({ items }: { items: string[] }) {
+function itemListVariant(
+  groupId: string,
+  segmentLead?: string
+): 'check' | 'bullet' {
+  if (groupId === 'customers-use') return 'bullet'
+  if (segmentLead) return 'bullet'
+  return 'check'
+}
+
+function DetailItemList({
+  items,
+  variant = 'check',
+}: {
+  items: string[]
+  variant?: 'check' | 'bullet'
+}) {
   const { dict } = useLocale()
+
+  if (variant === 'bullet') {
+    return (
+      <ul className="list-disc space-y-0.5 pl-4 marker:text-gray-500">
+        {items.map((item) => {
+          const { kind, text } = splitItem(item)
+          return (
+            <li
+              key={item}
+              className={cn(
+                'text-sm leading-snug',
+                kind === 'excluded' && 'text-gray-900 font-medium',
+                kind === 'optional' && 'text-gray-600',
+                kind === 'included' && 'text-gray-900'
+              )}
+            >
+              {kind === 'optional' ? (
+                <>
+                  <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-gray-600 mr-1.5">
+                    {dict.common.optional}
+                  </span>
+                  <ItemText text={text} />
+                </>
+              ) : kind === 'excluded' ? (
+                <>
+                  <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-[oklch(48%_0.18_25)] mr-1.5">
+                    {dict.common.notIncluded}
+                  </span>
+                  <ItemText text={text} />
+                </>
+              ) : (
+                <ItemText text={text} />
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    )
+  }
 
   return (
     <ul className="space-y-0.5">
@@ -217,7 +271,12 @@ function DetailGroup({ group }: { group: PlanDetailGroup }) {
             {segment.lead ? (
               <p className="mb-1 text-xs font-medium text-gray-600">{segment.lead}</p>
             ) : null}
-            {segment.items.length > 0 ? <DetailItemList items={segment.items} /> : null}
+            {segment.items.length > 0 ? (
+              <DetailItemList
+                items={segment.items}
+                variant={itemListVariant(group.id, segment.lead)}
+              />
+            ) : null}
           </div>
         ))}
       </div>
@@ -227,10 +286,27 @@ function DetailGroup({ group }: { group: PlanDetailGroup }) {
 
 /** Layman labels with short list items — easy to scan, not middot prose */
 export function DetailGroups({ groups, className }: DetailGroupsProps) {
-  // Left column: size + look. Right column: use → manage → help after.
-  const leftIds = new Set(['how-big', 'looks-like'])
+  // Website: size + look | use → manage → help after
+  // Support: included + fix/update | contact → who for
+  const leftIds = new Set([
+    'how-big',
+    'looks-like',
+    'whats-included',
+    'fix-or-update',
+  ])
   const left = groups.filter((g) => leftIds.has(g.id))
   const right = groups.filter((g) => !leftIds.has(g.id))
+
+  // Avoid an empty left column pushing everything to the right
+  if (left.length === 0 || right.length === 0) {
+    return (
+      <div className={cn('flex flex-col gap-3.5', className)}>
+        {groups.map((group) => (
+          <DetailGroup key={group.id} group={group} />
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div

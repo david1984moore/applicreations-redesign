@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server'
+import { sendEmail } from '@/lib/email'
+import { brandedEmailHtml } from '@/lib/email-templates'
+import { getSiteUrl } from '@/lib/site'
 import { isLocale, type Locale } from '@/lib/i18n/config'
 import { getDictionary } from '@/lib/i18n/get-dictionary'
 
@@ -29,7 +32,9 @@ export async function POST(request: Request) {
   }
 
   const locale: Locale = isLocale(body.locale) ? body.locale : 'en'
-  const messages = getDictionary(locale).api.contact
+  const dict = getDictionary(locale)
+  const messages = dict.api.contact
+  const labels = dict.contact
 
   const name = isNonEmptyString(body.name) ? body.name.trim() : ''
   const email = isNonEmptyString(body.email) ? body.email.trim() : ''
@@ -58,12 +63,92 @@ export async function POST(request: Request) {
     )
   }
 
+  const rows = [
+    { label: labels.nameLabel, value: name },
+    { label: labels.emailLabel, value: email },
+    { label: labels.phoneLabel, value: phone },
+    { label: labels.messageLabel, value: message },
+  ]
+
+  const clientText = [
+    messages.clientEmailTitle,
+    '',
+    messages.clientEmailIntro,
+    '',
+    ...rows.map((row) => `${row.label}: ${row.value}`),
+    '',
+    messages.clientEmailSignoff,
+    '',
+    messages.emailQuestions,
+  ].join('\n')
+
+  const clientResult = await sendEmail({
+    to: email,
+    subject: messages.clientEmailSubject,
+    text: clientText,
+    html: brandedEmailHtml({
+      brandName: dict.brand.name,
+      tagline: dict.landing.tagline,
+      title: messages.clientEmailTitle,
+      intro: messages.clientEmailIntro,
+      rows,
+      signoff: messages.clientEmailSignoff,
+      linkHref: getSiteUrl(),
+      linkLabel: messages.clientEmailLinkLabel,
+      footer: messages.emailQuestions,
+    }),
+  })
+
+  if (!clientResult.ok) {
+    console.error('[contact] client email failed', {
+      code: clientResult.code,
+      message: clientResult.message,
+    })
+    const status = clientResult.code === 'missing_config' ? 503 : 502
+    return NextResponse.json({ message: clientResult.message }, { status })
+  }
+
+  const notifyTo = process.env.EMAIL_NOTIFY_TO?.trim()
+  if (notifyTo) {
+    const ownerSubject = messages.ownerEmailSubject.replace('{name}', name)
+    const ownerText = [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      `Phone: ${phone}`,
+      '',
+      'Message:',
+      message,
+      '',
+      `Locale: ${locale}`,
+      `Received: ${new Date().toISOString()}`,
+    ].join('\n')
+
+    const ownerResult = await sendEmail({
+      to: notifyTo,
+      subject: ownerSubject,
+      text: ownerText,
+      replyTo: email,
+    })
+
+    if (!ownerResult.ok) {
+      console.error('[contact] owner notify failed', {
+        code: ownerResult.code,
+        message: ownerResult.message,
+      })
+    } else {
+      console.info('[contact] owner notify sent', { id: ownerResult.id })
+    }
+  } else {
+    console.warn('[contact] EMAIL_NOTIFY_TO is not set — skipping owner notification')
+  }
+
   console.info('[contact]', {
     name,
     email,
     phone: phone || null,
     message,
     locale,
+    clientEmailId: clientResult.id,
     receivedAt: new Date().toISOString(),
   })
 

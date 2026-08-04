@@ -32,6 +32,7 @@ import { useLocale } from '@/components/i18n/LocaleProvider'
 import { Button } from '@/components/ui/Button'
 import { Progress } from '@/components/ui/Progress'
 import type { Dictionary } from '@/lib/i18n/dictionaries/types'
+import { isLocaleTransition } from '@/lib/i18n/locale-transition'
 import {
   aboutBusinessError,
   businessNameError,
@@ -215,6 +216,7 @@ export function IntrospectBoard() {
   const { dict, t, href, locale } = useLocale()
   const ui = dict.introspectUi
   const dash = dict.common.emptyDash
+  const [skipIntro] = useState(() => isLocaleTransition())
 
   const yesNoUnsure = getYesNoUnsure(dict)
   const siteDepthOptions = getSiteDepthOptions(dict)
@@ -260,23 +262,34 @@ export function IntrospectBoard() {
     const fromPricing = params.get('from') === 'pricing'
     const queryPlan = params.get('plan')
     const querySupport = params.get('support')
-    const stored = fromPricing || queryPlan || querySupport ? readPricingSelectionHandoff() : null
+    const queryHandoff = params.get('handoff') === '1'
+    const stored =
+      fromPricing || queryPlan || querySupport || queryHandoff
+        ? readPricingSelectionHandoff()
+        : null
 
     const planId: PlanId | null = isPlanId(queryPlan)
       ? queryPlan
       : stored?.planId ?? (isPlanId(draft.selectedPlanId) ? draft.selectedPlanId : null)
-    const supportId: SupportPlanId | null = isSupportPlanId(querySupport)
-      ? querySupport
-      : stored?.supportId ??
-        (isSupportPlanId(draft.selectedSupportId) ? draft.selectedSupportId : null)
+    const buildHandoff =
+      queryHandoff || stored?.buildHandoff === true || draft.selectedBuildHandoff === true
+    const supportId: SupportPlanId | null = buildHandoff
+      ? null
+      : isSupportPlanId(querySupport)
+        ? querySupport
+        : stored?.supportId ??
+          (isSupportPlanId(draft.selectedSupportId) ? draft.selectedSupportId : null)
 
-    const cameFromPricing = Boolean(fromPricing || stored?.planId || stored?.supportId)
+    const cameFromPricing = Boolean(
+      fromPricing || stored?.planId || stored?.supportId || stored?.buildHandoff
+    )
 
-    if (cameFromPricing || planId || supportId) {
+    if (cameFromPricing || planId || supportId || buildHandoff) {
       draft = {
         ...draft,
         selectedPlanId: planId ?? '',
         selectedSupportId: supportId ?? '',
+        selectedBuildHandoff: buildHandoff,
         siteDepth: planId ? planIdToSiteDepth(planId) : draft.siteDepth,
       }
       if (planId) setSkipSiteDepth(true)
@@ -690,10 +703,9 @@ export function IntrospectBoard() {
   return (
     <section
       className={cn(
-        // overflow-x hidden; desktop top Back sits left of the question column via absolute + translate
         'relative bg-paper coastal-wash overflow-x-hidden',
         // Desktop: welcome/success fit one screen. Mobile: content height only (no empty band).
-        lockViewport && 'lg:h-[calc(100svh-var(--spacing-12))] lg:overflow-hidden'
+        lockViewport && 'lg:h-[calc(100svh-var(--spacing-12)-1.75rem)] lg:overflow-hidden'
       )}
     >
       <div className="pointer-events-none absolute inset-0 coastal-grain opacity-60" aria-hidden />
@@ -709,49 +721,25 @@ export function IntrospectBoard() {
         )}
       >
         {(phase === 'questions' || phase === 'review') && (
-          <div className="relative mx-auto w-full max-w-2xl">
-            {/* Desktop (lg+) only — fully removed on mobile; bottom Back remains */}
-            <button
-              type="button"
-              onClick={goBack}
-              className="hidden lg:absolute lg:inline-flex h-9 items-center gap-1 rounded-md py-1.5 pl-1 pr-2 text-sm font-medium text-gray-700 hover:bg-sand/60 active:bg-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 cursor-pointer lg:left-0 lg:top-1/2 lg:-translate-x-[calc(100%+1.25rem)] lg:-translate-y-1/2"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="h-5 w-5 shrink-0"
-                aria-hidden
+          <div className="mx-auto w-full max-w-2xl min-w-0 space-y-1.5">
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <span>
+                {phase === 'review'
+                  ? ui.review
+                  : t(ui.stepOf, { step, total: TOTAL_STEPS })}
+              </span>
+              <Link
+                href={href('/')}
+                className="text-primary-700 hover:underline underline-offset-2"
               >
-                <path
-                  d="M15 6 9 12l6 6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              {ui.back}
-            </button>
-            <div className="min-w-0 space-y-1.5">
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <span>
-                  {phase === 'review'
-                    ? ui.review
-                    : t(ui.stepOf, { step, total: TOTAL_STEPS })}
-                </span>
-                <Link
-                  href={href('/')}
-                  className="text-primary-700 hover:underline underline-offset-2"
-                >
-                  {ui.exit}
-                </Link>
-              </div>
-              <Progress
-                value={progressValue}
-                aria-label={ui.progressAria}
-                indicatorClassName="!bg-[oklch(58%_0.14_310)]"
-              />
+                {ui.exit}
+              </Link>
             </div>
+            <Progress
+              value={progressValue}
+              aria-label={ui.progressAria}
+              indicatorClassName="!bg-[oklch(58%_0.14_310)]"
+            />
           </div>
         )}
 
@@ -759,7 +747,7 @@ export function IntrospectBoard() {
           {phase === 'welcome' && (
             <motion.div
               key="welcome"
-              initial={{ opacity: 0, y: 12 }}
+              initial={skipIntro ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35 }}
@@ -799,7 +787,7 @@ export function IntrospectBoard() {
                     setPhase('questions')
                     setStep(1)
                   }}
-                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl px-8 py-3 font-sans text-base font-bold tracking-tight shadow-[0_8px_24px_-8px_rgba(0,0,0,0.28),0_2px_8px_-2px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 cursor-pointer bg-[oklch(58%_0.14_310)] text-white ring-1 ring-[oklch(58%_0.14_310)/0.35] focus-visible:ring-[oklch(58%_0.14_310)/0.45] lg:bg-white lg:text-primary-800 lg:ring-primary-300/70 lg:focus-visible:ring-primary/40"
+                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl px-8 py-3 font-sans text-base font-bold tracking-tight shadow-[0_8px_24px_-8px_rgba(0,0,0,0.28),0_2px_8px_-2px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 cursor-pointer bg-[oklch(50%_0.09_198)] text-white ring-1 ring-[oklch(50%_0.09_198)/0.35] focus-visible:ring-[oklch(50%_0.09_198)/0.45] lg:bg-white lg:text-primary-800 lg:ring-primary-300/70 lg:focus-visible:ring-primary/40"
                 >
                   <span className="relative inline-flex items-center gap-3">
                     <span className="relative z-0 hidden h-2 w-2 shrink-0 lg:block" aria-hidden>

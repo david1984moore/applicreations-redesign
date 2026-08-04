@@ -57,8 +57,8 @@ See `SCOPE.md` for complete design system documentation.
 This is a complete redesign being built separately from the current live site:
 
 1. **Development**: Work locally on this project
-2. **Preview**: Deploy to Vercel preview URL for review
-3. **Launch**: Deploy to production when ready
+2. **Preview**: Share a Render staging/preview service for review (optional)
+3. **Launch**: Deploy to Render production when ready
 
 The current live site remains untouched until launch day.
 
@@ -83,7 +83,7 @@ This is a known issue with Next.js Turbopack during active development.
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS v4
 - **Animation**: Framer Motion
-- **Deployment**: Vercel
+- **Deployment**: Render
 
 ## Phase Progress
 

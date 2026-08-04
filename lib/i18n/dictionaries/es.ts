@@ -41,9 +41,6 @@ export const es: Dictionary = {
     howItWorks: 'Cómo funciona',
     threeSteps: 'Tres pasos simples para tener tu sitio web…',
     beginIntrospect: 'Comenzar la Introspección',
-    goingLiveLabel: 'Para publicar tu sitio:',
-    goingLive:
-      'Tu paquete de sitio web cubre solo la construcción — diseñar y entregar el sitio. Para ponerlo en internet, necesitarás comprar un dominio (tu dirección web, como www.joescafe.com — puedes comprar uno en Namecheap) y hosting. La mayoría de nuestros clientes elige nuestro plan de hosting y soporte desde $50 al mes para que nosotros publiquemos el sitio, lo mantengamos en línea y resolvamos los problemas técnicos. Sin un plan de hosting y soporte, tú eres responsable de poner el sitio en línea y mantenerlo funcionando.',
     steps: {
       introspect: {
         label: 'Introspección',
@@ -75,9 +72,9 @@ export const es: Dictionary = {
     eyebrow: 'Nosotros',
     name: 'David Moore',
     role: 'Fundador, Applicreations',
-    p1: 'Comencé Applicreations en 2025. Crecí dibujando con distintos medios — lápiz, pluma y tinta, carboncillo, pasteles y acuarela. Con el tiempo trabajé como chef, expresando mi lado creativo a través del sabor y la presentación de los ingredientes en el plato.',
-    p2: 'Mientras aprendía por mi cuenta diseño web y software desde 2021, en el camino noté que muchos pequeños negocios locales batallan para presentarse con dignidad en línea — o terminan con sitios genéricos de Wix, GoDaddy, Squarespace y similares. Cada vez más, en un mundo enfocado más en las máquinas que en las personas, sentí la necesidad de dedicarme al desarrollo web con un diseño centrado en el ser humano: crear exactamente lo que el cliente quiere, en sus términos, diseñado para él.',
-    p3: 'Los constructores de sitios genéricos suelen ser rápidos, pero pueden hacerte sentir como un número más. En Applicreations no hay plantillas genéricas — cada proyecto es original y hecho a la medida de lo que realmente quieres. Ayudo a los pequeños negocios a echar raíces en línea con dignidad. Espero poder ayudarte a echar las tuyas.',
+    p1: 'Crecí dibujando con distintos medios — lápiz, pluma y tinta, carboncillo, pasteles y acuarela. Con el tiempo trabajé como chef, expresando mi lado creativo a través del sabor y la presentación de los ingredientes en el plato.',
+    p2: 'Mientras aprendía por mi cuenta diseño web y software desde 2021, en el camino noté que muchos pequeños negocios locales batallan para presentarse con dignidad en línea — o terminan con sitios genéricos de Wix, GoDaddy, Squarespace y similares. Cada vez más, en un mundo enfocado más en las máquinas que en las personas, me sentí atraído al desarrollo web que pone a las personas primero — construir exactamente lo que cada cliente quiere, en sus términos. Así que comencé Applicreations en 2025.',
+    p3: 'Los constructores de sitios genéricos suelen ser rápidos, pero pueden hacerte sentir como un número más. En Applicreations no hay plantillas genéricas — cada proyecto es original y hecho a la medida de lo que realmente quieres. Cada negocio tiene una identidad distinta, y eso merece una presencia en línea respetable. Ayudo a las personas a echar raíces digitales únicas — no una plantilla para todos. Espero poder ayudarte a echar las tuyas.',
   },
   contact: {
     eyebrow: 'Contacto',
@@ -114,8 +111,11 @@ export const es: Dictionary = {
     imageAltScreenOf: '{title} — pantalla {index} de {total}',
     imageAltLabeled: '{title} — {label}',
     imageAltScreen: '{title} — pantalla {index}',
-    pausedHint: 'En pausa — toca la imagen para reanudar',
-    playHint: 'Toca una miniatura o toca la imagen para pausar',
+    pausedHint: 'En pausa — toca una miniatura para cambiar',
+    playHint: 'Toca una miniatura · toca la foto para ampliar',
+    openPhotoZoom: 'Abrir foto de {title} para ampliar',
+    closePhotoZoom: 'Cerrar foto',
+    zoomHint: 'Pellizca para ampliar · arrastra para mover',
     visit: 'Visitar {name}',
     wantLikeThis: '¿Quieres algo así?',
     startOrEmail: 'Comienza con la Introspección — o escríbenos directamente.',
@@ -124,24 +124,73 @@ export const es: Dictionary = {
   },
   pricingPage: {
     title: 'Precios',
-    websitePackagesAria: 'Paquetes de sitios web',
+    websitePlansHeading: 'Sitio web',
     oneTime: 'pago único',
     whatsIncluded: 'Qué incluye',
     highlightsAria: 'Puntos destacados de {name}',
     exampleTotal:
       'Ejemplo: Basic ({basicPrice}) + Basic Support ({supportPrice}) — elige ambos para ver un total simple.',
     hostingSupportHeading: 'Hosting y soporte',
-    hostingSupportIntro:
-      'Cuando nosotros alojamos tu sitio, funciona en Render. Puedes explorar sus servicios de hosting, incluyendo sitios estáticos y servicios web.',
     hostingIntroBeforeRender: 'Cuando nosotros alojamos tu sitio, funciona en',
     hostingIntroRender: 'Render',
-    hostingIntroAfterRender: '. Puedes explorar sus',
-    hostingIntroServices: 'servicios de hosting',
-    hostingIntroIncluding: ', incluyendo',
-    hostingIntroStaticSites: 'sitios estáticos',
-    hostingIntroAnd: 'y',
-    hostingIntroWebServices: 'servicios web',
-    hostingIntroEnd: '.',
+    goingLiveHeading: 'Para publicar tu sitio',
+    goingLiveLead: 'Lo que necesitas para poner tu sitio en internet.',
+    goingLiveStep1Title: 'Paquete de sitio web',
+    goingLiveStep1Bullet:
+      'Tu paquete cubre solo la construcción — diseñar y entregar el sitio.',
+    goingLiveStep2Title: 'Hosting y soporte',
+    goingLiveStep2BulletPlan:
+      'Añade un plan de hosting y soporte para que publiquemos tu sitio, lo mantengamos en línea y resolvamos los problemas técnicos.',
+    goingLiveStep2CancellationHeading: 'Cancelación',
+    goingLiveStep2BulletCancel:
+      'Puedes cancelar el hosting y el soporte en cualquier momento. Antes de que podamos transferir los datos de tu sitio, es obligatorio que tengas tu propia cuenta de Render configurada y activa. Cuando cancelas, tú asumes el trabajo técnico que nosotros manejamos mientras estás con nosotros — incluyendo:',
+    goingLiveStep2CancelItems: [
+      'Apuntar tu dirección web al sitio en vivo — registros DNS (A/CNAME) en tu registrador de dominio',
+      'Mantener el sitio seguro en el navegador — certificados HTTPS y forzar conexiones seguras',
+      'Ser dueño de la cuenta de hosting — ajustes del servicio en Render, comandos de build y versión de runtime',
+      'Mantener las claves privadas en privado — variables de entorno y secretos de producción',
+      'Publicar actualizaciones sin romper el sitio — deploys desde git, logs de build y rollbacks',
+      'Arreglarlo cuando algo cae — monitoreo de uptime, errores 5xx y restaurar una release defectuosa',
+      'Mantener el software al día — actualizaciones de dependencias y parches de seguridad',
+      'Pagar y gestionar el host tú mismo — acceso a Render, límites y facturación después de la entrega',
+    ],
+    goingLiveStep2CancelClosing:
+      'Desaconsejamos firmemente la opción de construir y entregar — invita a problemas técnicos complejos para tu negocio o proyecto más adelante. Una vez que los datos de tu sitio hayan sido transferidos y el sitio esté en vivo en tu cuenta de Render, tú eres el único responsable de todo a partir de ese momento. Applicreations ya no es responsable de ningún mantenimiento técnico ni soporte — sin excepciones.',
+    goingLiveStep2HandoffHeading: 'Construir y entregar — sin hosting continuo',
+    goingLiveStep2HandoffBodyBefore:
+      '¿Quieres que construyamos tu sitio, lo pongamos en línea y luego dejes el hosting y el soporte en tus manos? Esa opción está disponible por',
+    goingLiveStep2HandoffFee: '$500',
+    goingLiveStep2HandoffBodyAfterFee:
+      ' adicionales. Desplegamos solo en Render — no configuramos ni aceptamos solicitudes de otros servidores.',
+    goingLiveStep2HandoffFeeCovers:
+      'Tu paquete de sitio web cubre crear, diseñar y entregar el sitio. La tarifa única de $500 cubre desplegarlo en tu cuenta de Render y una breve orientación para que tú — o quien se encargue del mantenimiento técnico — conozca lo básico: acceder al sitio, desplegar actualizaciones y hacer mantenimiento menor.',
+    goingLiveStep2HandoffRenderAccount:
+      'Antes de que el sitio salga en vivo, eres responsable de tener tu propia cuenta de Render configurada y activa para que podamos desplegar el sitio en tu cuenta.',
+    goingLiveStep2HandoffSoleResponsibility:
+      'Una vez que el sitio esté en vivo en tu cuenta de Render, tú eres el único responsable de las actualizaciones, los problemas técnicos y de mantener el sitio funcionando.',
+    goingLiveStep2HandoffExample:
+      'Ejemplo: {planName} ({planPrice}) + construir y entregar ({handoffFee}) = {total} — construimos el sitio y lo desplegamos en tu cuenta de Render, sin un plan continuo de hosting y soporte.',
+    buildHandoffName: 'Construir y entregar',
+    buildHandoffSelect: 'Elegir construir y entregar en lugar de hosting mensual',
+    buildHandoffSelected: 'Construir y entregar seleccionado',
+    buildHandoffRemove: 'Quitar',
+    buildHandoffConfirmTitle: '¿Elegir construir y entregar?',
+    buildHandoffConfirmBody:
+      'Desaconsejamos firmemente esta opción — significa que asumes el hosting y el mantenimiento técnico por tu cuenta, sin soporte continuo de nuestra parte. ¿Seguro que quieres continuar?',
+    buildHandoffConfirmYes: 'Sí, estoy seguro',
+    buildHandoffConfirmNo: 'Cancelar',
+    buildHandoffConfirmCloseAria: 'Cerrar',
+    buildHandoffResponsibilityHeading:
+      'Si eliges esta opción, eres el único responsable de todo lo siguiente una vez que el sitio esté en vivo en tu cuenta de Render:',
+    selectionEmailBuildHandoff:
+      'Construir y entregar: {price} pago único (sin hosting mensual)',
+    selectionEmailBuildHandoffNote:
+      'Antes de salir en vivo debes tener una cuenta de Render activa. Cuando el sitio esté en vivo en tu cuenta, eres el único responsable de:',
+    goingLiveStep3Title: 'Nombre de dominio',
+    goingLiveNeedDomainBefore:
+      'Compra un dominio de tu elección (tu dirección web, como www.joescafe.com — puedes comprar uno en ',
+    goingLiveNeedDomainNamecheap: 'Namecheap',
+    goingLiveNeedDomainAfter: ').',
     notSureHeading: '¿No sabes cuál te conviene?',
     notSureBody:
       'Responde unas preguntas cortas y te ayudamos a elegir — o envíanos un correo con lo que hayas escogido.',
@@ -150,7 +199,7 @@ export const es: Dictionary = {
     choose: 'Elegir {name}',
     chosen: 'Elegido',
     chosenAria: 'Elegido {name}',
-    yourSelection: 'Tu selección',
+    yourSelection: 'Vista previa del pago',
     packageSuffix: 'Paquete {name}',
     oneTimeSuffix: '{price} pago único',
     emptySelection:
@@ -170,10 +219,20 @@ export const es: Dictionary = {
     remainingFiftyWithAmount: 'el 50% restante ({amount})',
     isDue: 'se paga en ese momento',
     alongWithFirstMonthly: ', junto con tu primer pago mensual de soporte ({amount})',
+    alongWithBuildHandoff: ', junto con la tarifa de construir y entregar ({amount})',
     monthlySupportStartsWith:
       'El soporte mensual ({monthly}/mes) comienza cuando tu sitio queda en línea — el primer pago de {monthly} se hace en ese momento, junto con el saldo restante del paquete.',
     monthlySupportStartsWithout:
       'Si agregas soporte mensual, ese primer pago comienza cuando tu sitio queda en línea — se paga en ese momento, junto con el saldo restante del paquete.',
+    paymentScheduleHeading: 'Calendario de pagos',
+    scheduleProjectStart: 'Inicio del proyecto',
+    scheduleProjectStartDetail: '50% del paquete',
+    scheduleGoLive: 'El sitio web queda en línea',
+    scheduleGoLivePackageOnly: '50% restante del paquete',
+    scheduleGoLiveWithSupport:
+      '50% restante del paquete ({packageHalf}) + primer soporte mensual ({monthly})',
+    scheduleGoLiveWithHandoff:
+      '50% restante del paquete ({packageHalf}) + construir y entregar ({handoff})',
     continueToIntrospect: 'Continuar a la Introspección',
     emailThisSelection: 'Enviarme esta selección por correo',
     yourEmailSrOnly: 'Tu correo electrónico',
@@ -204,6 +263,10 @@ export const es: Dictionary = {
     selectionEmailEstimateNote:
       'Esto es solo un estimado de lo que puedes esperar; el alcance final se confirma juntos.',
     selectionEmailSignoff: '— Applicreations',
+    selectionEmailWebsiteLabel: 'Paquete de sitio web',
+    selectionEmailMonthlyLabel: 'Cuidado mensual',
+    selectionEmailTotalLabel: 'Total estimado',
+    selectionEmailLinkLabel: 'Ver precios en Applicreations',
   },
   introspectUi: {
     // Progress / chrome
@@ -526,6 +589,7 @@ export const es: Dictionary = {
             items: [
               'Ayuda durante horario laboral normal',
               'Mantenemos tu sitio web funcionando después de que queda en línea',
+              'Cancela cuando quieras — al cancelar, tú eres responsable de publicar tu sitio en internet',
             ],
           },
           {
@@ -540,7 +604,11 @@ export const es: Dictionary = {
           {
             id: 'how-contact',
             label: 'Cómo nos contactas',
-            items: ['Por correo — te diremos qué tan rápido solemos responder'],
+            items: [
+              'Correo',
+              'Teléfono',
+              'Respondemos en horario laboral (lunes a viernes, 8 a.m.–4 p.m. EST)',
+            ],
           },
           {
             id: 'who-for',
@@ -556,6 +624,7 @@ export const es: Dictionary = {
           'Arreglos cuando algo se descompone',
           'Actualizaciones pequeñas',
           'Ayuda por correo',
+          'Cancela cuando quieras',
           'Funciona con cualquier paquete',
         ],
         cta: 'Preguntar por Basic Support',
@@ -574,6 +643,7 @@ export const es: Dictionary = {
               'Todo lo de Basic Support',
               'Ayuda a cualquier hora del día o de la noche',
               'Tu sitio recibe atención prioritaria cuando algo sale mal',
+              'Cancela cuando quieras — al cancelar, tú eres responsable de publicar tu sitio en internet',
             ],
           },
           {
@@ -589,8 +659,9 @@ export const es: Dictionary = {
             id: 'how-contact',
             label: 'Cómo nos contactas',
             items: [
-              'Una vía más rápida para localizarnos',
-              'Una forma de contactarnos fuera de horario en una emergencia',
+              'Correo',
+              'Teléfono',
+              'Respondemos cuando llamas a cualquier hora',
             ],
           },
           {
@@ -607,6 +678,7 @@ export const es: Dictionary = {
           'Ayuda de día o de noche',
           'Primero en la fila para arreglos',
           'Respuestas más rápidas',
+          'Cancela cuando quieras',
         ],
         cta: 'Preguntar por Ultimate',
       },
@@ -875,6 +947,15 @@ export const es: Dictionary = {
       messageEmpty: 'Por favor escribe un mensaje.',
       messageShort: 'Por favor agrega un poco más de detalle a tu mensaje.',
       success: '¡Gracias! Te responderemos pronto.',
+      clientEmailSubject: 'Recibimos tu mensaje',
+      clientEmailTitle: 'Gracias — recibimos tu mensaje',
+      clientEmailIntro:
+        'Aquí tienes una copia de lo que enviaste. Lo revisaremos y te responderemos en unas 48 horas.',
+      clientEmailSignoff: '— Applicreations',
+      clientEmailLinkLabel: 'Volver a Applicreations',
+      emailQuestions:
+        '¿Preguntas? Responde a este correo o escribe a hello@applicreations.com.',
+      ownerEmailSubject: 'Formulario de contacto: {name}',
     },
     introspect: {
       invalidBody: 'Solicitud inválida.',
@@ -882,6 +963,17 @@ export const es: Dictionary = {
       emailInvalid: 'Por favor escribe un correo válido.',
       phoneInvalid: 'Por favor escribe un número de teléfono completo de 10 dígitos.',
       success: '¡Gracias! Recibimos tus respuestas de la Introspección.',
+      clientEmailSubject: 'Recibimos tus respuestas de la Introspección',
+      clientEmailTitle: 'Gracias — recibimos tu Introspección',
+      clientEmailIntro:
+        'Aquí tienes un resumen breve de lo que compartiste. Lo revisaremos y te contactaremos pronto.',
+      clientEmailRecommendedLabel: 'Paquete sugerido',
+      clientEmailPricingLabel: 'Tu selección de precios',
+      clientEmailSignoff: '— Applicreations',
+      clientEmailLinkLabel: 'Continuar en Applicreations',
+      emailQuestions:
+        '¿Preguntas? Responde a este correo o escribe a hello@applicreations.com.',
+      ownerEmailSubject: 'Introspección: {business} — {plan}',
     },
     pricingSelection: {
       invalidBody: 'Solicitud inválida.',

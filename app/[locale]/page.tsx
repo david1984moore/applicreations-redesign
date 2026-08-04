@@ -2,7 +2,7 @@ import { LandingBoard } from "@/components/sections/LandingBoard"
 
 export default function Home() {
   return (
-    <main className="lg:h-[100svh] lg:overflow-hidden">
+    <main className="lg:h-[calc(100svh-1.75rem)] lg:overflow-hidden">
       <LandingBoard />
     </main>
   )

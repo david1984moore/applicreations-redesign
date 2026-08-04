@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
+import { X } from 'lucide-react'
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import { IconContact } from '@/components/ui/BrandNavLinks'
 import { SITE_VIEWPORT_BELOW_NAV_CLASS } from '@/components/ui/Navigation'
@@ -19,11 +21,241 @@ import {
 
 const SLIDE_HOLD_MS = 3800
 const SLIDE_FADE_S = 0.85
+const ZOOM_MIN = 1
+const ZOOM_MAX = 4
+const DOUBLE_TAP_MS = 280
 
 function brandTitleClass(project: Project) {
   if (project.brandFont === 'caramel') return 'font-caramel font-medium'
   if (project.brandFont === 'mi-gente') return 'font-mi-gente font-semibold tracking-tight'
   return 'font-display'
+}
+
+function touchDistance(a: Touch, b: Touch) {
+  return Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY)
+}
+
+function touchMidpoint(a: Touch, b: Touch) {
+  return {
+    x: (a.clientX + b.clientX) / 2,
+    y: (a.clientY + b.clientY) / 2,
+  }
+}
+
+/** Mobile-only fullscreen photo viewer with pinch-zoom / pan (desktop unused). */
+function MobilePhotoZoom({
+  src,
+  alt,
+  onClose,
+  closeLabel,
+  zoomHint,
+}: {
+  src: string
+  alt: string
+  onClose: () => void
+  closeLabel: string
+  zoomHint: string
+}) {
+  const [mounted, setMounted] = useState(false)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const imgWrapRef = useRef<HTMLDivElement>(null)
+  const scaleRef = useRef(1)
+  const offsetRef = useRef({ x: 0, y: 0 })
+  const pinchStartDist = useRef(0)
+  const pinchStartScale = useRef(1)
+  const panStart = useRef<{ x: number; y: number; ox: number; oy: number } | null>(
+    null
+  )
+  const lastTap = useRef(0)
+  const closeTimer = useRef<number | null>(null)
+  const moved = useRef(false)
+
+  const applyTransform = () => {
+    const el = imgWrapRef.current
+    if (!el) return
+    const { x, y } = offsetRef.current
+    el.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scaleRef.current})`
+  }
+
+  const commitTransform = (nextScale: number, nextOffset: { x: number; y: number }) => {
+    const clamped = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, nextScale))
+    scaleRef.current = clamped
+    offsetRef.current = clamped <= 1.01 ? { x: 0, y: 0 } : nextOffset
+    applyTransform()
+  }
+
+  useEffect(() => {
+    setMounted(true)
+    const html = document.documentElement
+    const body = document.body
+    const prevHtml = html.style.overflow
+    const prevBody = body.style.overflow
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    return () => {
+      html.style.overflow = prevHtml
+      body.style.overflow = prevBody
+      if (closeTimer.current != null) window.clearTimeout(closeTimer.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  // Native listeners so preventDefault works for pinch/pan (React touchmove is passive).
+  useEffect(() => {
+    if (!mounted) return
+    const stage = stageRef.current
+    if (!stage) return
+
+    const onTouchStart = (e: TouchEvent) => {
+      moved.current = false
+      const a = e.touches.item(0)
+      const b = e.touches.item(1)
+      if (a && b) {
+        if (closeTimer.current != null) {
+          window.clearTimeout(closeTimer.current)
+          closeTimer.current = null
+        }
+        pinchStartDist.current = touchDistance(a, b)
+        pinchStartScale.current = scaleRef.current
+        panStart.current = null
+        return
+      }
+      if (a && e.touches.length === 1) {
+        panStart.current = {
+          x: a.clientX,
+          y: a.clientY,
+          ox: offsetRef.current.x,
+          oy: offsetRef.current.y,
+        }
+      }
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      const a = e.touches.item(0)
+      const b = e.touches.item(1)
+      if (a && b) {
+        e.preventDefault()
+        moved.current = true
+        const dist = touchDistance(a, b)
+        if (pinchStartDist.current <= 0) return
+        const nextScale = (pinchStartScale.current * dist) / pinchStartDist.current
+        const mid = touchMidpoint(a, b)
+        const prev = scaleRef.current || 1
+        const ratio = nextScale / prev
+        commitTransform(nextScale, {
+          x: mid.x - (mid.x - offsetRef.current.x) * ratio,
+          y: mid.y - (mid.y - offsetRef.current.y) * ratio,
+        })
+        return
+      }
+      if (a && panStart.current && scaleRef.current > 1.01) {
+        e.preventDefault()
+        const dx = a.clientX - panStart.current.x
+        const dy = a.clientY - panStart.current.y
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) moved.current = true
+        commitTransform(scaleRef.current, {
+          x: panStart.current.ox + dx,
+          y: panStart.current.oy + dy,
+        })
+      }
+    }
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const tap = e.changedTouches.item(0)
+      if (e.touches.length === 0 && tap && !moved.current) {
+        const now = Date.now()
+        if (now - lastTap.current < DOUBLE_TAP_MS) {
+          if (closeTimer.current != null) {
+            window.clearTimeout(closeTimer.current)
+            closeTimer.current = null
+          }
+          if (scaleRef.current > 1.05) {
+            commitTransform(1, { x: 0, y: 0 })
+          } else {
+            const targetScale = 2.4
+            commitTransform(targetScale, {
+              x: (window.innerWidth / 2 - tap.clientX) * (targetScale - 1),
+              y: (window.innerHeight / 2 - tap.clientY) * (targetScale - 1),
+            })
+          }
+          lastTap.current = 0
+        } else if (scaleRef.current <= 1.01) {
+          lastTap.current = now
+          closeTimer.current = window.setTimeout(() => {
+            if (lastTap.current === now) onClose()
+          }, DOUBLE_TAP_MS)
+        } else {
+          lastTap.current = now
+        }
+      }
+      if (e.touches.length < 2) pinchStartDist.current = 0
+      if (e.touches.length === 0) panStart.current = null
+    }
+
+    stage.addEventListener('touchstart', onTouchStart, { passive: true })
+    stage.addEventListener('touchmove', onTouchMove, { passive: false })
+    stage.addEventListener('touchend', onTouchEnd)
+    stage.addEventListener('touchcancel', onTouchEnd)
+    return () => {
+      stage.removeEventListener('touchstart', onTouchStart)
+      stage.removeEventListener('touchmove', onTouchMove)
+      stage.removeEventListener('touchend', onTouchEnd)
+      stage.removeEventListener('touchcancel', onTouchEnd)
+    }
+  }, [mounted, onClose])
+
+  if (!mounted) return null
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={alt}
+      className="fixed inset-0 z-[200] md:hidden bg-black/95 touch-none"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label={closeLabel}
+        className="absolute top-[max(0.75rem,env(safe-area-inset-top))] right-3 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+      >
+        <X className="h-5 w-5" aria-hidden />
+      </button>
+
+      <p className="pointer-events-none absolute bottom-[max(1rem,env(safe-area-inset-bottom))] left-0 right-0 z-10 text-center text-xs text-white/55 px-4">
+        {zoomHint}
+      </p>
+
+      <div
+        ref={stageRef}
+        className="absolute inset-0 flex items-center justify-center"
+      >
+        <div
+          ref={imgWrapRef}
+          className="relative h-full w-full will-change-transform"
+          style={{ transform: 'translate3d(0px, 0px, 0) scale(1)' }}
+        >
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            className="object-contain pointer-events-none select-none"
+            sizes="100vw"
+            priority
+            draggable={false}
+          />
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
 }
 
 function GallerySlideshow({
@@ -38,23 +270,30 @@ function GallerySlideshow({
   const { dict, t } = useLocale()
   const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)
+  const [zoomOpen, setZoomOpen] = useState(false)
 
   useEffect(() => {
     setIndex(0)
     setPaused(false)
+    setZoomOpen(false)
   }, [shots])
 
   useEffect(() => {
-    if (paused || shots.length <= 1) return
+    if (paused || zoomOpen || shots.length <= 1) return
     const id = window.setInterval(() => {
       setIndex((i) => (i + 1) % shots.length)
     }, SLIDE_HOLD_MS)
     return () => window.clearInterval(id)
-  }, [paused, shots.length])
+  }, [paused, zoomOpen, shots.length])
 
   const selectShot = (i: number) => {
     setIndex(i)
     setPaused(true)
+  }
+
+  const openZoom = () => {
+    setPaused(true)
+    setZoomOpen(true)
   }
 
   const shot = shots[index] ?? shots[0]
@@ -63,6 +302,11 @@ function GallerySlideshow({
   const src = gallerySrc(shot)
   const shape = galleryShotShape(shot, defaultShape)
   const isPhone = shape === 'phone'
+  const alt = t(dict.demos.imageAltScreenOf, {
+    title,
+    index: index + 1,
+    total: shots.length,
+  })
 
   return (
     <div className="flex flex-col items-center gap-3 md:hidden">
@@ -110,13 +354,8 @@ function GallerySlideshow({
 
       <button
         type="button"
-        onClick={() => setPaused((p) => !p)}
-        aria-pressed={paused}
-        aria-label={
-          paused
-            ? t(dict.demos.resumeScreenshots, { title })
-            : t(dict.demos.pauseScreenshots, { title })
-        }
+        onClick={openZoom}
+        aria-label={t(dict.demos.openPhotoZoom, { title })}
         className={`relative overflow-hidden rounded-2xl cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600/40 focus-visible:ring-offset-2 focus-visible:ring-offset-paper ${
           isPhone
             ? 'w-[min(72vw,260px)] aspect-[9/16]'
@@ -134,11 +373,7 @@ function GallerySlideshow({
           >
             <Image
               src={src}
-              alt={t(dict.demos.imageAltScreenOf, {
-                title,
-                index: index + 1,
-                total: shots.length,
-              })}
+              alt={alt}
               fill
               className="object-cover object-top"
               sizes="(max-width: 768px) 72vw, 260px"
@@ -150,6 +385,16 @@ function GallerySlideshow({
       <p className="text-xs text-gray-400" aria-live="polite">
         {paused ? dict.demos.pausedHint : dict.demos.playHint}
       </p>
+
+      {zoomOpen ? (
+        <MobilePhotoZoom
+          src={src}
+          alt={alt}
+          onClose={() => setZoomOpen(false)}
+          closeLabel={dict.demos.closePhotoZoom}
+          zoomHint={dict.demos.zoomHint}
+        />
+      ) : null}
     </div>
   )
 }
@@ -449,7 +694,7 @@ export default function DemosPageClient() {
               <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                 <Link
                   href={href('/introspect')}
-                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl px-6 py-2.5 font-sans text-base font-bold tracking-tight shadow-[0_8px_24px_-8px_rgba(0,0,0,0.28),0_2px_8px_-2px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 cursor-pointer bg-[oklch(58%_0.14_310)] text-white ring-1 ring-[oklch(58%_0.14_310)/0.35] focus-visible:ring-[oklch(58%_0.14_310)/0.45] lg:bg-white lg:text-primary-800 lg:ring-primary-300/70 lg:focus-visible:ring-primary/40"
+                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl px-6 py-2.5 font-sans text-base font-bold tracking-tight shadow-[0_8px_24px_-8px_rgba(0,0,0,0.28),0_2px_8px_-2px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 cursor-pointer bg-[oklch(50%_0.09_198)] text-white ring-1 ring-[oklch(50%_0.09_198)/0.35] focus-visible:ring-[oklch(50%_0.09_198)/0.45] lg:bg-white lg:text-primary-800 lg:ring-primary-300/70 lg:focus-visible:ring-primary/40"
                 >
                   <span className="relative inline-flex items-center gap-3">
                     <span className="relative z-0 hidden h-2 w-2 shrink-0 lg:block" aria-hidden>

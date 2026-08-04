@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import { Button } from '@/components/ui/Button'
 import { SpectrumFlipCta } from '@/components/ui/SpectrumFlipCta'
+import { LinkRenderText } from '@/components/pricing/LinkRenderText'
 import {
+  BUILD_HANDOFF_FEE,
   buildIntrospectHandoffHref,
   formatMoney,
   writePricingSelectionHandoff,
@@ -17,20 +19,26 @@ import { cn } from '@/lib/utils'
 interface SelectionSummaryProps {
   selectedPlan: PricingPlan | null
   selectedSupport: SupportPlan | null
+  selectedBuildHandoff: boolean
   onClearSupport: () => void
   onClearPlan: () => void
+  onClearBuildHandoff: () => void
 }
 
 export function SelectionSummary({
   selectedPlan,
   selectedSupport,
+  selectedBuildHandoff,
   onClearSupport,
   onClearPlan,
+  onClearBuildHandoff,
 }: SelectionSummaryProps) {
   const router = useRouter()
   const { dict, t, locale } = useLocale()
   const p = dict.pricingPage
-  const hasSelection = Boolean(selectedPlan || selectedSupport)
+  const hasSelection = Boolean(
+    selectedPlan || selectedSupport || selectedBuildHandoff
+  )
   const [emailOpen, setEmailOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState<string | undefined>()
@@ -40,10 +48,18 @@ export function SelectionSummary({
   const [emailMessage, setEmailMessage] = useState('')
   const [mobileExpanded, setMobileExpanded] = useState(false)
 
-  const oneTime = selectedPlan?.price ?? 0
+  const packagePrice = selectedPlan?.price ?? 0
+  const handoffFee = selectedBuildHandoff ? BUILD_HANDOFF_FEE : 0
+  const oneTime = packagePrice + handoffFee
   const monthly = selectedSupport?.price ?? 0
-  const deposit = selectedPlan ? Math.round(oneTime / 2) : null
-  const oneTimeLabel = selectedPlan ? formatMoney(oneTime, locale) : '$0'
+  const deposit = selectedPlan ? Math.round(packagePrice / 2) : null
+  const goLiveDue =
+    deposit != null
+      ? deposit + (selectedSupport ? monthly : 0) + handoffFee
+      : handoffFee > 0
+        ? handoffFee
+        : null
+  const oneTimeLabel = oneTime > 0 ? formatMoney(oneTime, locale) : '$0'
   const totalLabel = selectedSupport
     ? t(p.totalWithMonthly, {
         oneTime: oneTimeLabel,
@@ -52,12 +68,17 @@ export function SelectionSummary({
     : oneTimeLabel
 
   const continueToIntrospect = () => {
-    writePricingSelectionHandoff(selectedPlan?.id ?? null, selectedSupport?.id ?? null)
+    writePricingSelectionHandoff(
+      selectedPlan?.id ?? null,
+      selectedSupport?.id ?? null,
+      selectedBuildHandoff
+    )
     router.push(
       buildIntrospectHandoffHref(
         selectedPlan?.id ?? null,
         selectedSupport?.id ?? null,
-        locale
+        locale,
+        selectedBuildHandoff
       )
     )
   }
@@ -83,6 +104,7 @@ export function SelectionSummary({
           email: trimmed,
           planId: selectedPlan?.id ?? null,
           supportId: selectedSupport?.id ?? null,
+          buildHandoff: selectedBuildHandoff,
           locale,
         }),
       })
@@ -101,6 +123,12 @@ export function SelectionSummary({
       setEmailMessage(p.emailSendFailedNetwork)
     }
   }
+
+  const careLabel = selectedBuildHandoff
+    ? p.buildHandoffName
+    : selectedSupport
+      ? selectedSupport.name
+      : p.noMonthlySupport
 
   const card = (
     <div className="rounded-xl border border-[oklch(52%_0.14_295/0.25)] bg-white/95 shadow-sm backdrop-blur-sm p-3.5 sm:p-4">
@@ -144,6 +172,50 @@ export function SelectionSummary({
               </button>
             </li>
           ) : null}
+          {selectedBuildHandoff ? (
+            <li className="space-y-1.5">
+              <div className="flex items-start justify-between gap-2 text-sm">
+                <div className="min-w-0">
+                  <p className="font-medium text-gray-900">{p.buildHandoffName}</p>
+                  <p className="text-xs text-gray-500">
+                    {t(p.oneTimeSuffix, {
+                      price: formatMoney(BUILD_HANDOFF_FEE, locale),
+                    })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClearBuildHandoff}
+                  className="cursor-pointer shrink-0 text-xs font-medium text-gray-500 hover:text-gray-800"
+                >
+                  {dict.common.remove}
+                </button>
+              </div>
+              <div className="rounded-md border border-gray-200 bg-gray-50/80 px-2.5 py-2">
+                <p className="text-xs font-medium text-gray-800 leading-snug mb-1">
+                  <LinkRenderText text={p.buildHandoffResponsibilityHeading} />
+                </p>
+                <ul className="space-y-1">
+                  {p.goingLiveStep2CancelItems.map((item) => {
+                    const [plain, tech] = item.split(' — ')
+                    return (
+                      <li key={item} className="text-xs leading-snug text-gray-600">
+                        <span className="font-medium text-gray-800">
+                          <LinkRenderText text={plain ?? item} />
+                        </span>
+                        {tech ? (
+                          <span>
+                            {' — '}
+                            <LinkRenderText text={tech} />
+                          </span>
+                        ) : null}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            </li>
+          ) : null}
         </ul>
       ) : (
         <p className="text-sm text-gray-600 leading-snug mb-3">{p.emptySelection}</p>
@@ -183,14 +255,54 @@ export function SelectionSummary({
             {selectedSupport
               ? t(p.alongWithFirstMonthly, { amount: formatMoney(monthly, locale) })
               : null}
+            {selectedBuildHandoff
+              ? t(p.alongWithBuildHandoff, {
+                  amount: formatMoney(BUILD_HANDOFF_FEE, locale),
+                })
+              : null}
             .
           </li>
         </ol>
-        <p className="text-xs text-gray-500 leading-snug mt-2">
-          {selectedSupport
-            ? t(p.monthlySupportStartsWith, { monthly: formatMoney(monthly, locale) })
-            : p.monthlySupportStartsWithout}
-        </p>
+
+        {deposit != null ? (
+          <div className="mt-3 rounded-lg border border-[oklch(52%_0.14_295/0.2)] bg-[oklch(97%_0.02_295)] px-3 py-2.5">
+            <p className="text-xs font-semibold tracking-wide uppercase text-[oklch(48%_0.14_295)] mb-2">
+              {p.paymentScheduleHeading}
+            </p>
+            <ul className="space-y-2.5">
+              <li className="text-xs leading-snug">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-medium text-gray-900">{p.scheduleProjectStart}</span>
+                  <span className="shrink-0 font-medium text-gray-900">
+                    {formatMoney(deposit, locale)}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-gray-600">{p.scheduleProjectStartDetail}</p>
+              </li>
+              <li className="text-xs leading-snug">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="font-medium text-gray-900">{p.scheduleGoLive}</span>
+                  <span className="shrink-0 font-medium text-gray-900">
+                    {formatMoney(goLiveDue ?? deposit, locale)}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-gray-600">
+                  {selectedSupport
+                    ? t(p.scheduleGoLiveWithSupport, {
+                        packageHalf: formatMoney(deposit, locale),
+                        monthly: formatMoney(monthly, locale),
+                      })
+                    : selectedBuildHandoff
+                      ? t(p.scheduleGoLiveWithHandoff, {
+                          packageHalf: formatMoney(deposit, locale),
+                          handoff: formatMoney(BUILD_HANDOFF_FEE, locale),
+                        })
+                      : p.scheduleGoLivePackageOnly}
+                </p>
+              </li>
+            </ul>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -296,7 +408,7 @@ export function SelectionSummary({
         aria-live="polite"
         aria-label={p.yourSelection}
       >
-        <div className="sticky top-[calc(var(--spacing-12)+0.75rem)] max-h-[calc(100svh-var(--spacing-12)-1.5rem)] overflow-y-auto overscroll-contain">
+        <div className="sticky top-[calc(var(--spacing-12)+0.75rem)] max-h-[calc(100svh-var(--spacing-12)-1.75rem-1.5rem)] overflow-y-auto overscroll-contain">
           {card}
         </div>
       </aside>
@@ -310,7 +422,7 @@ export function SelectionSummary({
                   {selectedPlan ? selectedPlan.name : p.noPackage}
                 </span>
                 <span className="text-gray-400 mx-1.5">·</span>
-                <span>{selectedSupport ? selectedSupport.name : p.noMonthlySupport}</span>
+                <span>{careLabel}</span>
                 <span className="text-gray-400 mx-1.5">·</span>
                 <span className="font-display text-[oklch(48%_0.14_295)]">{totalLabel}</span>
               </div>

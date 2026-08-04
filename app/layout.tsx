@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Fraunces, Playfair_Display, Poppins, Source_Sans_3 } from 'next/font/google'
+import { getSiteUrl } from '@/lib/site'
 import './globals.css'
 
 const fraunces = Fraunces({
@@ -31,10 +32,41 @@ const poppins = Poppins({
   display: 'swap',
 })
 
+const siteUrl = getSiteUrl()
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'Applicreations — Custom apps and websites',
   description:
     'Friendly custom websites and apps for local businesses. Simple pricing. Clear next steps.',
+  applicationName: 'Applicreations',
+  icons: {
+    icon: [{ url: '/logo-mark.png', type: 'image/png' }],
+    apple: [{ url: '/logo-mark.png', type: 'image/png' }],
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'Applicreations',
+    title: 'Applicreations — Custom apps and websites',
+    description:
+      'Friendly custom websites and apps for local businesses. Simple pricing. Clear next steps.',
+    url: siteUrl,
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Applicreations — Custom apps and websites',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Applicreations — Custom apps and websites',
+    description:
+      'Friendly custom websites and apps for local businesses. Simple pricing. Clear next steps.',
+    images: ['/og-image.png'],
+  },
 }
 
 export default function RootLayout({

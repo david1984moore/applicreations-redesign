@@ -3,14 +3,30 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
+import {
+  Activity,
+  AlertTriangle,
+  ChevronDown,
+  CreditCard,
+  GitBranch,
+  Globe2,
+  KeyRound,
+  Lock,
+  Package,
+  Server,
+  type LucideIcon,
+} from 'lucide-react'
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import { IconContact } from '@/components/ui/BrandNavLinks'
+import { BuildHandoffConfirmDialog } from '@/components/pricing/BuildHandoffConfirmDialog'
 import { DetailGroups } from '@/components/pricing/DetailGroups'
+import { LinkRenderText } from '@/components/pricing/LinkRenderText'
+import { PlanFeatureRotator } from '@/components/pricing/PlanFeatureRotator'
 import { SelectToggle } from '@/components/pricing/SelectToggle'
 import { SelectionSummary } from '@/components/pricing/SelectionSummary'
 import { SpectrumFlipCta } from '@/components/ui/SpectrumFlipCta'
 import {
+  BUILD_HANDOFF_FEE,
   getPlans,
   getSupportPlans,
   type PlanId,
@@ -24,6 +40,18 @@ const SUPPORT_IDS = new Set<string>(['support', 'ultimate'])
 const introLinkClass =
   'font-medium text-primary-700 hover:text-primary-800 underline underline-offset-2'
 
+/** Icons for cancel-takeover items — order matches dictionary arrays (en/es). */
+const CANCEL_ITEM_ICONS: LucideIcon[] = [
+  Globe2,
+  Lock,
+  Server,
+  KeyRound,
+  GitBranch,
+  Activity,
+  Package,
+  CreditCard,
+]
+
 export default function PricingPageClient() {
   const { dict, t, href, locale } = useLocale()
   const p = dict.pricingPage
@@ -34,13 +62,17 @@ export default function PricingPageClient() {
   const [selectedSupportId, setSelectedSupportId] = useState<SupportPlanId | null>(
     null
   )
+  const [selectedBuildHandoff, setSelectedBuildHandoff] = useState(false)
+  const [buildHandoffConfirmOpen, setBuildHandoffConfirmOpen] = useState(false)
   const [openPlanId, setOpenPlanId] = useState<PlanId | null>(null)
   const [openSupportId, setOpenSupportId] = useState<SupportPlanId | null>(null)
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null
   const selectedSupport =
     supportPlans.find((p) => p.id === selectedSupportId) ?? null
-  const hasSelection = Boolean(selectedPlan || selectedSupport)
+  const hasSelection = Boolean(
+    selectedPlan || selectedSupport || selectedBuildHandoff
+  )
 
   useEffect(() => {
     const applyHash = () => {
@@ -61,7 +93,26 @@ export default function PricingPageClient() {
   }
 
   const selectSupport = (id: SupportPlanId) => {
+    setSelectedBuildHandoff(false)
     setSelectedSupportId((current) => (current === id ? null : id))
+  }
+
+  const requestBuildHandoff = () => {
+    setBuildHandoffConfirmOpen(true)
+  }
+
+  const confirmBuildHandoff = () => {
+    setSelectedSupportId(null)
+    setSelectedBuildHandoff(true)
+    setBuildHandoffConfirmOpen(false)
+  }
+
+  const cancelBuildHandoffConfirm = () => {
+    setBuildHandoffConfirmOpen(false)
+  }
+
+  const removeBuildHandoff = () => {
+    setSelectedBuildHandoff(false)
   }
 
   const togglePlanOpen = (id: PlanId) => {
@@ -95,8 +146,25 @@ export default function PricingPageClient() {
               </motion.div>
             </section>
 
-            <section className="pb-5" aria-label={p.websitePackagesAria}>
-              <div className="flex flex-col gap-2.5">
+            <section
+              className="pb-5 mx-auto max-w-5xl"
+              aria-labelledby="website-plans-heading"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.06 }}
+                className="mb-3"
+              >
+                <h2
+                  id="website-plans-heading"
+                  className="font-display text-xl sm:text-2xl text-gray-900"
+                >
+                  {p.websitePlansHeading}
+                </h2>
+              </motion.div>
+
+              <div className="flex flex-col gap-2">
                 {plans.map((plan, index) => {
                   const isSelected = selectedPlanId === plan.id
                   const isOpen = openPlanId === plan.id
@@ -114,56 +182,52 @@ export default function PricingPageClient() {
                           : 'border border-gray-200 bg-white/85'
                       )}
                     >
-                      <div className="px-3.5 pt-3.5 pb-1.5 sm:px-4 sm:pt-4 sm:pb-2">
-                        <div className="flex items-baseline justify-between gap-4 mb-1.5">
-                          <div className="min-w-0 flex-1">
-                            <h2 className="font-display text-2xl sm:text-[1.75rem] text-gray-900 leading-tight">
+                      <div className="px-3 py-2 sm:px-4">
+                        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-4">
+                          <div className="min-w-0 justify-self-start">
+                            <h2 className="font-display text-2xl sm:text-[1.75rem] text-gray-900 leading-none">
                               {plan.name}
                             </h2>
-                            <ul
-                              className="flex flex-wrap gap-1.5 mt-2.5"
-                              aria-label={t(p.highlightsAria, { name: plan.name })}
-                            >
-                              {plan.features.map((feature) => (
-                                <li
-                                  key={feature}
-                                  className="text-xs text-gray-700 bg-[oklch(96%_0.02_295)] border border-[oklch(90%_0.035_295)] px-2 py-0.5 rounded-md"
-                                >
-                                  {feature}
-                                </li>
-                              ))}
-                            </ul>
+                            <div className="mt-1 w-full">
+                              <PlanFeatureRotator
+                                messages={plan.features}
+                                ariaLabel={t(p.highlightsAria, { name: plan.name })}
+                                startDelay={index * 900}
+                              />
+                            </div>
                           </div>
-                          <p className="font-display text-xl sm:text-2xl text-primary-700 shrink-0 text-right whitespace-nowrap">
-                            {plan.priceLabel}
-                            <span className="ml-1.5 text-xs font-sans font-normal text-gray-500">
-                              {p.oneTime}
-                            </span>
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2.5 mt-4">
-                          <button
-                            type="button"
-                            onClick={() => togglePlanOpen(plan.id)}
-                            aria-expanded={isOpen}
-                            aria-controls={`${plan.id}-details`}
-                            className="cursor-pointer inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800 self-start"
-                          >
-                            {p.whatsIncluded}
-                            <ChevronDown
-                              className={cn(
-                                'h-4 w-4 transition-transform duration-200',
-                                isOpen && 'rotate-180'
-                              )}
-                              aria-hidden
+                          <div className="justify-self-center text-center px-2">
+                            <p className="font-display text-xl sm:text-2xl text-primary-700 whitespace-nowrap leading-none">
+                              {plan.priceLabel}
+                              <span className="ml-1.5 text-xs font-sans font-normal text-gray-500">
+                                {p.oneTime}
+                              </span>
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 justify-self-end">
+                            <SelectToggle
+                              selected={isSelected}
+                              label={plan.name}
+                              onToggle={() => selectPlan(plan.id)}
+                              className="w-auto px-2.5 py-1 text-sm leading-none"
                             />
-                          </button>
-                          <SelectToggle
-                            selected={isSelected}
-                            label={plan.name}
-                            onToggle={() => selectPlan(plan.id)}
-                          />
+                            <button
+                              type="button"
+                              onClick={() => togglePlanOpen(plan.id)}
+                              aria-expanded={isOpen}
+                              aria-controls={`${plan.id}-details`}
+                              className="cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-primary-700 hover:text-primary-800"
+                            >
+                              {p.whatsIncluded}
+                              <ChevronDown
+                                className={cn(
+                                  'h-3.5 w-3.5 transition-transform duration-200',
+                                  isOpen && 'rotate-180'
+                                )}
+                                aria-hidden
+                              />
+                            </button>
+                          </div>
                         </div>
                       </div>
 
@@ -198,7 +262,7 @@ export default function PricingPageClient() {
 
             <section
               id="hosting-support"
-              className="scroll-mt-16 border-t border-gray-200 py-5"
+              className="scroll-mt-16 border-t border-gray-200 py-5 mx-auto max-w-5xl"
               aria-labelledby="hosting-support-heading"
             >
               <motion.div
@@ -209,52 +273,13 @@ export default function PricingPageClient() {
               >
                 <h2
                   id="hosting-support-heading"
-                  className="font-display text-xl sm:text-2xl text-gray-900 mb-1"
+                  className="font-display text-xl sm:text-2xl text-gray-900"
                 >
                   {p.hostingSupportHeading}
                 </h2>
-                <p className="text-sm text-gray-600 leading-snug max-w-2xl">
-                  {p.hostingIntroBeforeRender}{' '}
-                  <a
-                    href="https://render.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={introLinkClass}
-                  >
-                    {p.hostingIntroRender}
-                  </a>
-                  {p.hostingIntroAfterRender}{' '}
-                  <a
-                    href="https://render.com/docs/service-types"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={introLinkClass}
-                  >
-                    {p.hostingIntroServices}
-                  </a>
-                  {p.hostingIntroIncluding}{' '}
-                  <a
-                    href="https://render.com/docs/static-sites"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={introLinkClass}
-                  >
-                    {p.hostingIntroStaticSites}
-                  </a>{' '}
-                  {p.hostingIntroAnd}{' '}
-                  <a
-                    href="https://render.com/docs/web-services"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={introLinkClass}
-                  >
-                    {p.hostingIntroWebServices}
-                  </a>
-                  {p.hostingIntroEnd}
-                </p>
               </motion.div>
 
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2">
                 {supportPlans.map((plan, index) => {
                   const isSelected = selectedSupportId === plan.id
                   const isOpen = openSupportId === plan.id
@@ -272,53 +297,49 @@ export default function PricingPageClient() {
                           : 'border border-gray-200 bg-white/85'
                       )}
                     >
-                      <div className="px-3.5 pt-3.5 pb-1.5 sm:px-4 sm:pt-4 sm:pb-2">
-                        <div className="flex items-baseline justify-between gap-4 mb-1.5">
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-display text-2xl sm:text-[1.75rem] text-gray-900 leading-tight">
+                      <div className="px-3 py-2 sm:px-4">
+                        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-4">
+                          <div className="min-w-0 justify-self-start">
+                            <h3 className="font-display text-2xl sm:text-[1.75rem] text-gray-900 leading-none">
                               {plan.name}
                             </h3>
-                            <ul
-                              className="flex flex-wrap gap-1.5 mt-2.5"
-                              aria-label={t(p.highlightsAria, { name: plan.name })}
-                            >
-                              {plan.features.map((feature) => (
-                                <li
-                                  key={feature}
-                                  className="text-xs text-gray-700 bg-[oklch(96%_0.02_295)] border border-[oklch(90%_0.035_295)] px-2 py-0.5 rounded-md"
-                                >
-                                  {feature}
-                                </li>
-                              ))}
-                            </ul>
+                            <div className="mt-1 w-full">
+                              <PlanFeatureRotator
+                                messages={plan.features}
+                                ariaLabel={t(p.highlightsAria, { name: plan.name })}
+                                startDelay={(plans.length + index) * 900}
+                              />
+                            </div>
                           </div>
-                          <p className="font-display text-xl sm:text-2xl text-primary-700 shrink-0 text-right whitespace-nowrap">
-                            {plan.priceLabel}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2.5 mt-4">
-                          <button
-                            type="button"
-                            onClick={() => toggleSupportOpen(plan.id)}
-                            aria-expanded={isOpen}
-                            aria-controls={`${plan.id}-details`}
-                            className="cursor-pointer inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800 self-start"
-                          >
-                            {p.whatsIncluded}
-                            <ChevronDown
-                              className={cn(
-                                'h-4 w-4 transition-transform duration-200',
-                                isOpen && 'rotate-180'
-                              )}
-                              aria-hidden
+                          <div className="justify-self-center text-center px-2">
+                            <p className="font-display text-xl sm:text-2xl text-primary-700 whitespace-nowrap leading-none">
+                              {plan.priceLabel}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 justify-self-end">
+                            <SelectToggle
+                              selected={isSelected}
+                              label={plan.name}
+                              onToggle={() => selectSupport(plan.id)}
+                              className="w-auto px-2.5 py-1 text-sm leading-none"
                             />
-                          </button>
-                          <SelectToggle
-                            selected={isSelected}
-                            label={plan.name}
-                            onToggle={() => selectSupport(plan.id)}
-                          />
+                            <button
+                              type="button"
+                              onClick={() => toggleSupportOpen(plan.id)}
+                              aria-expanded={isOpen}
+                              aria-controls={`${plan.id}-details`}
+                              className="cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-primary-700 hover:text-primary-800"
+                            >
+                              {p.whatsIncluded}
+                              <ChevronDown
+                                className={cn(
+                                  'h-3.5 w-3.5 transition-transform duration-200',
+                                  isOpen && 'rotate-180'
+                                )}
+                                aria-hidden
+                              />
+                            </button>
+                          </div>
                         </div>
                       </div>
 
@@ -346,6 +367,257 @@ export default function PricingPageClient() {
                   )
                 })}
               </div>
+            </section>
+
+            <section
+              id="going-live"
+              className="scroll-mt-16 border-t border-gray-200 py-5"
+              aria-labelledby="going-live-heading"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.18 }}
+              >
+                <h2
+                  id="going-live-heading"
+                  className="font-display text-xl sm:text-2xl text-gray-900 mb-0.5"
+                >
+                  {p.goingLiveHeading}
+                </h2>
+                <p className="text-sm text-gray-600 leading-snug mb-2.5 max-w-2xl">
+                  {p.goingLiveLead}
+                </p>
+
+                <div className="rounded-xl border border-[oklch(88%_0.035_195)] bg-[oklch(96%_0.025_195)] overflow-hidden">
+                  <ol className="divide-y divide-[oklch(90%_0.03_195)]">
+                    <li className="flex gap-2.5 px-3.5 py-2.5 sm:px-4">
+                      <span
+                        className="mt-px w-5 shrink-0 font-display text-xl font-bold tabular-nums text-[oklch(42%_0.16_295)] leading-none"
+                        aria-hidden
+                      >
+                        1
+                      </span>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold text-gray-900 leading-tight">
+                          {p.goingLiveStep1Title}
+                        </h3>
+                        <ul className="mt-1 list-disc pl-4 marker:text-[oklch(42%_0.12_295)] space-y-0.5">
+                          <li className="text-sm text-gray-700 leading-snug pl-0.5">
+                            {p.goingLiveStep1Bullet}
+                          </li>
+                        </ul>
+                      </div>
+                    </li>
+
+                    <li className="flex gap-2.5 px-3.5 py-2.5 sm:px-4">
+                      <span
+                        className="mt-px w-5 shrink-0 font-display text-xl font-bold tabular-nums text-[oklch(42%_0.16_295)] leading-none"
+                        aria-hidden
+                      >
+                        2
+                      </span>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold text-gray-900 leading-tight">
+                          {p.goingLiveStep2Title}
+                        </h3>
+                        <ul className="mt-1 list-disc pl-4 marker:text-[oklch(42%_0.12_295)] space-y-1">
+                          <li className="text-sm text-gray-700 leading-snug pl-0.5">
+                            {p.goingLiveStep2BulletPlan}
+                          </li>
+                          <li className="text-sm text-gray-700 leading-snug pl-0.5">
+                            <LinkRenderText
+                              text={`${p.hostingIntroBeforeRender} ${p.hostingIntroRender}.`}
+                            />
+                          </li>
+                        </ul>
+                      </div>
+                    </li>
+
+                    <li className="flex gap-2.5 px-3.5 py-2.5 sm:px-4">
+                      <span
+                        className="mt-px w-5 shrink-0 font-display text-xl font-bold tabular-nums text-[oklch(42%_0.16_295)] leading-none"
+                        aria-hidden
+                      >
+                        3
+                      </span>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold text-gray-900 leading-tight">
+                          {p.goingLiveStep3Title}
+                        </h3>
+                        <ul className="mt-1 list-disc pl-4 marker:text-[oklch(42%_0.12_295)] space-y-0.5">
+                          <li className="text-sm text-gray-700 leading-snug pl-0.5">
+                            {p.goingLiveNeedDomainBefore}
+                            <a
+                              href="https://www.namecheap.com"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={introLinkClass}
+                            >
+                              {p.goingLiveNeedDomainNamecheap}
+                            </a>
+                            {p.goingLiveNeedDomainAfter}
+                          </li>
+                        </ul>
+                      </div>
+                    </li>
+                  </ol>
+                </div>
+              </motion.div>
+            </section>
+
+            <section
+              id="cancellation"
+              className="scroll-mt-16 border-t border-gray-200 py-5"
+              aria-labelledby="cancellation-heading"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.22 }}
+                className="space-y-3"
+              >
+                <h2
+                  id="cancellation-heading"
+                  className="font-display text-xl sm:text-2xl text-gray-900"
+                >
+                  {p.goingLiveStep2CancellationHeading}
+                </h2>
+
+                {/* Cancel anytime — responsibilities you take over */}
+                <div className="rounded-xl border border-[oklch(88%_0.035_195)] bg-white overflow-hidden">
+                  <div className="border-b border-[oklch(90%_0.03_195)] bg-[oklch(97%_0.015_195)] px-3.5 py-2.5 sm:px-4">
+                    <p className="text-sm text-gray-700 leading-snug">
+                      <LinkRenderText text={p.goingLiveStep2BulletCancel} />
+                    </p>
+                  </div>
+
+                  <ul className="grid sm:grid-cols-2 gap-px bg-[oklch(92%_0.02_195)]">
+                    {p.goingLiveStep2CancelItems.map((item, index) => {
+                      const [plain, tech] = item.split(' — ')
+                      const Icon = CANCEL_ITEM_ICONS[index] ?? Server
+                      return (
+                        <li
+                          key={item}
+                          className="flex gap-2.5 bg-white px-3.5 py-2.5 sm:px-4"
+                        >
+                          <span
+                            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[oklch(96%_0.025_195)] text-[oklch(42%_0.1_195)]"
+                            aria-hidden
+                          >
+                            <Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 leading-snug">
+                              <LinkRenderText text={plain ?? item} />
+                            </p>
+                            {tech ? (
+                              <p className="mt-0.5 text-xs text-gray-500 leading-snug">
+                                <LinkRenderText text={tech} />
+                              </p>
+                            ) : null}
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+
+                {/* Build & hand off — one-time alternative */}
+                <div
+                  className={cn(
+                    'rounded-xl border overflow-hidden transition-colors',
+                    selectedBuildHandoff
+                      ? 'border-[oklch(70%_0.08_295)] bg-[oklch(96%_0.03_295)]'
+                      : 'border-[oklch(88%_0.035_195)] bg-[oklch(96%_0.025_195)]'
+                  )}
+                >
+                  <div className="px-3.5 py-3 sm:px-4 sm:py-3.5">
+                    <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
+                      <h3 className="text-sm font-bold text-gray-900 leading-tight min-w-0">
+                        {p.goingLiveStep2HandoffHeading}
+                      </h3>
+                      <p className="shrink-0 rounded-md border border-[oklch(82%_0.05_195)] bg-white px-2.5 py-0.5 text-sm font-bold tabular-nums text-gray-900">
+                        {t(p.oneTimeSuffix, { price: p.goingLiveStep2HandoffFee })}
+                      </p>
+                    </div>
+
+                    <ul className="mt-2 list-disc pl-4 marker:text-[oklch(50%_0.08_195)] space-y-1">
+                      <li className="text-sm text-gray-700 leading-snug pl-0.5">
+                        {p.goingLiveStep2HandoffBodyBefore}{' '}
+                        <span className="font-bold text-gray-900">
+                          {p.goingLiveStep2HandoffFee}
+                        </span>
+                        <LinkRenderText text={p.goingLiveStep2HandoffBodyAfterFee} />
+                      </li>
+                      <li className="text-sm text-gray-700 leading-snug pl-0.5">
+                        <LinkRenderText text={p.goingLiveStep2HandoffFeeCovers} />
+                      </li>
+                      <li className="text-sm text-gray-700 leading-snug pl-0.5">
+                        <LinkRenderText text={p.goingLiveStep2HandoffRenderAccount} />
+                      </li>
+                      <li className="text-sm font-medium text-gray-900 leading-snug pl-0.5">
+                        <LinkRenderText
+                          text={p.goingLiveStep2HandoffSoleResponsibility}
+                        />
+                      </li>
+                    </ul>
+
+                    <p className="mt-2.5 rounded-lg border border-[oklch(90%_0.02_195)] bg-white/80 px-2.5 py-1.5 text-sm text-gray-600 leading-snug">
+                      <LinkRenderText
+                        text={t(p.goingLiveStep2HandoffExample, {
+                          planName: plans[0]?.name ?? 'Basic',
+                          planPrice: plans[0]?.priceLabel ?? '$600',
+                          handoffFee: p.goingLiveStep2HandoffFee,
+                          total: `$${((plans[0]?.price ?? 600) + BUILD_HANDOFF_FEE).toLocaleString('en-US')}`,
+                        })}
+                      />
+                    </p>
+
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                      {selectedBuildHandoff ? (
+                        <>
+                          <p className="text-xs text-gray-600">
+                            {p.buildHandoffSelected}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={removeBuildHandoff}
+                            className="cursor-pointer text-xs font-medium text-gray-500 underline underline-offset-2 hover:text-gray-800"
+                          >
+                            {p.buildHandoffRemove}
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={requestBuildHandoff}
+                          className="cursor-pointer text-xs text-gray-500 underline underline-offset-2 hover:text-gray-700"
+                        >
+                          {p.buildHandoffSelect}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2.5 border-t border-[oklch(88%_0.04_75)] bg-[oklch(98%_0.02_85)] px-3.5 py-2.5 sm:px-4">
+                    <AlertTriangle
+                      className="mt-0.5 h-4 w-4 shrink-0 text-[oklch(48%_0.12_65)]"
+                      strokeWidth={2.25}
+                      aria-hidden
+                    />
+                    <p className="text-sm font-bold text-gray-900 leading-snug">
+                      <LinkRenderText text={p.goingLiveStep2CancelClosing} />
+                    </p>
+                  </div>
+                </div>
+
+                <BuildHandoffConfirmDialog
+                  open={buildHandoffConfirmOpen}
+                  onConfirm={confirmBuildHandoff}
+                  onCancel={cancelBuildHandoffConfirm}
+                />
+              </motion.div>
             </section>
 
             <section className="border-t border-gray-200 bg-white/50 py-5 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 lg:rounded-xl">
@@ -377,8 +649,10 @@ export default function PricingPageClient() {
           <SelectionSummary
             selectedPlan={selectedPlan}
             selectedSupport={selectedSupport}
+            selectedBuildHandoff={selectedBuildHandoff}
             onClearPlan={() => setSelectedPlanId(null)}
             onClearSupport={() => setSelectedSupportId(null)}
+            onClearBuildHandoff={() => setSelectedBuildHandoff(false)}
           />
         </div>
       </div>

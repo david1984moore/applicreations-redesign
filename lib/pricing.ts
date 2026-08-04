@@ -75,16 +75,27 @@ const WEBSITE_META: Record<
 
 const SUPPORT_META: Record<
   SupportPlanId,
-  { price: number; priceLabel: string; highlighted?: boolean }
+  { price: number; highlighted?: boolean }
 > = {
-  support: { price: 50, priceLabel: '$50/month', highlighted: false },
-  ultimate: { price: 250, priceLabel: '$250/month', highlighted: true },
+  support: { price: 50, highlighted: false },
+  ultimate: { price: 250, highlighted: true },
 }
 
-export function getBasicSupport(dict: Dictionary = en) {
+/** One-time fee to build, deploy on Render, then hand hosting off to the client */
+export const BUILD_HANDOFF_FEE = 500
+
+function monthlyPriceLabel(amount: number, locale: Locale = defaultLocale): string {
+  const money = `$${amount.toLocaleString('en-US')}`
+  return locale === 'es' ? `${money}/mes` : `${money}/month`
+}
+
+export function getBasicSupport(
+  dict: Dictionary = en,
+  locale: Locale = defaultLocale
+) {
   return {
     price: 50,
-    priceLabel: '$50/month',
+    priceLabel: monthlyPriceLabel(50, locale),
     description: dict.plans.basicSupport.description,
   }
 }
@@ -126,7 +137,7 @@ export function getSupportPlans(
       id,
       name: copy.name,
       price: meta.price,
-      priceLabel: meta.priceLabel,
+      priceLabel: monthlyPriceLabel(meta.price, locale),
       summary: copy.summary,
       whyItHelps: copy.whyItHelps,
       details: copy.details,
@@ -171,6 +182,8 @@ export const PRICING_SELECTION_STORAGE_KEY = 'applicreations-pricing-selection'
 export type PricingSelectionHandoff = {
   planId: PlanId | null
   supportId: SupportPlanId | null
+  /** One-time build & hand off ($500) — mutually exclusive with monthly support */
+  buildHandoff: boolean
 }
 
 /** Map website package → Introspect siteDepth (step 6 proxy). */
@@ -198,21 +211,28 @@ export function isSupportPlanId(value: unknown): value is SupportPlanId {
 export function buildIntrospectHandoffHref(
   planId: PlanId | null,
   supportId: SupportPlanId | null,
-  locale: Locale = defaultLocale
+  locale: Locale = defaultLocale,
+  buildHandoff = false
 ): string {
   const params = new URLSearchParams()
   params.set('from', 'pricing')
   if (planId) params.set('plan', planId)
   if (supportId) params.set('support', supportId)
+  if (buildHandoff) params.set('handoff', '1')
   return withLocale(`/introspect?${params.toString()}`, locale)
 }
 
 export function writePricingSelectionHandoff(
   planId: PlanId | null,
-  supportId: SupportPlanId | null
+  supportId: SupportPlanId | null,
+  buildHandoff = false
 ): void {
   try {
-    const payload: PricingSelectionHandoff = { planId, supportId }
+    const payload: PricingSelectionHandoff = {
+      planId,
+      supportId: buildHandoff ? null : supportId,
+      buildHandoff,
+    }
     sessionStorage.setItem(PRICING_SELECTION_STORAGE_KEY, JSON.stringify(payload))
   } catch {
     /* ignore quota / private mode */
@@ -224,45 +244,91 @@ export function readPricingSelectionHandoff(): PricingSelectionHandoff | null {
     const raw = sessionStorage.getItem(PRICING_SELECTION_STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw) as Partial<PricingSelectionHandoff>
+    const buildHandoff = parsed.buildHandoff === true
     return {
       planId: isPlanId(parsed.planId) ? parsed.planId : null,
-      supportId: isSupportPlanId(parsed.supportId) ? parsed.supportId : null,
+      supportId:
+        buildHandoff
+          ? null
+          : isSupportPlanId(parsed.supportId)
+            ? parsed.supportId
+            : null,
+      buildHandoff,
     }
   } catch {
     return null
   }
 }
 
-/** Plain-text synopsis for the client’s mailbox (mailto / API log). */
+export type SelectionEmailContent = {
+  subject: string
+  body: string
+  title: string
+  rows: { label: string; value: string }[]
+  bullets: string[]
+  notes: string[]
+  signoff: string
+  linkHref: string
+  linkLabel: string
+}
+
+/** Plain-text + structured fields for the client selection email. */
 export function formatSelectionForEmail(
   plan: PricingPlan | null,
   support: SupportPlan | null,
   dict: Dictionary = en,
-  locale: Locale = defaultLocale
-): { subject: string; body: string } {
-  const oneTime = plan?.price ?? 0
+  locale: Locale = defaultLocale,
+  buildHandoff = false
+): SelectionEmailContent {
+  const oneTime = (plan?.price ?? 0) + (buildHandoff ? BUILD_HANDOFF_FEE : 0)
   const monthly = support?.price ?? 0
   const totalLine = [
-    plan ? `${formatMoney(oneTime, locale)} ${dict.pricingPage.oneTime}` : null,
-    support ? `${formatMoney(monthly, locale)}/mo` : null,
+    plan || buildHandoff
+      ? `${formatMoney(oneTime, locale)} ${dict.pricingPage.oneTime}`
+      : null,
+    support
+      ? `${formatMoney(monthly, locale)}${locale === 'es' ? '/mes' : '/mo'}`
+      : null,
   ]
     .filter(Boolean)
     .join(' + ')
 
   const p = dict.pricingPage
-  const lines = [
-    p.selectionEmailBodyHeader,
-    '',
-    plan
-      ? p.selectionEmailWebsitePackage
-          .replace('{name}', plan.name)
-          .replace('{price}', plan.priceLabel)
-      : p.selectionEmailWebsiteNone,
-    support
+  const websiteLine = plan
+    ? p.selectionEmailWebsitePackage
+        .replace('{name}', plan.name)
+        .replace('{price}', plan.priceLabel)
+    : p.selectionEmailWebsiteNone
+  const careLine = buildHandoff
+    ? p.selectionEmailBuildHandoff.replace(
+        '{price}',
+        formatMoney(BUILD_HANDOFF_FEE, locale)
+      )
+    : support
       ? p.selectionEmailMonthlyCare
           .replace('{name}', support.name)
           .replace('{price}', support.priceLabel)
-      : p.selectionEmailMonthlyNone,
+      : p.selectionEmailMonthlyNone
+
+  const websiteValue = plan
+    ? `${plan.name} — ${plan.priceLabel} ${p.oneTime}`
+    : p.noPackage
+  const careValue = buildHandoff
+    ? p.selectionEmailBuildHandoff
+        .replace('{price}', formatMoney(BUILD_HANDOFF_FEE, locale))
+        .replace(/^[^:]+:\s*/, '')
+    : support
+      ? `${support.name} — ${support.priceLabel}`
+      : p.noMonthlySupport
+
+  const lines = [
+    p.selectionEmailBodyHeader,
+    '',
+    websiteLine,
+    careLine,
+    ...(buildHandoff
+      ? ['', p.selectionEmailBuildHandoffNote, ...p.goingLiveStep2CancelItems.map((item) => `• ${item}`)]
+      : []),
     '',
     p.selectionEmailEstimatedTotal.replace('{total}', totalLine || '$0'),
     '',
@@ -273,16 +339,39 @@ export function formatSelectionForEmail(
     'https://applicreations.com/pricing',
   ]
 
+  const extras = buildHandoff
+    ? p.buildHandoffName
+    : support
+      ? support.name
+      : ''
   const planSubjectName = plan
-    ? `${plan.name}${support ? ` + ${support.name}` : ''}`
-    : ''
+    ? `${plan.name}${extras ? ` + ${extras}` : ''}`
+    : extras
 
   return {
     subject: plan
       ? p.selectionEmailSubjectWithPlan.replace('{name}', planSubjectName)
-      : support
-        ? p.selectionEmailSubjectWithSupport.replace('{name}', support.name)
+      : extras
+        ? p.selectionEmailSubjectWithSupport.replace('{name}', extras)
         : p.selectionEmailSubject,
     body: lines.join('\n'),
+    title: p.selectionEmailBodyHeader,
+    rows: [
+      { label: p.selectionEmailWebsiteLabel, value: websiteValue },
+      { label: p.selectionEmailMonthlyLabel, value: careValue },
+      {
+        label: p.selectionEmailTotalLabel,
+        value: totalLine || '$0',
+      },
+    ],
+    bullets: buildHandoff ? [...p.goingLiveStep2CancelItems] : [],
+    notes: [
+      ...(buildHandoff ? [p.selectionEmailBuildHandoffNote] : []),
+      p.selectionEmailZeroDue,
+      p.selectionEmailEstimateNote,
+    ],
+    signoff: p.selectionEmailSignoff,
+    linkHref: 'https://applicreations.com/pricing',
+    linkLabel: p.selectionEmailLinkLabel,
   }
 }

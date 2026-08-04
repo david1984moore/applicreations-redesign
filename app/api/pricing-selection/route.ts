@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email'
+import { brandedEmailHtml } from '@/lib/email-templates'
 import {
   formatSelectionForEmail,
   getPlans,
@@ -14,6 +15,7 @@ type PricingSelectionBody = {
   email?: unknown
   planId?: unknown
   supportId?: unknown
+  buildHandoff?: unknown
   locale?: unknown
 }
 
@@ -23,43 +25,6 @@ function isNonEmptyString(value: unknown): value is string {
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(email)
-}
-
-function selectionHtml(textBody: string, questionsFooter: string): string {
-  const lines = textBody.split('\n')
-  const paragraphs = lines
-    .map((line) => {
-      if (!line.trim()) return '<br />'
-      return `<p style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.45;color:#2a2a2a">${escapeHtml(line)}</p>`
-    })
-    .join('')
-
-  return `
-<!DOCTYPE html>
-<html>
-  <body style="margin:0;padding:24px;background:#f7f4ef;">
-    <div style="max-width:520px;margin:0 auto;padding:24px 28px;background:#fffefb;border:1px solid #e5e0d6;border-radius:12px;">
-      <p style="margin:0 0 16px;font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6b3fa0;">
-        Applicreations
-      </p>
-      ${paragraphs}
-      <p style="margin:20px 0 0;font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;line-height:1.4;color:#6b6560;">
-        ${escapeHtml(questionsFooter).replace(
-          'hello@applicreations.com',
-          '<a href="mailto:hello@applicreations.com" style="color:#6b3fa0;">hello@applicreations.com</a>'
-        )}
-      </p>
-    </div>
-  </body>
-</html>`.trim()
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
 }
 
 export async function POST(request: Request) {
@@ -85,9 +50,15 @@ export async function POST(request: Request) {
   }
 
   const planId = isPlanId(body.planId) ? body.planId : null
-  const supportId = isSupportPlanId(body.supportId) ? body.supportId : null
+  const buildHandoff = body.buildHandoff === true
+  const supportId =
+    buildHandoff
+      ? null
+      : isSupportPlanId(body.supportId)
+        ? body.supportId
+        : null
 
-  if (!planId && !supportId) {
+  if (!planId && !supportId && !buildHandoff) {
     return NextResponse.json({ message: messages.selectionRequired }, { status: 400 })
   }
 
@@ -98,13 +69,30 @@ export async function POST(request: Request) {
     ? supportPlans.find((p) => p.id === supportId) ?? null
     : null
 
-  const { subject, body: text } = formatSelectionForEmail(plan, support, dict, locale)
+  const selection = formatSelectionForEmail(
+    plan,
+    support,
+    dict,
+    locale,
+    buildHandoff
+  )
 
   const result = await sendEmail({
     to: email,
-    subject,
-    text,
-    html: selectionHtml(text, messages.emailQuestions ?? ''),
+    subject: selection.subject,
+    text: selection.body,
+    html: brandedEmailHtml({
+      brandName: dict.brand.name,
+      tagline: dict.landing.tagline,
+      title: selection.title,
+      rows: selection.rows,
+      bullets: selection.bullets,
+      notes: selection.notes,
+      signoff: selection.signoff,
+      linkHref: selection.linkHref,
+      linkLabel: selection.linkLabel,
+      footer: messages.emailQuestions ?? '',
+    }),
   })
 
   if (!result.ok) {
@@ -112,6 +100,7 @@ export async function POST(request: Request) {
       email,
       planId,
       supportId,
+      buildHandoff,
       code: result.code,
       message: result.message,
     })
@@ -123,6 +112,7 @@ export async function POST(request: Request) {
     email,
     planId,
     supportId,
+    buildHandoff,
     locale,
     id: result.id,
     receivedAt: new Date().toISOString(),

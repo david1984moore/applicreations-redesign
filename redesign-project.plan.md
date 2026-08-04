@@ -401,7 +401,7 @@ npm run type-check  # Must pass
 npm run build       # Must succeed
 ```
 
-## Task 1.7: Vercel Deployment Setup
+## Task 1.7: Render Deployment Setup
 
 ### Step 1: Initialize Git
 
@@ -418,28 +418,18 @@ Either:
 - Create new repo on GitHub and push
 - Or keep local only for now
 
-### Step 3: Deploy to Vercel
+### Step 3: Deploy to Render
 
-```bash
-# Install Vercel CLI globally
-npm i -g vercel
+1. Go to the Render dashboard → New → Web Service
+2. Connect the Git repo
+3. Configure:
+   - Runtime: Node
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm run start`
+4. Add environment variables (e.g. `RESEND_API_KEY`, `EMAIL_FROM`)
+5. Deploy
 
-# Login to Vercel
-vercel login
-
-# Deploy to preview
-vercel
-```
-
-Follow prompts:
-- Set up and deploy? Yes
-- Which scope? Your account
-- Link to existing project? No
-- Project name? applicreations-redesign
-- Directory? ./
-- Override settings? No
-
-**Result**: Vercel will provide preview URL (e.g., `applicreations-redesign-xyz.vercel.app`)
+**Result**: Render provides a service URL (e.g., `applicreations-redesign.onrender.com`)
 
 ## Phase 1 Completion Checklist
 
@@ -462,7 +452,7 @@ Before moving to Phase 2, verify ALL:
 - [ ] Reduced motion preference respected
 - [ ] Git repository initialized
 - [ ] First commit made
-- [ ] Vercel preview deployment successful
+- [ ] Render preview/staging deployment successful
 - [ ] README.md documents setup
 - [ ] DECISIONS.md created for tracking
 - [ ] All project documentation files copied

@@ -176,8 +176,6 @@ export type Dictionary = {
     howItWorks: string
     threeSteps: string
     beginIntrospect: string
-    goingLiveLabel: string
-    goingLive: string
     steps: {
       introspect: { label: string; detail: string }
       livePreview: { label: string; detail: string }
@@ -241,6 +239,9 @@ export type Dictionary = {
     imageAltScreen: string
     pausedHint: string
     playHint: string
+    openPhotoZoom: string
+    closePhotoZoom: string
+    zoomHint: string
     visit: string
     wantLikeThis: string
     startOrEmail: string
@@ -249,23 +250,49 @@ export type Dictionary = {
   }
   pricingPage: {
     title: string
-    websitePackagesAria: string
+    websitePlansHeading: string
     oneTime: string
     whatsIncluded: string
     highlightsAria: string
     exampleTotal: string
     hostingSupportHeading: string
-    hostingSupportIntro: string
-    /** Segmented hosting intro — allows inline links to Render docs */
+    /** “When we host… on” + linked “Render” */
     hostingIntroBeforeRender: string
     hostingIntroRender: string
-    hostingIntroAfterRender: string
-    hostingIntroServices: string
-    hostingIntroIncluding: string
-    hostingIntroStaticSites: string
-    hostingIntroAnd: string
-    hostingIntroWebServices: string
-    hostingIntroEnd: string
+    goingLiveHeading: string
+    goingLiveLead: string
+    goingLiveStep1Title: string
+    goingLiveStep1Bullet: string
+    goingLiveStep2Title: string
+    goingLiveStep2BulletPlan: string
+    goingLiveStep2CancellationHeading: string
+    goingLiveStep2BulletCancel: string
+    goingLiveStep2CancelItems: string[]
+    goingLiveStep2CancelClosing: string
+    goingLiveStep2HandoffHeading: string
+    goingLiveStep2HandoffBodyBefore: string
+    goingLiveStep2HandoffFee: string
+    goingLiveStep2HandoffBodyAfterFee: string
+    goingLiveStep2HandoffFeeCovers: string
+    goingLiveStep2HandoffRenderAccount: string
+    goingLiveStep2HandoffSoleResponsibility: string
+    goingLiveStep2HandoffExample: string
+    buildHandoffName: string
+    buildHandoffSelect: string
+    buildHandoffSelected: string
+    buildHandoffRemove: string
+    buildHandoffConfirmTitle: string
+    buildHandoffConfirmBody: string
+    buildHandoffConfirmYes: string
+    buildHandoffConfirmNo: string
+    buildHandoffConfirmCloseAria: string
+    buildHandoffResponsibilityHeading: string
+    selectionEmailBuildHandoff: string
+    selectionEmailBuildHandoffNote: string
+    goingLiveStep3Title: string
+    goingLiveNeedDomainBefore: string
+    goingLiveNeedDomainNamecheap: string
+    goingLiveNeedDomainAfter: string
     notSureHeading: string
     notSureBody: string
     introspectCta: string
@@ -290,8 +317,16 @@ export type Dictionary = {
     remainingFiftyWithAmount: string
     isDue: string
     alongWithFirstMonthly: string
+    alongWithBuildHandoff: string
     monthlySupportStartsWith: string
     monthlySupportStartsWithout: string
+    paymentScheduleHeading: string
+    scheduleProjectStart: string
+    scheduleProjectStartDetail: string
+    scheduleGoLive: string
+    scheduleGoLivePackageOnly: string
+    scheduleGoLiveWithSupport: string
+    scheduleGoLiveWithHandoff: string
     continueToIntrospect: string
     emailThisSelection: string
     yourEmailSrOnly: string
@@ -318,6 +353,10 @@ export type Dictionary = {
     selectionEmailZeroDue: string
     selectionEmailEstimateNote: string
     selectionEmailSignoff: string
+    selectionEmailWebsiteLabel: string
+    selectionEmailMonthlyLabel: string
+    selectionEmailTotalLabel: string
+    selectionEmailLinkLabel: string
   }
   introspectUi: Record<IntrospectUiKey, string>
   introspectValidation: {
@@ -426,8 +465,44 @@ export type Dictionary = {
     }
   >
   api: {
-    contact: Record<string, string>
-    introspect: Record<string, string>
-    pricingSelection: Record<string, string>
+    contact: {
+      invalidBody: string
+      nameRequired: string
+      emailInvalid: string
+      phoneInvalid: string
+      messageEmpty: string
+      messageShort: string
+      success: string
+      clientEmailSubject: string
+      clientEmailTitle: string
+      clientEmailIntro: string
+      clientEmailSignoff: string
+      clientEmailLinkLabel: string
+      emailQuestions: string
+      ownerEmailSubject: string
+    }
+    introspect: {
+      invalidBody: string
+      nameRequired: string
+      emailInvalid: string
+      phoneInvalid: string
+      success: string
+      clientEmailSubject: string
+      clientEmailTitle: string
+      clientEmailIntro: string
+      clientEmailRecommendedLabel: string
+      clientEmailPricingLabel: string
+      clientEmailSignoff: string
+      clientEmailLinkLabel: string
+      emailQuestions: string
+      ownerEmailSubject: string
+    }
+    pricingSelection: {
+      invalidBody: string
+      emailInvalid: string
+      selectionRequired: string
+      success: string
+      emailQuestions: string
+    }
   }
 }

@@ -5,6 +5,8 @@ export type SendEmailInput = {
   subject: string
   text: string
   html?: string
+  /** Override default EMAIL_REPLY_TO / solutions@ when set (e.g. client email for owner notify). */
+  replyTo?: string
 }
 
 export type SendEmailResult =
@@ -14,7 +16,7 @@ export type SendEmailResult =
 function getFromAddress(): string {
   return (
     process.env.EMAIL_FROM?.trim() ||
-    'Applicreations <hello@applicreations.com>'
+    'Applicreations <solutions@applicreations.com>'
   )
 }
 
@@ -34,7 +36,10 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   const { data, error } = await resend.emails.send({
     from: getFromAddress(),
     to: input.to,
-    replyTo: process.env.EMAIL_REPLY_TO?.trim() || 'hello@applicreations.com',
+    replyTo:
+      input.replyTo?.trim() ||
+      process.env.EMAIL_REPLY_TO?.trim() ||
+      'solutions@applicreations.com',
     subject: input.subject,
     text: input.text,
     html: input.html ?? `<pre style="font-family:ui-sans-serif,system-ui,sans-serif;white-space:pre-wrap;line-height:1.5">${escapeHtml(input.text)}</pre>`,

@@ -12,6 +12,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { LOCALE_COOKIE, type Locale } from '@/lib/i18n/config'
 import type { Dictionary } from '@/lib/i18n/dictionaries/types'
 import { interpolate } from '@/lib/i18n/interpolate'
+import { beginLocaleTransition } from '@/lib/i18n/locale-transition'
 import { swapLocalePath, withLocale } from '@/lib/i18n/paths'
 
 type LocaleContextValue = {
@@ -67,7 +68,11 @@ export function LocaleProvider({
       }
       const search = typeof window !== 'undefined' ? window.location.search : ''
       const hash = typeof window !== 'undefined' ? window.location.hash : ''
-      router.push(swapLocalePath(pathname || '/', search, hash, next))
+      beginLocaleTransition()
+      // replace: no history ping-pong; soft nav + scroll restore avoids jump/flash
+      router.replace(swapLocalePath(pathname || '/', search, hash, next), {
+        scroll: false,
+      })
     },
     [locale, pathname, router]
   )

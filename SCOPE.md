@@ -95,15 +95,15 @@ npm run build # Must succeed
 ### Preview Deployment Strategy
 
 **Before Launch Day:**
-- **Option 1:** Deploy to Vercel with custom preview URL (e.g., `redesign.applicreations.com` or `new.applicreations.com`)
+- **Option 1:** Deploy a Render staging/preview service with a custom URL (e.g., `redesign.applicreations.com` or `new.applicreations.com`)
 - **Option 2:** Keep it completely local until launch day
-- **Option 3:** Deploy to Vercel's auto-generated URL (e.g., `applicreations-redesign-xyz.vercel.app`)
+- **Option 3:** Use Render’s auto-generated service URL for review
 
 **Launch Day:**
 - Test final build locally one last time
-- Deploy to Vercel production (can point to `www.applicreations.com` after DNS update)
-- Update DNS to point to new Vercel deployment
-- Keep old Render site as backup (don't delete for 30 days)
+- Deploy to Render production (can point to `www.applicreations.com` after DNS update)
+- Update DNS to point to the new Render service
+- Keep the previous Render service as backup (don't delete for 30 days)
 
 ### Development Environment Checklist
 
@@ -176,7 +176,7 @@ They **feel** the quality immediately, even if they can't articulate why.
 | **Framework** | Next.js 14 App Router | ✓ |
 | **Styling** | Tailwind CSS + CSS Custom Properties | ✓ |
 | **Animation** | Framer Motion (when needed) | ✓ |
-| **Deployment** | Vercel Edge | ✓ |
+| **Deployment** | Render | ✓ |
 | **Browser support** | Last 2 versions (Chrome, Safari, Firefox, Edge) | ✓ |
 | **Mobile-first** | Design for 375px width first, scale up | ✓ |
 
@@ -543,25 +543,24 @@ export const scaleOnHover = {
 
 ---
 
-#### 1.7: Vercel Deployment Setup (Preview Only)
+#### 1.7: Render Preview Deployment Setup (Optional)
 
-**Task:** Connect project to Vercel for preview deployments
+**Task:** Deploy a Render staging/preview service for review
 
 **Subtasks:**
-- [ ] 1.7.1: Create Vercel account (if needed)
-- [ ] 1.7.2: Install Vercel CLI: `npm i -g vercel`
-- [ ] 1.7.3: Link project: `vercel link`
-- [ ] 1.7.4: Deploy to preview URL: `vercel`
-- [ ] 1.7.5: Verify preview URL works
-- [ ] 1.7.6: Document preview URL for client review
+- [ ] 1.7.1: Create a Render Web Service for this Next.js app (or skip and stay local)
+- [ ] 1.7.2: Connect the Git repo and set build/start commands for Next.js
+- [ ] 1.7.3: Set required environment variables in the Render dashboard
+- [ ] 1.7.4: Deploy the preview/staging service
+- [ ] 1.7.5: Verify the Render URL works
+- [ ] 1.7.6: Document the preview URL for client review
 
-**IMPORTANT:** This is for **preview only**. Your live site on Render is **not touched**.
+**IMPORTANT:** This is for **preview only**. Your live Render production site is **not touched**.
 
 **Definition of Done:**
-- ✓ Vercel account created
-- ✓ Project deployed to preview URL
-- ✓ Preview URL accessible
-- ✓ Live site still running on Render (unchanged)
+- ✓ Preview/staging deploy available on Render (or consciously deferred to local-only)
+- ✓ Preview URL accessible when using Render staging
+- ✓ Live production site still running on Render (unchanged)
 
 ---
 
@@ -579,7 +578,7 @@ export const scaleOnHover = {
 - [ ] ✓ Framer Motion animations working
 - [ ] ✓ Reduced motion preference respected
 - [ ] ✓ Git repository initialized with commits
-- [ ] ✓ Vercel preview deployment working
+- [ ] ✓ Render preview/staging deploy working (or local-only until launch)
 - [ ] ✓ Documentation complete (README, .cursorrules)
 
 **Validation Commands:**
@@ -1019,7 +1018,7 @@ const SERVICES = [
     shortDescription: "Fast, secure hosting with automatic updates and daily backups.",
     fullDescription: "We handle the technical stuff: hosting, security, updates, backups. Your site stays fast, secure, and up-to-date. Includes SSL certificate and 99.9% uptime guarantee.",
     included: [
-      "Fast edge hosting (Vercel)",
+      "Fast, reliable hosting",
       "SSL certificate (HTTPS)",
       "Daily automated backups",
       "Security monitoring",
@@ -2305,7 +2304,7 @@ export async function POST(request: Request) {
 **Privacy Policy** (`/privacy`):
 - What data you collect (email, name, etc.)
 - How you use data (responding to inquiries, newsletters)
-- Third-party services (Google Analytics, Vercel Analytics, etc.)
+- Third-party services (Google Analytics, privacy-focused analytics, etc.)
 - Cookie usage (if any)
 - User rights (access, deletion requests)
 - Contact for privacy questions
@@ -2592,8 +2591,8 @@ const structuredData = {
 **Task:** Configure analytics and monitoring
 
 **Subtasks:**
-- [ ] 4.4.1: Set up Vercel Analytics
-- [ ] 4.4.2: Set up Vercel Speed Insights
+- [ ] 4.4.1: Set up privacy-focused analytics (e.g. Plausible or Simple Analytics)
+- [ ] 4.4.2: Configure Core Web Vitals / performance monitoring
 - [ ] 4.4.3: Configure goal tracking (form submissions)
 - [ ] 4.4.4: Set up error monitoring (Sentry, optional)
 - [ ] 4.4.5: Create analytics dashboard
@@ -2608,8 +2607,8 @@ const structuredData = {
 - **Sources:** Where traffic comes from (Google, direct, referrals)
 
 **Definition of Done:**
-- ✓ Vercel Analytics installed
-- ✓ Speed Insights enabled
+- ✓ Analytics installed
+- ✓ Performance monitoring enabled
 - ✓ Form submission goals tracked
 - ✓ Error monitoring configured (optional)
 - ✓ Can view real-time analytics data
@@ -2648,7 +2647,7 @@ const structuredData = {
 - [ ] ✓ Social share images set (Open Graph)
 - [ ] ✓ SSL certificate valid (HTTPS working)
 - [ ] ✓ DNS configured correctly
-- [ ] ✓ Vercel domain set up
+- [ ] ✓ Production domain set up on Render
 - [ ] ✓ Monitoring/alerting enabled
 - [ ] ✓ Backup of old site taken
 - [ ] ✓ Rollback plan documented and tested
@@ -2662,7 +2661,7 @@ const structuredData = {
 If something goes wrong after launch:
 
 1. Revert DNS to point to old site (takes 5-60 minutes)
-2. Investigate issue on Vercel deployment
+2. Investigate issue on the Render deployment
 3. Fix in development environment
 4. Re-deploy when confirmed working
 5. Update DNS again to point to new site
@@ -2710,11 +2709,11 @@ Backup: Old site remains on Render for 30 days post-launch
 **Task:** Watch for critical issues immediately after launch
 
 **Checklist:**
-- [ ] Monitor Core Web Vitals (Vercel dashboard)
+- [ ] Monitor Core Web Vitals (Render/analytics dashboard)
 - [ ] Check for JavaScript errors (browser console, Sentry)
 - [ ] Monitor form submissions (ensure they're working)
 - [ ] Check analytics (traffic coming through correctly)
-- [ ] Monitor uptime (Vercel should be 99.9%+)
+- [ ] Monitor uptime (target 99.9%+)
 - [ ] Watch for user feedback/complaints
 
 **Action Items:**
@@ -3376,17 +3375,16 @@ npx @axe-core/cli http://localhost:3000
    - Only you can see this
    - Make changes here first
 
-2. **Preview** (Vercel preview URL)
-   - Auto-generated URL for each git branch
-   - Share with client for review
-   - e.g., `applicreations-redesign-xyz.vercel.app`
+2. **Preview** (optional Render staging service)
+   - Shared URL for client review
+   - Can be a subdomain (e.g. `redesign.applicreations.com`) or Render’s service URL
 
 3. **Staging** (optional - `staging.applicreations.com`)
-   - Near-identical to production
+   - Near-identical to production on Render
    - Final testing before launch
    - Not required if preview sufficient
 
-4. **Production** (`www.applicreations.com`)
+4. **Production** (`www.applicreations.com` on Render)
    - Live site
    - Only deploy here after all testing passes
 
@@ -3421,10 +3419,10 @@ git checkout redesign-2025
 git add .
 git commit -m "feat: add hero section with dual CTAs"
 
-# Push to remote (triggers Vercel preview deploy)
+# Push to remote (triggers Render auto-deploy if connected)
 git push origin redesign-2025
 
-# Share preview URL with client
+# Share the Render preview/staging URL with the client
 ```
 
 **Commit Message Convention:**
@@ -3441,35 +3439,35 @@ chore: tooling, config updates
 
 ---
 
-### Vercel Deployment
+### Render Deployment
 
 **Setup:**
 
 1. **Connect Git Repository:**
-   - Go to Vercel dashboard
-   - Click "Add New Project"
+   - Go to the Render dashboard
+   - Create a new Web Service
    - Connect your GitHub/GitLab repo
-   - Select `redesign-2025` branch for auto-deploy
+   - Select the branch used for auto-deploy (e.g. `redesign-2025` for preview, `main` for production)
 
 2. **Configure Project:**
-   - Framework Preset: Next.js
+   - Runtime: Node
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm run start` (or `npx next start`)
    - Root Directory: `./` (default)
-   - Build Command: `npm run build` (default)
-   - Output Directory: `.next` (default)
-   - Install Command: `npm install` (default)
 
 3. **Environment Variables:**
-   - Add any API keys (email service, analytics, etc.)
+   - Add any API keys in the Render dashboard (email service, analytics, etc.)
    - Never commit secrets to git
+   - Set `EMAIL_FROM=Applicreations <solutions@applicreations.com>` for Resend
 
 4. **Domain Configuration:**
-   - Don't configure custom domain until launch day
-   - Use auto-generated preview URL for now
+   - Don't point the live custom domain until launch day
+   - Use Render’s service URL (or a staging subdomain) for review
 
 **Deployment Triggers:**
 
-- **Push to branch** → Auto-deploys to preview URL
-- **Merge to main** → Auto-deploys to production (only do this on launch day)
+- **Push to connected branch** → Auto-deploys on Render
+- **Merge to main** → Deploy production (only do this on launch day)
 
 **Deployment Checklist:**
 
@@ -3480,8 +3478,8 @@ Before each deployment:
 - [ ] ✓ Test on localhost one last time
 - [ ] ✓ Commit with descriptive message
 - [ ] ✓ Push to branch
-- [ ] ✓ Wait for Vercel build (watch build logs)
-- [ ] ✓ Test preview URL
+- [ ] ✓ Wait for Render build (watch deploy logs)
+- [ ] ✓ Test preview/staging URL
 - [ ] ✓ Share with client for approval
 
 ---
@@ -3506,20 +3504,19 @@ Before each deployment:
    git push origin main
    ```
 
-2. **Configure Vercel Domain:**
-   - Go to Vercel project settings
+2. **Configure Render Domain:**
+   - Go to Render service settings → Custom Domains
    - Add custom domain: `www.applicreations.com`
-   - Vercel will provide DNS instructions
+   - Follow Render’s DNS instructions
 
 3. **Update DNS:**
    - Go to your domain registrar (GoDaddy, Namecheap, etc.)
-   - Update A record to point to Vercel's IP
-   - Update CNAME record (if using)
+   - Update records as Render specifies (usually CNAME or A)
    - Changes propagate in 5 minutes - 24 hours (usually <1 hour)
 
 4. **Monitor:**
    - Watch analytics for traffic
-   - Check for errors (Vercel dashboard, Sentry if configured)
+   - Check for errors (Render logs, Sentry if configured)
    - Test forms still working
    - Test on multiple devices/browsers
 
@@ -3532,7 +3529,7 @@ Before each deployment:
 - [ ] ✓ Monitor analytics every few hours
 - [ ] ✓ Check for errors/console logs
 - [ ] ✓ Respond to any user feedback
-- [ ] ✓ Keep old site backup for 30 days (don't delete)
+- [ ] ✓ Keep previous Render service/backup for 30 days (don't delete)
 
 ---
 
@@ -3542,13 +3539,13 @@ Before each deployment:
 
 1. **Immediate (Emergency) Rollback:**
    ```bash
-   # Revert DNS to old site
-   # (Go to domain registrar, change A record back)
+   # Revert DNS to previous Render service / old site
+   # (Go to domain registrar, change records back)
    # Takes 5-60 minutes to propagate
    ```
 
 2. **Identify Issue:**
-   - Check Vercel build logs
+   - Check Render deploy/runtime logs
    - Check browser console for errors
    - Check form submissions
    - Check analytics
@@ -3572,11 +3569,11 @@ Before each deployment:
    ```
 
 4. **Re-Launch:**
-   - Update DNS again to point to Vercel
+   - Update DNS again to point to the current Render production service
    - Monitor closely
 
 **Backup Strategy:**
-- Keep old site live on Render for 30 days
+- Keep the previous Render service live for 30 days
 - Don't delete old files until new site proven stable
 - Document any issues encountered for future reference
 
