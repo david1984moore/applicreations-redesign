@@ -32,6 +32,7 @@ import { useLocale } from '@/components/i18n/LocaleProvider'
 import { BrandNavLinks } from '@/components/ui/BrandNavLinks'
 import { isLocaleTransition } from '@/lib/i18n/locale-transition'
 import { getBasicSupport, getPlans } from '@/lib/pricing'
+import { cn } from '@/lib/utils'
 
 /**
  * How it works entrance (delays in ms/s as noted):
@@ -175,28 +176,41 @@ export function LandingBoard() {
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                  {plans.map((plan) => (
-                    <Link
-                      key={plan.id}
-                      href={plan.ctaHref}
-                      className="relative flex flex-col items-center text-center rounded-lg px-3 py-2.5 bg-paper/70 border border-gray-200 cursor-pointer outline-none transition-colors hover:border-gray-300 hover:bg-paper focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
-                    >
-                      <h3 className="font-display text-lg font-bold text-gray-900 leading-none tracking-tight">
-                        {plan.name}
-                      </h3>
-                      <p className="mt-1.5 font-display text-2xl font-bold text-primary-600 leading-none tabular-nums">
-                        {plan.priceLabel}
-                      </p>
+                  {plans.map((plan) => {
+                    const isPopular = plan.id === 'basic'
+                    return (
+                      <Link
+                        key={plan.id}
+                        href={plan.ctaHref}
+                        className={cn(
+                          'relative flex flex-col items-center text-center rounded-lg px-3 py-2.5 cursor-pointer outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2',
+                          isPopular
+                            ? 'border border-primary-400/70 bg-[oklch(96%_0.025_230)] hover:border-primary-500/80 hover:bg-[oklch(95%_0.03_230)] shadow-[inset_0_0_0_1px_oklch(70%_0.06_230/0.12)]'
+                            : 'border border-gray-200 bg-paper/70 hover:border-gray-300 hover:bg-paper'
+                        )}
+                      >
+                        {isPopular ? (
+                          <span className="mb-1 text-[0.625rem] font-bold tracking-[0.14em] uppercase text-primary-600 leading-none">
+                            {dict.landing.popularPackage}
+                          </span>
+                        ) : null}
+                        <h3 className="font-display text-lg font-bold text-gray-900 leading-none tracking-tight">
+                          {plan.name}
+                        </h3>
+                        <p className="mt-1.5 font-display text-2xl font-bold text-primary-600 leading-none tabular-nums">
+                          {plan.priceLabel}
+                        </p>
 
-                      <p className="mt-1.5 text-[0.8125rem] text-gray-700 leading-snug flex-1">
-                        {plan.shortSummary}
-                      </p>
+                        <p className="mt-1.5 text-[0.8125rem] text-gray-700 leading-snug flex-1">
+                          {plan.shortSummary}
+                        </p>
 
-                      <span className="mt-1.5 text-[0.9375rem] font-bold tracking-tight text-gray-900">
-                        {plan.cta} →
-                      </span>
-                    </Link>
-                  ))}
+                        <span className="mt-1.5 text-[0.9375rem] font-bold tracking-tight text-gray-900">
+                          {plan.cta} →
+                        </span>
+                      </Link>
+                    )
+                  })}
                 </div>
 
                 <p className="mt-2 text-sm text-center">

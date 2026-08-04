@@ -37,6 +37,7 @@ export const es: Dictionary = {
     tagline: 'Aplicaciones y sitios web a la medida',
     websitePricing: 'Precios de sitios web',
     fullPricingDetails: 'Ver todos los precios →',
+    popularPackage: 'Popular',
     hostingFrom: '*Hosting y soporte desde {price}',
     howItWorks: 'Cómo funciona',
     threeSteps: 'Tres pasos simples para tener tu sitio web…',

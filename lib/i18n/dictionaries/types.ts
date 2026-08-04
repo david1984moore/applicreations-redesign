@@ -172,6 +172,8 @@ export type Dictionary = {
     tagline: string
     websitePricing: string
     fullPricingDetails: string
+    /** Landing-only badge on the Basic package card */
+    popularPackage: string
     hostingFrom: string
     howItWorks: string
     threeSteps: string
