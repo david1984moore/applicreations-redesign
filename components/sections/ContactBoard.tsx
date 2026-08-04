@@ -218,7 +218,7 @@ export function ContactBoard() {
                   size="sm"
                   isLoading={status === 'submitting'}
                   disabled={status === 'submitting'}
-                  className="w-full sm:w-auto !bg-[oklch(58%_0.14_310)] hover:!bg-[oklch(50%_0.14_310)] focus-visible:!ring-[oklch(58%_0.14_310)/0.35]"
+                  className="w-full sm:w-auto !bg-[oklch(68%_0.15_230)] hover:!bg-[oklch(62%_0.14_230)] focus-visible:!ring-[oklch(68%_0.15_230)/0.45] lg:!bg-[oklch(58%_0.14_310)] lg:hover:!bg-[oklch(50%_0.14_310)] lg:focus-visible:!ring-[oklch(58%_0.14_310)/0.35]"
                 >
                   {c.sendMessage}
                 </Button>
