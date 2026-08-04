@@ -253,6 +253,8 @@ export type Dictionary = {
     websitePlansHeading: string
     oneTime: string
     whatsIncluded: string
+    /** Footnote in expanded “what’s included” for website package prices */
+    startingPriceNote: string
     highlightsAria: string
     exampleTotal: string
     hostingSupportHeading: string
@@ -407,10 +409,10 @@ export type Dictionary = {
     >
     recommend: {
       choseOnPricing: string
-      business: string
-      proInteractive: string
-      proPages: string
-      proPhotos: string
+      pro: string
+      businessInteractive: string
+      businessPages: string
+      businessPhotos: string
       basic: string
     }
     emailLabels: Record<string, string>
@@ -437,7 +439,7 @@ export type Dictionary = {
       }
     >
     website: Record<
-      'basic' | 'pro' | 'business',
+      'starter' | 'basic' | 'pro' | 'business',
       {
         name: string
         shortSummary: string

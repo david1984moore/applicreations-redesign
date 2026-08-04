@@ -4,7 +4,7 @@ import { withLocale } from '@/lib/i18n/paths'
 import type { Locale } from '@/lib/i18n/config'
 import { defaultLocale } from '@/lib/i18n/config'
 
-export type PlanId = 'basic' | 'pro' | 'business'
+export type PlanId = 'starter' | 'basic' | 'pro' | 'business'
 
 export interface PlanDetailSegment {
   /** Optional line above this segment’s items (e.g. “Common examples:”) */
@@ -63,13 +63,15 @@ const WEBSITE_META: Record<
   PlanId,
   { price: number; priceLabel: string; highlighted?: boolean; hash: string }
 > = {
-  basic: { price: 600, priceLabel: '$600', highlighted: false, hash: 'basic' },
-  pro: { price: 1000, priceLabel: '$1,000', highlighted: true, hash: 'pro' },
-  business: {
-    price: 3000,
-    priceLabel: '$3,000',
+  starter: { price: 295, priceLabel: '$295', highlighted: false, hash: 'starter' },
+  basic: { price: 595, priceLabel: '$595', highlighted: false, hash: 'basic' },
+  // Names flipped vs prior tiers: Business = former Pro (mid), Pro = former Business (top)
+  business: { price: 849, priceLabel: '$849', highlighted: true, hash: 'business' },
+  pro: {
+    price: 2200,
+    priceLabel: '$2,200',
     highlighted: false,
-    hash: 'business',
+    hash: 'pro',
   },
 }
 
@@ -107,7 +109,7 @@ export const BASIC_SUPPORT = getBasicSupport(en)
 export const BASIC_HOSTING = BASIC_SUPPORT
 
 export function getPlans(dict: Dictionary = en, locale: Locale = defaultLocale): PricingPlan[] {
-  return (['basic', 'pro', 'business'] as const).map((id) => {
+  return (['starter', 'basic', 'business', 'pro'] as const).map((id) => {
     const meta = WEBSITE_META[id]
     const copy = dict.plans.website[id]
     return {
@@ -191,17 +193,23 @@ export function planIdToSiteDepth(
   planId: PlanId
 ): 'basics' | 'a-few-pages' | 'fuller-site' {
   switch (planId) {
+    case 'starter':
     case 'basic':
       return 'basics'
-    case 'pro':
-      return 'a-few-pages'
     case 'business':
+      return 'a-few-pages'
+    case 'pro':
       return 'fuller-site'
   }
 }
 
 export function isPlanId(value: unknown): value is PlanId {
-  return value === 'basic' || value === 'pro' || value === 'business'
+  return (
+    value === 'starter' ||
+    value === 'basic' ||
+    value === 'pro' ||
+    value === 'business'
+  )
 }
 
 export function isSupportPlanId(value: unknown): value is SupportPlanId {

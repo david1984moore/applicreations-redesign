@@ -34,7 +34,7 @@ import {
 } from '@/lib/pricing'
 import { cn } from '@/lib/utils'
 
-const PLAN_IDS = new Set<string>(['basic', 'pro', 'business'])
+const PLAN_IDS = new Set<string>(['starter', 'basic', 'pro', 'business'])
 const SUPPORT_IDS = new Set<string>(['support', 'ultimate'])
 
 const introLinkClass =
@@ -182,9 +182,9 @@ export default function PricingPageClient() {
                           : 'border border-gray-200 bg-white/85'
                       )}
                     >
-                      <div className="px-3 py-2.5 sm:px-4 sm:py-2">
+                      <div className="px-3 py-2 sm:px-4">
                         {/* Mobile: stacked so Choose never overlaps price; desktop grid unchanged */}
-                        <div className="flex flex-col gap-2.5 lg:hidden">
+                        <div className="flex flex-col gap-1.5 lg:hidden">
                           <div className="flex items-baseline justify-between gap-3">
                             <h2 className="font-display text-2xl text-gray-900 leading-none min-w-0">
                               {plan.name}
@@ -288,6 +288,15 @@ export default function PricingPageClient() {
                           >
                             <div className="mx-3.5 sm:mx-4 mb-3.5 sm:mb-4 rounded-lg border border-primary-100/80 bg-white px-3.5 py-3 sm:px-4 sm:py-3.5">
                               <DetailGroups groups={plan.details} />
+                              <p className="mt-3.5 border-t border-gray-100 pt-3 text-xs text-gray-500 leading-snug">
+                                <span
+                                  className="mr-1 font-semibold text-primary-700"
+                                  aria-hidden
+                                >
+                                  *
+                                </span>
+                                {p.startingPriceNote}
+                              </p>
                             </div>
                           </motion.div>
                         ) : null}
@@ -341,9 +350,9 @@ export default function PricingPageClient() {
                           : 'border border-gray-200 bg-white/85'
                       )}
                     >
-                      <div className="px-3 py-2.5 sm:px-4 sm:py-2">
+                      <div className="px-3 py-2 sm:px-4">
                         {/* Mobile: stacked so Choose never overlaps price; desktop grid unchanged */}
-                        <div className="flex flex-col gap-2.5 lg:hidden">
+                        <div className="flex flex-col gap-1.5 lg:hidden">
                           <div className="flex items-baseline justify-between gap-3">
                             <h3 className="font-display text-2xl text-gray-900 leading-none min-w-0">
                               {plan.name}
@@ -651,10 +660,10 @@ export default function PricingPageClient() {
                     <p className="mt-2.5 rounded-lg border border-[oklch(90%_0.02_195)] bg-white/80 px-2.5 py-1.5 text-sm text-gray-600 leading-snug">
                       <LinkRenderText
                         text={t(p.goingLiveStep2HandoffExample, {
-                          planName: plans[0]?.name ?? 'Basic',
-                          planPrice: plans[0]?.priceLabel ?? '$600',
+                          planName: plans[0]?.name ?? 'Starter',
+                          planPrice: plans[0]?.priceLabel ?? '$295',
                           handoffFee: p.goingLiveStep2HandoffFee,
-                          total: `$${((plans[0]?.price ?? 600) + BUILD_HANDOFF_FEE).toLocaleString('en-US')}`,
+                          total: `$${((plans[0]?.price ?? 295) + BUILD_HANDOFF_FEE).toLocaleString('en-US')}`,
                         })}
                       />
                     </p>

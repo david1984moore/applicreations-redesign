@@ -385,17 +385,17 @@ export function recommendPlan(
     )
 
   if (answers.siteDepth === 'fuller-site') {
-    return { planId: 'business', reason: r.business }
+    return { planId: 'pro', reason: r.pro }
   }
 
   if (answers.siteDepth === 'a-few-pages' || wantsInteractive || answers.needsPhotosTaken === 'yes') {
     return {
-      planId: 'pro',
+      planId: 'business',
       reason: wantsInteractive
-        ? r.proInteractive
+        ? r.businessInteractive
         : answers.siteDepth === 'a-few-pages'
-          ? r.proPages
-          : r.proPhotos,
+          ? r.businessPages
+          : r.businessPhotos,
     }
   }
 

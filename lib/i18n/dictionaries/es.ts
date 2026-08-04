@@ -127,6 +127,8 @@ export const es: Dictionary = {
     websitePlansHeading: 'Sitio web',
     oneTime: 'pago único',
     whatsIncluded: 'Qué incluye',
+    startingPriceNote:
+      'Este precio es un punto de partida. Después de que tu sitio web esté construido y en línea, cualquier trabajo, función o servicio adicional que solicites será estimado por Applicreations antes de comenzar ese trabajo.',
     highlightsAria: 'Puntos destacados de {name}',
     exampleTotal:
       'Ejemplo: Basic ({basicPrice}) + Basic Support ({supportPrice}) — elige ambos para ver un total simple.',
@@ -514,13 +516,13 @@ export const es: Dictionary = {
     },
     recommend: {
       choseOnPricing: 'El cliente ya eligió {name} en la página de precios.',
-      business:
-        'Describiste un sitio más completo con piezas interactivas o herramientas a la medida — eso normalmente encaja con Business.',
-      proInteractive:
-        'Quieres que los visitantes hagan más que leer (pedir, reservar, cuentas, etc.) — eso normalmente encaja con Pro.',
-      proPages: 'Un sitio de varias páginas normalmente encaja con Pro.',
-      proPhotos:
-        'Un sitio que necesita fotos nuevas o más espacio para crecer normalmente encaja con Pro.',
+      pro:
+        'Describiste un sitio más completo con piezas interactivas o herramientas a la medida — eso normalmente encaja con Pro.',
+      businessInteractive:
+        'Quieres que los visitantes hagan más que leer (pedir, reservar, cuentas, etc.) — eso normalmente encaja con Business.',
+      businessPages: 'Un sitio de varias páginas normalmente encaja con Business.',
+      businessPhotos:
+        'Un sitio que necesita fotos nuevas o más espacio para crecer normalmente encaja con Business.',
       basic: 'Un sitio claro de una página con lo esencial normalmente encaja con Basic.',
     },
     emailLabels: {
@@ -684,6 +686,75 @@ export const es: Dictionary = {
       },
     },
     website: {
+      starter: {
+        name: 'Starter',
+        shortSummary: 'Un sitio sencillo de una página',
+        summary:
+          'Un sitio de una página, sin extras — pensado para portafolios de artistas, un proyecto paralelo o un evento comunitario. No está hecho para citas, pedidos ni para manejar un negocio completo en línea.',
+        details: [
+          {
+            id: 'how-big',
+            label: 'Qué tan grande es el sitio',
+            items: ['Una página — todo lo que los visitantes necesitan en un solo lugar'],
+          },
+          {
+            id: 'looks-like',
+            label: 'Cómo se ve',
+            items: [],
+            segments: [
+              {
+                items: [
+                  'Únicamente diseñado para ti, no una plantilla de rellenar espacios',
+                  'Diseño responsivo — tu sitio funciona en diferentes tamaños de pantalla (móvil, tablet, laptop, etc.)',
+                  'Not included: Cualquier plugin — herramientas para citas, pedidos y complementos similares',
+                ],
+              },
+              {
+                lead: 'Ejemplos comunes:',
+                items: [
+                  'Sección acerca de',
+                  'Portafolio',
+                  'Galería',
+                  'Servicios',
+                  'Productos ofrecidos',
+                  'Formulario de contacto',
+                ],
+              },
+            ],
+          },
+          {
+            id: 'customers-use',
+            label: 'Cómo lo usan tus clientes',
+            lead: 'Ejemplos comunes:',
+            items: [
+              'Explorar',
+              'Galería',
+              'Encontrarte en redes sociales',
+              'Contactarte',
+            ],
+          },
+          {
+            id: 'you-manage',
+            label: 'Cómo lo administras',
+            items: [
+              'Te enseñamos a usar tu sitio y nos aseguramos de que te sientas cómodo con él antes de dar el proyecto por terminado',
+            ],
+          },
+          {
+            id: 'help-after',
+            label: 'Ayuda después de publicarlo',
+            items: [
+              'Not included: Hosting — este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $50 al mes para poner tu sitio en línea y mantenerlo funcionando',
+            ],
+          },
+        ],
+        features: [
+          '1 página',
+          'Presencia en línea sin extras',
+          'Portafolio, galería o info de evento',
+        ],
+        cta: 'Más',
+      },
       basic: {
         name: 'Basic',
         shortSummary: 'Un sitio web de una página',
@@ -750,8 +821,9 @@ export const es: Dictionary = {
         ],
         cta: 'Más',
       },
-      pro: {
-        name: 'Pro',
+      // Former Pro tier — renamed Business
+      business: {
+        name: 'Business',
         shortSummary: 'Hasta cinco páginas',
         summary:
           'Un sitio web más completo — hasta cinco páginas — con espacio para inicios de sesión, pedidos en línea y una página que usas para hacer actualizaciones.',
@@ -823,8 +895,9 @@ export const es: Dictionary = {
         ],
         cta: 'Más',
       },
-      business: {
-        name: 'Business',
+      // Former Business tier — renamed Pro
+      pro: {
+        name: 'Pro',
         shortSummary: 'Herramientas a la medida de cómo trabajas',
         summary:
           'Herramientas a la medida construidas alrededor de cómo trabaja realmente tu equipo — más que un sitio web normal.',
@@ -844,7 +917,7 @@ export const es: Dictionary = {
             segments: [
               {
                 items: [
-                  'Todo lo de Basic y Pro que siga aplicando',
+                  'Todo lo de Basic y Business que siga aplicando',
                   'Pantallas construidas alrededor de cómo trabaja tu equipo día a día',
                 ],
               },
@@ -910,7 +983,7 @@ export const es: Dictionary = {
         'Sistema simple de pedidos por correo',
         'Bilingüe EN / ES',
       ],
-      packageLabel: 'Paquete Pro · $1,000',
+      packageLabel: 'Paquete Business · $849',
       galleryLabels: {
         '/images/caramel-jo/homepage.jpg': 'Página de inicio',
         '/images/caramel-jo/menu.jpg': 'Menú',
@@ -928,7 +1001,7 @@ export const es: Dictionary = {
         'Bilingüe EN / ES',
         'Llamadas, direcciones y enlaces a redes',
       ],
-      packageLabel: 'Paquete Pro · $1,000',
+      packageLabel: 'Paquete Business · $849',
       galleryLabels: {
         '/images/mi-gente/homepage.jpg': 'Página de inicio',
         '/images/mi-gente/menu.jpg': 'Menú y horarios',

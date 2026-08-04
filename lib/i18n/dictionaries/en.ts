@@ -127,6 +127,8 @@ export const en: Dictionary = {
     websitePlansHeading: 'Website',
     oneTime: 'one-time',
     whatsIncluded: "What's included",
+    startingPriceNote:
+      'This price is a starting point. After your website is built and live, any additional work, features, or services you request will be estimated by Applicreations before that work begins.',
     highlightsAria: '{name} highlights',
     exampleTotal:
       'Example: Basic ({basicPrice}) + Basic Support ({supportPrice}) — choose both to see a simple total.',
@@ -496,12 +498,13 @@ export const en: Dictionary = {
     },
     recommend: {
       choseOnPricing: 'Client already chose {name} on the pricing page.',
-      business:
-        'You described a fuller site with interactive pieces or custom tools — that usually fits Business.',
-      proInteractive:
-        'You want visitors to do more than read (order, book, accounts, etc.) — that usually fits Pro.',
-      proPages: 'A multi-page site usually fits Pro.',
-      proPhotos: 'A site that needs new photos or more room to grow usually fits Pro.',
+      pro:
+        'You described a fuller site with interactive pieces or custom tools — that usually fits Pro.',
+      businessInteractive:
+        'You want visitors to do more than read (order, book, accounts, etc.) — that usually fits Business.',
+      businessPages: 'A multi-page site usually fits Business.',
+      businessPhotos:
+        'A site that needs new photos or more room to grow usually fits Business.',
       basic: 'A clear one-page site with the essentials usually fits Basic.',
     },
     emailLabels: {
@@ -664,6 +667,75 @@ export const en: Dictionary = {
       },
     },
     website: {
+      starter: {
+        name: 'Starter',
+        shortSummary: 'A simple one-page site',
+        summary:
+          'A bare-bones one-page site — made for artist portfolios, a side hustle, or a community event. Not built for booking, ordering, or running a full business online.',
+        details: [
+          {
+            id: 'how-big',
+            label: 'How big is the site',
+            items: ['One page — everything visitors need in one place'],
+          },
+          {
+            id: 'looks-like',
+            label: 'What it looks like',
+            items: [],
+            segments: [
+              {
+                items: [
+                  'Uniquely designed for you, not a fill-in-the-blank template',
+                  'Responsive design — your site works on different screen sizes (mobile, tablet, laptop, etc.)',
+                  'Not included: Any plugins — appointment setting tools, ordering tools, and similar add-ons',
+                ],
+              },
+              {
+                lead: 'Common examples:',
+                items: [
+                  'About section',
+                  'Portfolio',
+                  'Gallery',
+                  'Services',
+                  'Products offered',
+                  'Contact form',
+                ],
+              },
+            ],
+          },
+          {
+            id: 'customers-use',
+            label: 'How customers use it',
+            lead: 'Common examples:',
+            items: [
+              'Browse',
+              'Gallery',
+              'Find you on social media',
+              'Contact you',
+            ],
+          },
+          {
+            id: 'you-manage',
+            label: 'How you manage it',
+            items: [
+              'We walk you through how to use your site and make sure you’re comfortable with it before we call the project finished',
+            ],
+          },
+          {
+            id: 'help-after',
+            label: 'Help after it’s live',
+            items: [
+              'Not included: Hosting — this package is the build only. Add a [hosting plan](#hosting-support) from $50/month to get your site online and keep it running',
+            ],
+          },
+        ],
+        features: [
+          '1 page',
+          'Bare-bones online presence',
+          'Portfolio, gallery, or event info',
+        ],
+        cta: 'More',
+      },
       basic: {
         name: 'Basic',
         shortSummary: 'A one-page website',
@@ -726,8 +798,9 @@ export const en: Dictionary = {
         features: ['1 page', 'Built for your business', 'Contact options for your customers'],
         cta: 'More',
       },
-      pro: {
-        name: 'Pro',
+      // Former Pro tier — renamed Business
+      business: {
+        name: 'Business',
         shortSummary: 'Up to five pages',
         summary:
           'A fuller website — up to five pages — with room for logins, online orders, and a page you use to make updates.',
@@ -795,8 +868,9 @@ export const en: Dictionary = {
         features: ['Up to 5 pages', 'Logins & online orders', 'Admin page for updating'],
         cta: 'More',
       },
-      business: {
-        name: 'Business',
+      // Former Business tier — renamed Pro
+      pro: {
+        name: 'Pro',
         shortSummary: 'Custom tools built for how you work',
         summary:
           'Custom tools built around how your team actually works — more than a normal website.',
@@ -816,7 +890,7 @@ export const en: Dictionary = {
             segments: [
               {
                 items: [
-                  'Everything from Basic and Pro that still applies',
+                  'Everything from Basic and Business that still applies',
                   'Screens built around how your team works day to day',
                 ],
               },
@@ -882,7 +956,7 @@ export const en: Dictionary = {
         'Simple email ordering system',
         'Bilingual EN / ES',
       ],
-      packageLabel: 'Pro package · $1,000',
+      packageLabel: 'Business package · $849',
       galleryLabels: {
         '/images/caramel-jo/homepage.jpg': 'Homepage',
         '/images/caramel-jo/menu.jpg': 'Menu',
@@ -900,7 +974,7 @@ export const en: Dictionary = {
         'Bilingual EN / ES',
         'Call, directions & social links',
       ],
-      packageLabel: 'Pro package · $1,000',
+      packageLabel: 'Business package · $849',
       galleryLabels: {
         '/images/mi-gente/homepage.jpg': 'Homepage',
         '/images/mi-gente/menu.jpg': 'Menu & hours',

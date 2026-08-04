@@ -7,9 +7,9 @@ import { cn } from '@/lib/utils'
 const FADE_DURATION = 1.15
 const HOLD_MS = 4500
 const SLIDE_OFFSET = 28
-/** 3 lines of text-base / leading-snug — keeps cards from resizing on rotate */
+/** 2 lines of text-sm / leading-snug — tighter cards; still fits EN/ES highlights */
 const RESERVED_LINES_MOBILE =
-  'max-lg:min-h-[calc(1rem*1.375*3)] max-lg:h-[calc(1rem*1.375*3)]'
+  'max-lg:min-h-[calc(0.875rem*1.375*2)] max-lg:h-[calc(0.875rem*1.375*2)]'
 
 type PlanFeatureRotatorProps = {
   messages: string[]
@@ -62,7 +62,7 @@ export function PlanFeatureRotator({
         className={cn('min-w-0 w-full', RESERVED_LINES_MOBILE, className)}
         aria-label={ariaLabel}
       >
-        <p className="text-base text-gray-600 leading-snug max-lg:line-clamp-3">
+        <p className="text-sm lg:text-base text-gray-600 leading-snug max-lg:line-clamp-2">
           {messages[0]}
         </p>
       </div>
@@ -91,7 +91,7 @@ export function PlanFeatureRotator({
             duration: FADE_DURATION,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="text-base text-gray-600 leading-snug max-lg:absolute max-lg:inset-x-0 max-lg:top-0 max-lg:line-clamp-3"
+          className="text-sm lg:text-base text-gray-600 leading-snug max-lg:absolute max-lg:inset-x-0 max-lg:top-0 max-lg:line-clamp-2"
         >
           {message}
         </motion.p>
