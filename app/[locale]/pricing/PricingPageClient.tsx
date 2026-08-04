@@ -182,10 +182,54 @@ export default function PricingPageClient() {
                           : 'border border-gray-200 bg-white/85'
                       )}
                     >
-                      <div className="px-3 py-2 sm:px-4">
-                        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-4">
+                      <div className="px-3 py-2.5 sm:px-4 sm:py-2">
+                        {/* Mobile: stacked so Choose never overlaps price; desktop grid unchanged */}
+                        <div className="flex flex-col gap-2.5 lg:hidden">
+                          <div className="flex items-baseline justify-between gap-3">
+                            <h2 className="font-display text-2xl text-gray-900 leading-none min-w-0">
+                              {plan.name}
+                            </h2>
+                            <p className="font-display text-xl text-primary-700 whitespace-nowrap leading-none shrink-0">
+                              {plan.priceLabel}
+                              <span className="ml-1.5 text-xs font-sans font-normal text-gray-500">
+                                {p.oneTime}
+                              </span>
+                            </p>
+                          </div>
+                          <PlanFeatureRotator
+                            messages={plan.features}
+                            ariaLabel={t(p.highlightsAria, { name: plan.name })}
+                            startDelay={index * 900}
+                          />
+                          <div className="flex items-center justify-between gap-3">
+                            <button
+                              type="button"
+                              onClick={() => togglePlanOpen(plan.id)}
+                              aria-expanded={isOpen}
+                              aria-controls={`${plan.id}-details`}
+                              className="cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-primary-700 hover:text-primary-800"
+                            >
+                              {p.whatsIncluded}
+                              <ChevronDown
+                                className={cn(
+                                  'h-3.5 w-3.5 transition-transform duration-200',
+                                  isOpen && 'rotate-180'
+                                )}
+                                aria-hidden
+                              />
+                            </button>
+                            <SelectToggle
+                              selected={isSelected}
+                              label={plan.name}
+                              onToggle={() => selectPlan(plan.id)}
+                              className="w-auto px-2.5 py-1 text-sm leading-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-4">
                           <div className="min-w-0 justify-self-start">
-                            <h2 className="font-display text-2xl sm:text-[1.75rem] text-gray-900 leading-none">
+                            <h2 className="font-display text-[1.75rem] text-gray-900 leading-none">
                               {plan.name}
                             </h2>
                             <div className="mt-1 w-full">
@@ -197,7 +241,7 @@ export default function PricingPageClient() {
                             </div>
                           </div>
                           <div className="justify-self-center text-center px-2">
-                            <p className="font-display text-xl sm:text-2xl text-primary-700 whitespace-nowrap leading-none">
+                            <p className="font-display text-2xl text-primary-700 whitespace-nowrap leading-none">
                               {plan.priceLabel}
                               <span className="ml-1.5 text-xs font-sans font-normal text-gray-500">
                                 {p.oneTime}
@@ -297,10 +341,51 @@ export default function PricingPageClient() {
                           : 'border border-gray-200 bg-white/85'
                       )}
                     >
-                      <div className="px-3 py-2 sm:px-4">
-                        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-4">
+                      <div className="px-3 py-2.5 sm:px-4 sm:py-2">
+                        {/* Mobile: stacked so Choose never overlaps price; desktop grid unchanged */}
+                        <div className="flex flex-col gap-2.5 lg:hidden">
+                          <div className="flex items-baseline justify-between gap-3">
+                            <h3 className="font-display text-2xl text-gray-900 leading-none min-w-0">
+                              {plan.name}
+                            </h3>
+                            <p className="font-display text-xl text-primary-700 whitespace-nowrap leading-none shrink-0">
+                              {plan.priceLabel}
+                            </p>
+                          </div>
+                          <PlanFeatureRotator
+                            messages={plan.features}
+                            ariaLabel={t(p.highlightsAria, { name: plan.name })}
+                            startDelay={(plans.length + index) * 900}
+                          />
+                          <div className="flex items-center justify-between gap-3">
+                            <button
+                              type="button"
+                              onClick={() => toggleSupportOpen(plan.id)}
+                              aria-expanded={isOpen}
+                              aria-controls={`${plan.id}-details`}
+                              className="cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-primary-700 hover:text-primary-800"
+                            >
+                              {p.whatsIncluded}
+                              <ChevronDown
+                                className={cn(
+                                  'h-3.5 w-3.5 transition-transform duration-200',
+                                  isOpen && 'rotate-180'
+                                )}
+                                aria-hidden
+                              />
+                            </button>
+                            <SelectToggle
+                              selected={isSelected}
+                              label={plan.name}
+                              onToggle={() => selectSupport(plan.id)}
+                              className="w-auto px-2.5 py-1 text-sm leading-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-4">
                           <div className="min-w-0 justify-self-start">
-                            <h3 className="font-display text-2xl sm:text-[1.75rem] text-gray-900 leading-none">
+                            <h3 className="font-display text-[1.75rem] text-gray-900 leading-none">
                               {plan.name}
                             </h3>
                             <div className="mt-1 w-full">
@@ -312,7 +397,7 @@ export default function PricingPageClient() {
                             </div>
                           </div>
                           <div className="justify-self-center text-center px-2">
-                            <p className="font-display text-xl sm:text-2xl text-primary-700 whitespace-nowrap leading-none">
+                            <p className="font-display text-2xl text-primary-700 whitespace-nowrap leading-none">
                               {plan.priceLabel}
                             </p>
                           </div>

@@ -7,6 +7,9 @@ import { cn } from '@/lib/utils'
 const FADE_DURATION = 1.15
 const HOLD_MS = 4500
 const SLIDE_OFFSET = 28
+/** 3 lines of text-base / leading-snug — keeps cards from resizing on rotate */
+const RESERVED_LINES_MOBILE =
+  'max-lg:min-h-[calc(1rem*1.375*3)] max-lg:h-[calc(1rem*1.375*3)]'
 
 type PlanFeatureRotatorProps = {
   messages: string[]
@@ -55,8 +58,11 @@ export function PlanFeatureRotator({
 
   if (prefersReducedMotion || messages.length === 1) {
     return (
-      <div className={cn('min-w-0 w-full', className)} aria-label={ariaLabel}>
-        <p className="text-base text-gray-600 leading-snug">
+      <div
+        className={cn('min-w-0 w-full', RESERVED_LINES_MOBILE, className)}
+        aria-label={ariaLabel}
+      >
+        <p className="text-base text-gray-600 leading-snug max-lg:line-clamp-3">
           {messages[0]}
         </p>
       </div>
@@ -67,7 +73,11 @@ export function PlanFeatureRotator({
 
   return (
     <div
-      className={cn('relative min-w-0 w-full overflow-x-hidden', className)}
+      className={cn(
+        'relative min-w-0 w-full overflow-x-hidden max-lg:overflow-hidden',
+        RESERVED_LINES_MOBILE,
+        className
+      )}
       aria-label={ariaLabel}
       aria-live="polite"
     >
@@ -81,7 +91,7 @@ export function PlanFeatureRotator({
             duration: FADE_DURATION,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="text-base text-gray-600 leading-snug"
+          className="text-base text-gray-600 leading-snug max-lg:absolute max-lg:inset-x-0 max-lg:top-0 max-lg:line-clamp-3"
         >
           {message}
         </motion.p>

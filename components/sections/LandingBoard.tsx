@@ -134,9 +134,9 @@ export function LandingBoard() {
                       {dict.brand.name}
                     </h1>
 
-                    {/* Tagline — min-height keeps EN/ES from shifting the nav when Spanish wraps */}
+                    {/* Tagline — phone: starts right of brand center; wraps in remaining width so ES isn’t clipped. sm+/lg unchanged. */}
                     <div className="w-0 min-w-full flex justify-start min-h-[2.35rem] sm:min-h-0">
-                      <p className="mt-2.5 ml-[3.25rem] sm:ml-[5.75rem] lg:ml-[8.5rem] max-w-[calc(100%-3.25rem)] sm:max-w-[calc(100%-5.75rem)] lg:max-w-none lg:w-max text-[0.8125rem] sm:text-base font-[700] italic tracking-[0.08em] sm:tracking-[0.12em] uppercase text-primary-600 leading-snug text-left lg:whitespace-nowrap">
+                      <p className="mt-2.5 ml-[calc(50%+1rem)] max-w-[calc(50%-1.25rem)] sm:ml-[5.75rem] sm:max-w-[calc(100%-5.75rem)] lg:ml-[8.5rem] lg:max-w-none lg:w-max text-[0.8125rem] sm:text-base font-[700] italic tracking-[0.05em] sm:tracking-[0.12em] uppercase text-primary-600 leading-snug text-left lg:whitespace-nowrap">
                         {dict.landing.tagline}
                       </p>
                     </div>
@@ -146,7 +146,7 @@ export function LandingBoard() {
                 {/* Nav — own band under brand; never collapses into the name */}
                 <nav
                   aria-label="Primary"
-                  className="flex flex-1 items-center justify-center gap-2.5 sm:gap-5 lg:gap-8 min-h-[5rem] lg:min-h-[5.75rem] mt-6 lg:mt-6 py-2 w-0 min-w-full"
+                  className="flex flex-1 items-center justify-center gap-3.5 sm:gap-5 lg:gap-8 min-h-[5rem] lg:min-h-[5.75rem] mt-6 lg:mt-6 py-2 w-0 min-w-full"
                 >
                   <BrandNavLinks variant="landing" />
                 </nav>
@@ -274,12 +274,12 @@ export function LandingBoard() {
                           className="flex gap-2.5 lg:gap-2 max-w-none lg:max-w-[min(100%,22rem)] max-lg:!ml-0"
                           style={{ marginLeft: `min(${index * 34}%, calc(100% - 22rem))` }}
                         >
-                          <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[oklch(78%_0.07_198/0.45)] bg-[oklch(55%_0.10_198)] text-white lg:h-8 lg:w-8 lg:border-[oklch(78%_0.08_310/0.45)] lg:bg-[oklch(58%_0.14_310)]">
+                          <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[oklch(84%_0.12_205/0.55)] bg-[oklch(60%_0.13_205)] text-white lg:h-8 lg:w-8 lg:border-[oklch(78%_0.08_310/0.45)] lg:bg-[oklch(58%_0.14_310)]">
                             <step.Icon className="h-5 w-5 lg:h-4 lg:w-4" strokeWidth={1.6} aria-hidden />
                           </span>
                           <div className="min-w-0">
                             <p className="flex items-baseline gap-1.5 text-base font-semibold text-white leading-tight lg:text-[0.9375rem]">
-                              <span className="font-display text-2xl font-semibold tabular-nums text-[oklch(86%_0.07_198)] leading-none lg:text-xl lg:text-[oklch(86%_0.08_310)]">
+                              <span className="font-display text-2xl font-semibold tabular-nums text-[oklch(88%_0.12_205)] leading-none lg:text-xl lg:text-[oklch(86%_0.08_310)]">
                                 {step.n}
                               </span>
                               {step.label}
@@ -313,7 +313,7 @@ export function LandingBoard() {
                     >
                       <Link
                         href={href('/introspect')}
-                        className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl px-8 py-3 font-sans text-base font-bold tracking-tight shadow-[0_12px_28px_-12px_rgba(0,0,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 bg-[oklch(50%_0.09_198)] text-white ring-1 ring-white/25 focus-visible:ring-white/60 focus-visible:ring-offset-primary-700 lg:bg-[oklch(98%_0.012_85)] lg:text-primary-800 lg:ring-white/70"
+                        className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl px-8 py-3 font-sans text-base font-bold tracking-tight shadow-[0_12px_28px_-12px_rgba(0,0,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 bg-[oklch(58%_0.13_205)] text-white ring-1 ring-white/30 focus-visible:ring-white/60 focus-visible:ring-offset-primary-700 lg:bg-[oklch(98%_0.012_85)] lg:text-primary-800 lg:ring-white/70"
                       >
                         <span className="relative inline-flex items-center gap-3">
                           <span className="relative z-0 hidden h-2 w-2 shrink-0 lg:block" aria-hidden>
