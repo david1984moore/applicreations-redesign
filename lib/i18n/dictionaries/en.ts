@@ -506,7 +506,7 @@ export const en: Dictionary = {
       businessPages: 'A multi-page site usually fits Business.',
       businessPhotos:
         'A site that needs new photos or more room to grow usually fits Business.',
-      basic: 'A clear one-page site with the essentials usually fits Basic.',
+      basic: 'A clear site of one or two pages with the essentials usually fits Basic.',
     },
     emailLabels: {
       recommendedPackage: 'Recommended package',
@@ -740,13 +740,13 @@ export const en: Dictionary = {
       },
       basic: {
         name: 'Basic',
-        shortSummary: 'A one-page website',
-        summary: 'A clear one-page website built around your business.',
+        shortSummary: '1–2 pages',
+        summary: 'A clear website of one or two pages built around your business.',
         details: [
           {
             id: 'how-big',
             label: 'How big is the site',
-            items: ['One page — everything visitors need in one place'],
+            items: ['1–2 pages — everything visitors need without a big multi-page site'],
           },
           {
             id: 'looks-like',
@@ -798,21 +798,21 @@ export const en: Dictionary = {
             ],
           },
         ],
-        features: ['1 page', 'Built for your business', 'Contact options for your customers'],
+        features: ['1–2 pages', 'Built for your business', 'Contact options for your customers'],
         cta: 'More',
       },
       // Former Pro tier — renamed Business
       business: {
         name: 'Business',
-        shortSummary: 'Up to five pages',
+        shortSummary: '3–5 pages',
         summary:
-          'A fuller website — up to five pages — with room for logins, online orders, and a page you use to make updates.',
+          'A fuller website — 3 to 5 pages — with room for logins, online orders, and a page you use to make updates.',
         details: [
           {
             id: 'how-big',
             label: 'How big is the site',
             items: [
-              'Up to 5 pages',
+              '3–5 pages',
               'Example pages: Home, About, Menu or Services, Gallery, Contact',
             ],
           },
@@ -869,7 +869,7 @@ export const en: Dictionary = {
             ],
           },
         ],
-        features: ['Up to 5 pages', 'Logins & online orders', 'Admin page for updating'],
+        features: ['3–5 pages', 'Logins & online orders', 'Admin page for updating'],
         cta: 'More',
       },
       // Former Business tier — renamed Pro

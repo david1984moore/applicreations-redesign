@@ -524,7 +524,7 @@ export const es: Dictionary = {
       businessPages: 'Un sitio de varias páginas normalmente encaja con Business.',
       businessPhotos:
         'Un sitio que necesita fotos nuevas o más espacio para crecer normalmente encaja con Business.',
-      basic: 'Un sitio claro de una página con lo esencial normalmente encaja con Basic.',
+      basic: 'Un sitio claro de una o dos páginas con lo esencial normalmente encaja con Basic.',
     },
     emailLabels: {
       recommendedPackage: 'Paquete recomendado',
@@ -759,13 +759,13 @@ export const es: Dictionary = {
       },
       basic: {
         name: 'Basic',
-        shortSummary: 'Un sitio web de una página',
-        summary: 'Un sitio web claro de una página, construido alrededor de tu negocio.',
+        shortSummary: '1–2 páginas',
+        summary: 'Un sitio web claro de una o dos páginas, construido alrededor de tu negocio.',
         details: [
           {
             id: 'how-big',
             label: 'Qué tan grande es el sitio',
-            items: ['Una página — todo lo que los visitantes necesitan en un solo lugar'],
+            items: ['1–2 páginas — todo lo que los visitantes necesitan sin un sitio grande de varias páginas'],
           },
           {
             id: 'looks-like',
@@ -818,7 +818,7 @@ export const es: Dictionary = {
           },
         ],
         features: [
-          '1 página',
+          '1–2 páginas',
           'Construido para tu negocio',
           'Opciones de contacto para tus clientes',
         ],
@@ -827,15 +827,15 @@ export const es: Dictionary = {
       // Former Pro tier — renamed Business
       business: {
         name: 'Business',
-        shortSummary: 'Hasta cinco páginas',
+        shortSummary: '3–5 páginas',
         summary:
-          'Un sitio web más completo — hasta cinco páginas — con espacio para inicios de sesión, pedidos en línea y una página que usas para hacer actualizaciones.',
+          'Un sitio web más completo — de 3 a 5 páginas — con espacio para inicios de sesión, pedidos en línea y una página que usas para hacer actualizaciones.',
         details: [
           {
             id: 'how-big',
             label: 'Qué tan grande es el sitio',
             items: [
-              'Hasta 5 páginas',
+              '3–5 páginas',
               'Páginas de ejemplo: Inicio, Nosotros, Menú o Servicios, Galería, Contacto',
             ],
           },
@@ -893,7 +893,7 @@ export const es: Dictionary = {
           },
         ],
         features: [
-          'Hasta 5 páginas',
+          '3–5 páginas',
           'Inicios de sesión y pedidos en línea',
           'Página de administración para actualizar',
         ],
