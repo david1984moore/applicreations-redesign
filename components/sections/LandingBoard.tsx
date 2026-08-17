@@ -7,28 +7,25 @@
  * Approved composition (do not restyle without explicit ask):
  * - Left: brand (logo overhang on name) + icon nav (Introspect / Projects / Contact)
  * - Right: simplified website pricing (name → price → short summary → More)
- * - Bottom: How it works — staggered steps 1→2→3, Begin Introspect right
+ * - Bottom: How it works cinematic stage (fills remaining viewport on desktop)
  *
  * Locked spacing recipe (desktop):
  * - Shell: lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)]
  * - Block gap (pricing ↔ How it works): lg:gap-[clamp(0.75rem,2vh,1.25rem)]
- * - How it works: py-[0.625rem]/sm:py-[0.75rem], inner gap-[0.625rem], step gap-[0.375rem]
- * - Step stagger: marginLeft min(index * 34%, calc(100% - 20rem))
- * - Begin Introspect CTA (LOCKED): dot + label centered as one unit (inline-flex gap-3),
- *   spectrum-flip grows/shrinks from the dot (200ms ease-in-out), purple→white dot on fill,
- *   sans bold label, top-[32%] on the right of How it works
  * - Prefer explicit rem / clamp values — project --spacing-* tokens are 2× Tailwind defaults
  *
- * How it works entrance (Aug 3, 2026):
- * - Compact card (title + tagline) → pause → expand → steps slide L→R overlapping → CTA last
- * - Step detail type ≥ nav labels (0.9375rem+). Skip on locale swap / reduced motion.
+ * How it works cinema (Aug 16, 2026):
+ * - No card — stage sits on the tan page wash, expands to remaining height
+ * - Intro (How it works / 3 / tagline) → three sequential steps with cartoon sketches
+ *   → lasting finale (title + Begin Introspect)
+ * - Skip cinema on locale swap / reduced motion.
  */
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ClipboardList, Eye, Globe2 } from 'lucide-react'
 import { useLocale } from '@/components/i18n/LocaleProvider'
+import { HowItWorksStage } from '@/components/landing/hiw/HowItWorksStage'
 import { BrandNavLinks } from '@/components/ui/BrandNavLinks'
 import { isLocaleTransition } from '@/lib/i18n/locale-transition'
 import { getBasicSupport, getPlans } from '@/lib/pricing'
@@ -36,21 +33,15 @@ import { cn } from '@/lib/utils'
 
 /**
  * How it works entrance (delays in ms/s as noted):
- * compact hold → expand (grid) → overlapping step slides → CTA
+ * compact hold → expand stage on tan wash
  */
 const HIW_MOTION = {
   cardDelay: 0.28,
   cardDuration: 0.5,
-  /** How long the header-only card stays before expanding (ms) */
-  compactHoldMs: 1200,
+  /** How long the empty stage stays before expanding (ms) */
+  compactHoldMs: 500,
   /** Expand duration (ms) — keep in sync with duration-[850ms] below */
   expandMs: 850,
-  /** Fraction of expand elapsed before step 1 starts */
-  step1AtExpand: 0.68,
-  stepDuration: 0.55,
-  /** Next step begins before the previous finishes */
-  stepOverlap: 0.32,
-  ctaDuration: 0.45,
 } as const
 
 const easeOut = [0.22, 1, 0.36, 1] as const
@@ -64,32 +55,23 @@ export function LandingBoard() {
   const prefersReducedMotion = useReducedMotion()
   const instantHiw = skipIntro || !!prefersReducedMotion
   const [hiwExpanded, setHiwExpanded] = useState(instantHiw)
+  const [hiwReady, setHiwReady] = useState(instantHiw)
 
   useEffect(() => {
     if (instantHiw) {
       setHiwExpanded(true)
+      setHiwReady(true)
       return
     }
     const id = window.setTimeout(() => setHiwExpanded(true), HIW_MOTION.compactHoldMs)
     return () => window.clearTimeout(id)
   }, [instantHiw])
 
-  const processSteps = useMemo(
-    () =>
-      [
-        { n: '1', ...dict.landing.steps.introspect, Icon: ClipboardList },
-        { n: '2', ...dict.landing.steps.livePreview, Icon: Eye },
-        { n: '3', ...dict.landing.steps.workingWebsite, Icon: Globe2 },
-      ] as const,
-    [dict]
-  )
-
-  const stepStartDelay = (HIW_MOTION.expandMs / 1000) * HIW_MOTION.step1AtExpand
-  const stepDelays = processSteps.map(
-    (_, index) => stepStartDelay + index * HIW_MOTION.stepOverlap
-  )
-  const ctaDelay =
-    stepDelays[stepDelays.length - 1]! + HIW_MOTION.stepDuration + 0.06
+  useEffect(() => {
+    if (instantHiw || !hiwExpanded) return
+    const id = window.setTimeout(() => setHiwReady(true), HIW_MOTION.expandMs)
+    return () => window.clearTimeout(id)
+  }, [hiwExpanded, instantHiw])
 
   return (
     <section className="landing-board relative flex flex-col overflow-x-hidden lg:h-full lg:overflow-hidden">
@@ -104,7 +86,7 @@ export function LandingBoard() {
 
       {/* LOCKED shell — cream edges + centered board; vh clamps keep HIW unclipped on short laptops */}
       <div className="relative z-10 flex flex-1 flex-col max-w-[90rem] w-full mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)] min-h-0">
-        <div className="lg:my-auto flex w-full shrink-0 flex-col gap-4 lg:gap-[clamp(0.75rem,2vh,1.25rem)]">
+        <div className="flex w-full flex-col gap-4 lg:flex-1 lg:min-h-0 lg:gap-[clamp(0.75rem,2vh,1.25rem)]">
           <div className="grid shrink-0 grid-cols-1 lg:grid-cols-12 gap-x-8 xl:gap-x-10 gap-y-4">
             <div className="lg:col-span-5 flex flex-col items-center lg:items-stretch lg:pr-2">
               <div className="w-fit max-w-full flex flex-col h-full min-h-0 mx-auto lg:mx-0">
@@ -232,7 +214,7 @@ export function LandingBoard() {
             </div>
           </div>
 
-          {/* How it works — compact → expand → staggered steps → CTA */}
+          {/* How it works — expand on tan wash, no card */}
           <motion.div
             id="introspect"
             initial={instantHiw ? false : { opacity: 0, y: 14 }}
@@ -242,106 +224,21 @@ export function LandingBoard() {
               delay: HIW_MOTION.cardDelay,
               ease: easeOut,
             }}
-            className="relative shrink-0 rounded-xl border border-primary-400/40 bg-fade-next text-white px-5 py-3.5 sm:px-6 sm:py-4 lg:py-[0.75rem]"
+            className={
+              hiwExpanded
+                ? 'relative flex min-h-[20rem] flex-col overflow-hidden lg:min-h-0 lg:flex-1'
+                : 'relative flex h-11 shrink-0 flex-col overflow-hidden'
+            }
           >
-            <div className="flex flex-col">
-              <div className="flex flex-col gap-1 lg:gap-0.5">
-                <p className="text-base font-bold tracking-[0.14em] uppercase text-primary-100/90 text-center lg:text-sm">
-                  {dict.landing.howItWorks}
-                </p>
-                <h2 className="font-display text-xl sm:text-2xl lg:text-xl leading-[1.2] lg:leading-[1.15] tracking-tight text-center">
-                  {dict.landing.threeSteps}
-                </h2>
-              </div>
-
-              {/* Expand via grid-rows so compact state is truly header-only */}
-              <div
-                aria-hidden={!hiwExpanded}
-                className={
-                  hiwExpanded
-                    ? `grid grid-rows-[1fr] ${instantHiw ? '' : 'transition-[grid-template-rows] duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)]'}`
-                    : 'grid grid-rows-[0fr] pointer-events-none'
-                }
-              >
-                <div className="min-h-0 overflow-hidden">
-                  {/* pt replaces former flex gap so compact state stays header-only */}
-                  <div className="relative pr-0 sm:pr-56 overflow-x-hidden lg:overflow-visible pt-3 lg:pt-[0.625rem]">
-                    <ol className="flex flex-col gap-2.5 lg:gap-[0.5rem] text-left">
-                      {processSteps.map((step, index) => (
-                        <motion.li
-                          key={step.n}
-                          initial={false}
-                          animate={
-                            hiwExpanded || instantHiw
-                              ? { opacity: 1, x: 0 }
-                              : { opacity: 0, x: -40 }
-                          }
-                          transition={
-                            instantHiw
-                              ? { duration: 0 }
-                              : {
-                                  delay: hiwExpanded ? stepDelays[index] : 0,
-                                  duration: HIW_MOTION.stepDuration,
-                                  ease: easeOut,
-                                }
-                          }
-                          className="flex gap-2.5 lg:gap-2 max-w-none lg:max-w-[min(100%,22rem)] max-lg:!ml-0"
-                          style={{ marginLeft: `min(${index * 34}%, calc(100% - 22rem))` }}
-                        >
-                          <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[oklch(90%_0.10_230/0.55)] bg-[oklch(72%_0.15_230)] text-white lg:h-8 lg:w-8 lg:border-[oklch(78%_0.08_310/0.45)] lg:bg-[oklch(58%_0.14_310)]">
-                            <step.Icon className="h-5 w-5 lg:h-4 lg:w-4" strokeWidth={1.6} aria-hidden />
-                          </span>
-                          <div className="min-w-0">
-                            <p className="flex items-baseline gap-1.5 text-base font-semibold text-white leading-tight lg:text-[0.9375rem]">
-                              <span className="font-display text-2xl font-semibold tabular-nums text-[oklch(86%_0.12_230)] leading-none lg:text-xl lg:text-[oklch(86%_0.08_310)]">
-                                {step.n}
-                              </span>
-                              {step.label}
-                            </p>
-                            <p className="mt-1 text-base leading-snug text-primary-50/95 lg:mt-0.5 lg:text-base">
-                              {step.detail}
-                            </p>
-                          </div>
-                        </motion.li>
-                      ))}
-                    </ol>
-
-                    {/* CTA — mobile: solid shaded button; lg+: spectrum-flip from the dot */}
-                    <motion.div
-                      initial={false}
-                      animate={
-                        hiwExpanded || instantHiw
-                          ? { opacity: 1, y: 0 }
-                          : { opacity: 0, y: 10 }
-                      }
-                      transition={
-                        instantHiw
-                          ? { duration: 0 }
-                          : {
-                              delay: hiwExpanded ? ctaDelay : 0,
-                              duration: HIW_MOTION.ctaDuration,
-                              ease: easeOut,
-                            }
-                      }
-                      className="mt-4 flex justify-center sm:mt-0 sm:absolute sm:right-0 sm:top-[32%] sm:-translate-y-1/2"
-                    >
-                      <Link
-                        href={href('/introspect')}
-                        className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl px-8 py-3 font-sans text-base font-bold tracking-tight shadow-[0_12px_28px_-12px_rgba(0,0,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 bg-[oklch(68%_0.15_230)] text-white ring-1 ring-white/30 focus-visible:ring-white/60 focus-visible:ring-offset-primary-700 lg:bg-[oklch(98%_0.012_85)] lg:text-primary-800 lg:ring-white/70"
-                      >
-                        <span className="relative inline-flex items-center gap-3">
-                          <span className="relative z-0 hidden h-2 w-2 shrink-0 lg:block" aria-hidden>
-                            <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(58%_0.14_310)] shadow-[0_0_0_0_oklch(58%_0.14_310)] transition-[box-shadow] duration-200 ease-in-out group-hover:shadow-[0_0_0_220px_oklch(58%_0.14_310)] group-focus-visible:shadow-[0_0_0_220px_oklch(58%_0.14_310)]" />
-                            <span className="relative z-20 block h-2 w-2 rounded-full bg-[oklch(58%_0.14_310)] transition-colors duration-200 ease-in-out group-hover:bg-white group-focus-visible:bg-white" />
-                          </span>
-                          <span className="relative z-10 lg:transition-colors lg:duration-200 lg:ease-in-out lg:group-hover:text-white lg:group-focus-visible:text-white">
-                            {dict.landing.beginIntrospect}
-                          </span>
-                        </span>
-                      </Link>
-                    </motion.div>
-                  </div>
-                </div>
+            <div
+              className={
+                hiwExpanded
+                  ? `grid h-full min-h-[20rem] flex-1 grid-rows-[1fr] lg:min-h-0 ${instantHiw ? '' : 'transition-[grid-template-rows] duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)]'}`
+                  : 'grid min-h-[2.75rem] grid-rows-[0fr] pointer-events-none'
+              }
+            >
+              <div className="h-full min-h-0 overflow-hidden">
+                <HowItWorksStage started={hiwReady} instant={instantHiw} />
               </div>
             </div>
           </motion.div>

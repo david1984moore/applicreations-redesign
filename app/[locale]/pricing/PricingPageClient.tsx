@@ -21,6 +21,7 @@ import { IconContact } from '@/components/ui/BrandNavLinks'
 import { BuildHandoffConfirmDialog } from '@/components/pricing/BuildHandoffConfirmDialog'
 import { DetailGroups } from '@/components/pricing/DetailGroups'
 import { LinkRenderText } from '@/components/pricing/LinkRenderText'
+import { PackagePriceLabel } from '@/components/pricing/PackagePriceLabel'
 import { PlanFeatureRotator } from '@/components/pricing/PlanFeatureRotator'
 import { SelectToggle } from '@/components/pricing/SelectToggle'
 import { SelectionSummary } from '@/components/pricing/SelectionSummary'
@@ -35,10 +36,13 @@ import {
 import { cn } from '@/lib/utils'
 
 const PLAN_IDS = new Set<string>(['starter', 'basic', 'pro', 'business'])
-const SUPPORT_IDS = new Set<string>(['support', 'ultimate'])
+const SUPPORT_IDS = new Set<string>(['support', 'business-support', 'ultimate'])
 
 const introLinkClass =
   'font-medium text-primary-700 hover:text-primary-800 underline underline-offset-2'
+
+const whatsIncludedLinkClass =
+  'cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-[oklch(52%_0.16_295)] hover:text-[oklch(45%_0.15_295)]'
 
 /** Icons for cancel-takeover items — order matches dictionary arrays (en/es). */
 const CANCEL_ITEM_ICONS: LucideIcon[] = [
@@ -66,10 +70,13 @@ export default function PricingPageClient() {
   const [buildHandoffConfirmOpen, setBuildHandoffConfirmOpen] = useState(false)
   const [openPlanId, setOpenPlanId] = useState<PlanId | null>(null)
   const [openSupportId, setOpenSupportId] = useState<SupportPlanId | null>(null)
+  const [buildHandoffOpen, setBuildHandoffOpen] = useState(false)
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null
   const selectedSupport =
     supportPlans.find((p) => p.id === selectedSupportId) ?? null
+  const websiteChooseWidthLabel =
+    plans.find((p) => p.id === 'business')?.name ?? 'Business'
   const hasSelection = Boolean(
     selectedPlan || selectedSupport || selectedBuildHandoff
   )
@@ -200,6 +207,7 @@ export default function PricingPageClient() {
                             messages={plan.features}
                             ariaLabel={t(p.highlightsAria, { name: plan.name })}
                             startDelay={index * 900}
+                            visible={!isOpen}
                           />
                           <div className="flex items-center justify-between gap-3">
                             <button
@@ -207,7 +215,7 @@ export default function PricingPageClient() {
                               onClick={() => togglePlanOpen(plan.id)}
                               aria-expanded={isOpen}
                               aria-controls={`${plan.id}-details`}
-                              className="cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-primary-700 hover:text-primary-800"
+                              className={whatsIncludedLinkClass}
                             >
                               {p.whatsIncluded}
                               <ChevronDown
@@ -222,45 +230,38 @@ export default function PricingPageClient() {
                               selected={isSelected}
                               label={plan.name}
                               onToggle={() => selectPlan(plan.id)}
+                              widthLabel={websiteChooseWidthLabel}
                               className="w-auto px-2.5 py-1 text-sm leading-none"
                             />
                           </div>
                         </div>
 
-                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-4">
+                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-4">
                           <div className="min-w-0 justify-self-start">
                             <h2 className="font-display text-[1.75rem] text-gray-900 leading-none">
                               {plan.name}
                             </h2>
-                            <div className="mt-1 w-full">
-                              <PlanFeatureRotator
-                                messages={plan.features}
-                                ariaLabel={t(p.highlightsAria, { name: plan.name })}
-                                startDelay={index * 900}
-                              />
-                            </div>
+                            <PlanFeatureRotator
+                              messages={plan.features}
+                              ariaLabel={t(p.highlightsAria, { name: plan.name })}
+                              startDelay={index * 900}
+                              visible={!isOpen}
+                              className="mt-1"
+                            />
                           </div>
-                          <div className="justify-self-center text-center px-2">
+                          <div className="flex flex-col items-center justify-self-center text-center px-2">
                             <p className="font-display text-2xl text-primary-700 whitespace-nowrap leading-none">
                               {plan.priceLabel}
                               <span className="ml-1.5 text-xs font-sans font-normal text-gray-500">
                                 {p.oneTime}
                               </span>
                             </p>
-                          </div>
-                          <div className="flex flex-col items-end gap-1 justify-self-end">
-                            <SelectToggle
-                              selected={isSelected}
-                              label={plan.name}
-                              onToggle={() => selectPlan(plan.id)}
-                              className="w-auto px-2.5 py-1 text-sm leading-none"
-                            />
                             <button
                               type="button"
                               onClick={() => togglePlanOpen(plan.id)}
                               aria-expanded={isOpen}
                               aria-controls={`${plan.id}-details`}
-                              className="cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-primary-700 hover:text-primary-800"
+                              className={cn(whatsIncludedLinkClass, 'mt-1')}
                             >
                               {p.whatsIncluded}
                               <ChevronDown
@@ -271,6 +272,15 @@ export default function PricingPageClient() {
                                 aria-hidden
                               />
                             </button>
+                          </div>
+                          <div className="flex items-start justify-end justify-self-end">
+                            <SelectToggle
+                              selected={isSelected}
+                              label={plan.name}
+                              onToggle={() => selectPlan(plan.id)}
+                              widthLabel={websiteChooseWidthLabel}
+                              className="w-auto px-2.5 py-1 text-sm leading-none"
+                            />
                           </div>
                         </div>
                       </div>
@@ -287,7 +297,7 @@ export default function PricingPageClient() {
                             className="overflow-hidden"
                           >
                             <div className="mx-3.5 sm:mx-4 mb-3.5 sm:mb-4 rounded-lg border border-primary-100/80 bg-white px-3.5 py-3 sm:px-4 sm:py-3.5">
-                              <DetailGroups groups={plan.details} />
+                              <DetailGroups groups={plan.details} planId={plan.id} />
                               <p className="mt-3.5 border-t border-gray-100 pt-3 text-xs text-gray-500 leading-snug">
                                 <span
                                   className="mr-1 font-semibold text-primary-700"
@@ -358,13 +368,14 @@ export default function PricingPageClient() {
                               {plan.name}
                             </h3>
                             <p className="font-display text-xl text-primary-700 whitespace-nowrap leading-none shrink-0">
-                              {plan.priceLabel}
+                              <PackagePriceLabel label={plan.priceLabel} />
                             </p>
                           </div>
                           <PlanFeatureRotator
                             messages={plan.features}
                             ariaLabel={t(p.highlightsAria, { name: plan.name })}
                             startDelay={(plans.length + index) * 900}
+                            visible={!isOpen}
                           />
                           <div className="flex items-center justify-between gap-3">
                             <button
@@ -372,7 +383,7 @@ export default function PricingPageClient() {
                               onClick={() => toggleSupportOpen(plan.id)}
                               aria-expanded={isOpen}
                               aria-controls={`${plan.id}-details`}
-                              className="cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-primary-700 hover:text-primary-800"
+                              className={whatsIncludedLinkClass}
                             >
                               {p.whatsIncluded}
                               <ChevronDown
@@ -392,37 +403,29 @@ export default function PricingPageClient() {
                           </div>
                         </div>
 
-                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-4">
+                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-4">
                           <div className="min-w-0 justify-self-start">
                             <h3 className="font-display text-[1.75rem] text-gray-900 leading-none">
                               {plan.name}
                             </h3>
-                            <div className="mt-1 w-full">
-                              <PlanFeatureRotator
-                                messages={plan.features}
-                                ariaLabel={t(p.highlightsAria, { name: plan.name })}
-                                startDelay={(plans.length + index) * 900}
-                              />
-                            </div>
-                          </div>
-                          <div className="justify-self-center text-center px-2">
-                            <p className="font-display text-2xl text-primary-700 whitespace-nowrap leading-none">
-                              {plan.priceLabel}
-                            </p>
-                          </div>
-                          <div className="flex flex-col items-end gap-1 justify-self-end">
-                            <SelectToggle
-                              selected={isSelected}
-                              label={plan.name}
-                              onToggle={() => selectSupport(plan.id)}
-                              className="w-auto px-2.5 py-1 text-sm leading-none"
+                            <PlanFeatureRotator
+                              messages={plan.features}
+                              ariaLabel={t(p.highlightsAria, { name: plan.name })}
+                              startDelay={(plans.length + index) * 900}
+                              visible={!isOpen}
+                              className="mt-1"
                             />
+                          </div>
+                          <div className="flex flex-col items-center justify-self-center text-center px-2">
+                            <p className="font-display text-2xl text-primary-700 whitespace-nowrap leading-none">
+                              <PackagePriceLabel label={plan.priceLabel} />
+                            </p>
                             <button
                               type="button"
                               onClick={() => toggleSupportOpen(plan.id)}
                               aria-expanded={isOpen}
                               aria-controls={`${plan.id}-details`}
-                              className="cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-primary-700 hover:text-primary-800"
+                              className={cn(whatsIncludedLinkClass, 'mt-1')}
                             >
                               {p.whatsIncluded}
                               <ChevronDown
@@ -433,6 +436,14 @@ export default function PricingPageClient() {
                                 aria-hidden
                               />
                             </button>
+                          </div>
+                          <div className="flex items-start justify-end justify-self-end">
+                            <SelectToggle
+                              selected={isSelected}
+                              label={plan.name}
+                              onToggle={() => selectSupport(plan.id)}
+                              className="w-auto px-2.5 py-1 text-sm leading-none"
+                            />
                           </div>
                         </div>
                       </div>
@@ -626,84 +637,113 @@ export default function PricingPageClient() {
                       : 'border-[oklch(88%_0.035_195)] bg-[oklch(96%_0.025_195)]'
                   )}
                 >
-                  <div className="px-3.5 py-3 sm:px-4 sm:py-3.5">
-                    <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
-                      <h3 className="text-sm font-bold text-gray-900 leading-tight min-w-0">
-                        {p.goingLiveStep2HandoffHeading}
-                      </h3>
-                      <p className="shrink-0 rounded-md border border-[oklch(82%_0.05_195)] bg-white px-2.5 py-0.5 text-sm font-bold tabular-nums text-gray-900">
-                        {t(p.oneTimeSuffix, { price: p.goingLiveStep2HandoffFee })}
-                      </p>
-                    </div>
-
-                    <ul className="mt-2 list-disc pl-4 marker:text-[oklch(50%_0.08_195)] space-y-1">
-                      <li className="text-sm text-gray-700 leading-snug pl-0.5">
-                        {p.goingLiveStep2HandoffBodyBefore}{' '}
-                        <span className="font-bold text-gray-900">
-                          {p.goingLiveStep2HandoffFee}
-                        </span>
-                        <LinkRenderText text={p.goingLiveStep2HandoffBodyAfterFee} />
-                      </li>
-                      <li className="text-sm text-gray-700 leading-snug pl-0.5">
-                        <LinkRenderText text={p.goingLiveStep2HandoffFeeCovers} />
-                      </li>
-                      <li className="text-sm text-gray-700 leading-snug pl-0.5">
-                        <LinkRenderText text={p.goingLiveStep2HandoffRenderAccount} />
-                      </li>
-                      <li className="text-sm font-medium text-gray-900 leading-snug pl-0.5">
-                        <LinkRenderText
-                          text={p.goingLiveStep2HandoffSoleResponsibility}
+                  <button
+                    type="button"
+                    onClick={() => setBuildHandoffOpen((current) => !current)}
+                    aria-expanded={buildHandoffOpen}
+                    aria-controls="build-handoff-details"
+                    className="cursor-pointer w-full px-3.5 py-3 sm:px-4 sm:py-3.5 text-left"
+                  >
+                    <div className="flex items-center justify-between gap-x-3 gap-y-1.5">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <AlertTriangle
+                          className="h-4 w-4 shrink-0 text-red-600"
+                          strokeWidth={2.25}
+                          aria-hidden
                         />
-                      </li>
-                    </ul>
-
-                    <p className="mt-2.5 rounded-lg border border-[oklch(90%_0.02_195)] bg-white/80 px-2.5 py-1.5 text-sm text-gray-600 leading-snug">
-                      <LinkRenderText
-                        text={t(p.goingLiveStep2HandoffExample, {
-                          planName: plans[0]?.name ?? 'Starter',
-                          planPrice: plans[0]?.priceLabel ?? '$295',
-                          handoffFee: p.goingLiveStep2HandoffFee,
-                          total: `$${((plans[0]?.price ?? 295) + BUILD_HANDOFF_FEE).toLocaleString('en-US')}`,
-                        })}
-                      />
-                    </p>
-
-                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                      {selectedBuildHandoff ? (
-                        <>
-                          <p className="text-xs text-gray-600">
-                            {p.buildHandoffSelected}
-                          </p>
-                          <button
-                            type="button"
-                            onClick={removeBuildHandoff}
-                            className="cursor-pointer text-xs font-medium text-gray-500 underline underline-offset-2 hover:text-gray-800"
-                          >
-                            {p.buildHandoffRemove}
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={requestBuildHandoff}
-                          className="cursor-pointer text-xs text-gray-500 underline underline-offset-2 hover:text-gray-700"
-                        >
-                          {p.buildHandoffSelect}
-                        </button>
-                      )}
+                        <h3 className="text-sm font-bold text-gray-900 leading-tight min-w-0">
+                          {p.goingLiveStep2HandoffHeading}
+                        </h3>
+                      </span>
+                      <span className="shrink-0 rounded-md border border-[oklch(82%_0.05_195)] bg-white px-2.5 py-0.5 text-sm font-bold tabular-nums text-gray-900">
+                        {t(p.oneTimeSuffix, { price: p.goingLiveStep2HandoffFee })}
+                      </span>
                     </div>
-                  </div>
+                  </button>
 
-                  <div className="flex gap-2.5 border-t border-[oklch(88%_0.04_75)] bg-[oklch(98%_0.02_85)] px-3.5 py-2.5 sm:px-4">
-                    <AlertTriangle
-                      className="mt-0.5 h-4 w-4 shrink-0 text-[oklch(48%_0.12_65)]"
-                      strokeWidth={2.25}
-                      aria-hidden
-                    />
-                    <p className="text-sm font-bold text-gray-900 leading-snug">
-                      <LinkRenderText text={p.goingLiveStep2CancelClosing} />
-                    </p>
-                  </div>
+                  <AnimatePresence initial={false}>
+                    {buildHandoffOpen ? (
+                      <motion.div
+                        id="build-handoff-details"
+                        key="build-handoff-details"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-3.5 pb-3 sm:px-4 sm:pb-3.5">
+                          <ul className="list-disc pl-4 marker:text-[oklch(50%_0.08_195)] space-y-1">
+                            <li className="text-sm text-gray-700 leading-snug pl-0.5">
+                              {p.goingLiveStep2HandoffBodyBefore}{' '}
+                              <span className="font-bold text-gray-900">
+                                {p.goingLiveStep2HandoffFee}
+                              </span>
+                              <LinkRenderText text={p.goingLiveStep2HandoffBodyAfterFee} />
+                            </li>
+                            <li className="text-sm text-gray-700 leading-snug pl-0.5">
+                              <LinkRenderText text={p.goingLiveStep2HandoffFeeCovers} />
+                            </li>
+                            <li className="text-sm text-gray-700 leading-snug pl-0.5">
+                              <LinkRenderText text={p.goingLiveStep2HandoffRenderAccount} />
+                            </li>
+                            <li className="text-sm font-medium text-gray-900 leading-snug pl-0.5">
+                              <LinkRenderText
+                                text={p.goingLiveStep2HandoffSoleResponsibility}
+                              />
+                            </li>
+                          </ul>
+
+                          <p className="mt-2.5 rounded-lg border border-[oklch(90%_0.02_195)] bg-white/80 px-2.5 py-1.5 text-sm text-gray-600 leading-snug">
+                            <LinkRenderText
+                              text={t(p.goingLiveStep2HandoffExample, {
+                                planName: plans[0]?.name ?? 'Starter',
+                                planPrice: plans[0]?.priceLabel ?? '$295',
+                                handoffFee: p.goingLiveStep2HandoffFee,
+                                total: `$${((plans[0]?.price ?? 295) + BUILD_HANDOFF_FEE).toLocaleString('en-US')}`,
+                              })}
+                            />
+                          </p>
+
+                          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                            {selectedBuildHandoff ? (
+                              <>
+                                <p className="text-xs text-gray-600">
+                                  {p.buildHandoffSelected}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={removeBuildHandoff}
+                                  className="cursor-pointer text-xs font-medium text-gray-500 underline underline-offset-2 hover:text-gray-800"
+                                >
+                                  {p.buildHandoffRemove}
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={requestBuildHandoff}
+                                className="cursor-pointer text-xs text-gray-500 underline underline-offset-2 hover:text-gray-700"
+                              >
+                                {p.buildHandoffSelect}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2.5 border-t border-[oklch(88%_0.04_75)] bg-[oklch(98%_0.02_85)] px-3.5 py-2.5 sm:px-4">
+                          <AlertTriangle
+                            className="mt-0.5 h-4 w-4 shrink-0 text-[oklch(48%_0.12_65)]"
+                            strokeWidth={2.25}
+                            aria-hidden
+                          />
+                          <p className="text-sm font-bold text-gray-900 leading-snug">
+                            <LinkRenderText text={p.goingLiveStep2CancelClosing} />
+                          </p>
+                        </div>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
                 </div>
 
                 <BuildHandoffConfirmDialog

@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Check,
@@ -16,12 +17,19 @@ import {
   X,
 } from 'lucide-react'
 import { useLocale } from '@/components/i18n/LocaleProvider'
-import type { PlanDetailGroup } from '@/lib/pricing'
+import {
+  EXAMPLE_SCENES_BY_PLAN,
+  ExampleScreenRotator,
+  useRotatingIndex,
+} from '@/components/pricing/ExampleScreenRotator'
+import type { PlanDetailGroup, PlanId } from '@/lib/pricing'
 import { cn } from '@/lib/utils'
 
 interface DetailGroupsProps {
   groups: PlanDetailGroup[]
   className?: string
+  /** Website plan id — used to pick Common examples screen scenes */
+  planId?: PlanId
 }
 
 type GroupStyle = {
@@ -169,16 +177,15 @@ function DetailItemList({
       <ul className="list-disc space-y-0.5 pl-4 marker:text-gray-500">
         {items.map((item) => {
           const { kind, text } = splitItem(item)
+          const itemClass = cn(
+            'text-sm leading-snug',
+            kind === 'excluded' && 'text-gray-900 font-medium',
+            kind === 'optional' && 'text-gray-600',
+            kind === 'included' && 'text-gray-900'
+          )
+
           return (
-            <li
-              key={item}
-              className={cn(
-                'text-sm leading-snug',
-                kind === 'excluded' && 'text-gray-900 font-medium',
-                kind === 'optional' && 'text-gray-600',
-                kind === 'included' && 'text-gray-900'
-              )}
-            >
+            <li key={item} className={itemClass}>
               {kind === 'optional' ? (
                 <>
                   <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-gray-600 mr-1.5">
@@ -244,7 +251,27 @@ function DetailItemList({
   )
 }
 
-function DetailGroup({ group }: { group: PlanDetailGroup }) {
+function isExampleSegment(groupId: string, lead?: string, itemCount?: number) {
+  return groupId === 'looks-like' && Boolean(lead) && (itemCount ?? 0) > 0
+}
+
+function findLooksLikeExamples(groups: PlanDetailGroup[]) {
+  const group = groups.find((g) => g.id === 'looks-like')
+  if (!group?.segments) return null
+  return (
+    group.segments.find((segment) =>
+      isExampleSegment(group.id, segment.lead, segment.items.length)
+    ) ?? null
+  )
+}
+
+function DetailGroup({
+  group,
+  besideExamples,
+}: {
+  group: PlanDetailGroup
+  besideExamples?: ReactNode
+}) {
   const style = styleFor(group.id)
   const Icon = style.icon
   const segments =
@@ -266,26 +293,43 @@ function DetailGroup({ group }: { group: PlanDetailGroup }) {
         </p>
       </div>
       <div className="flex flex-col gap-1.5">
-        {segments.map((segment, i) => (
-          <div key={`${group.id}-seg-${i}`}>
-            {segment.lead ? (
-              <p className="mb-1 text-xs font-medium text-gray-600">{segment.lead}</p>
-            ) : null}
-            {segment.items.length > 0 ? (
+        {segments.map((segment, i) => {
+          const example = isExampleSegment(
+            group.id,
+            segment.lead,
+            segment.items.length
+          )
+          const list =
+            segment.items.length > 0 ? (
               <DetailItemList
                 items={segment.items}
                 variant={itemListVariant(group.id, segment.lead)}
               />
-            ) : null}
-          </div>
-        ))}
+            ) : null
+
+          return (
+            <div key={`${group.id}-seg-${i}`}>
+              {segment.lead ? (
+                <p className="mb-1 text-xs font-medium text-gray-600">{segment.lead}</p>
+              ) : null}
+              {example && besideExamples ? (
+                <div className="flex items-start gap-3">
+                  <div className="min-w-0">{list}</div>
+                  <div className="w-[200px] shrink-0">{besideExamples}</div>
+                </div>
+              ) : (
+                list
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
 /** Layman labels with short list items — easy to scan, not middot prose */
-export function DetailGroups({ groups, className }: DetailGroupsProps) {
+export function DetailGroups({ groups, className, planId }: DetailGroupsProps) {
   // Website: size + look | use → manage → help after
   // Support: included + fix/update | contact → who for
   const leftIds = new Set([
@@ -296,13 +340,50 @@ export function DetailGroups({ groups, className }: DetailGroupsProps) {
   ])
   const left = groups.filter((g) => leftIds.has(g.id))
   const right = groups.filter((g) => !leftIds.has(g.id))
+  const exampleSegment = findLooksLikeExamples(groups)
+  const scenes = planId ? EXAMPLE_SCENES_BY_PLAN[planId] : undefined
+  const sceneCount = Math.min(
+    scenes?.length ?? 0,
+    exampleSegment?.items.length ?? 0
+  )
+  const { index, advance, setPaused, paused } = useRotatingIndex(sceneCount)
+  const showShowcase = sceneCount > 0 && scenes != null && exampleSegment != null
+  const activeScene = showShowcase ? scenes[index] : undefined
+
+  const showcase =
+    showShowcase && activeScene ? (
+      <ExampleScreenRotator
+        scene={activeScene}
+        navIndex={index}
+        nextNavIndex={(index + 1) % sceneCount}
+        navCount={sceneCount}
+        paused={paused}
+        onNavigate={advance}
+        onHoverPause={setPaused}
+      />
+    ) : null
+
+  const leftGroups = left.map((group) => (
+    <DetailGroup
+      key={group.id}
+      group={group}
+      besideExamples={showcase}
+    />
+  ))
+  const rightGroups = right.map((group) => (
+    <DetailGroup key={group.id} group={group} />
+  ))
 
   // Avoid an empty left column pushing everything to the right
   if (left.length === 0 || right.length === 0) {
     return (
       <div className={cn('flex flex-col gap-3.5', className)}>
         {groups.map((group) => (
-          <DetailGroup key={group.id} group={group} />
+          <DetailGroup
+            key={group.id}
+            group={group}
+            besideExamples={showcase}
+          />
         ))}
       </div>
     )
@@ -315,16 +396,8 @@ export function DetailGroups({ groups, className }: DetailGroupsProps) {
         className
       )}
     >
-      <div className="flex flex-col gap-3.5">
-        {left.map((group) => (
-          <DetailGroup key={group.id} group={group} />
-        ))}
-      </div>
-      <div className="flex flex-col gap-3.5">
-        {right.map((group) => (
-          <DetailGroup key={group.id} group={group} />
-        ))}
-      </div>
+      <div className="flex flex-col gap-3.5">{leftGroups}</div>
+      <div className="flex flex-col gap-3.5">{rightGroups}</div>
     </div>
   )
 }

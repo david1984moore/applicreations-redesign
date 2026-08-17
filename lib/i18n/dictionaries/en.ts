@@ -17,7 +17,7 @@ export const en: Dictionary = {
       'A short questionnaire about your business so we can build a preview of your custom website.',
     pricingTitle: 'Pricing — Applicreations',
     pricingDescription:
-      'Simple pricing for custom websites — one-time packages plus hosting & support from $50/month.',
+      'Simple pricing for custom websites — one-time packages plus hosting & support from $19/month.',
     demosTitle: 'Our work — Applicreations',
     demosDescription:
       'Real client projects by Applicreations — see how each site looks and what went into it.',
@@ -132,8 +132,8 @@ export const en: Dictionary = {
       'This price is a starting point. After your website is built and live, any additional work, features, or services you request will be estimated by Applicreations before that work begins.',
     highlightsAria: '{name} highlights',
     exampleTotal:
-      'Example: Basic ({basicPrice}) + Basic Support ({supportPrice}) — choose both to see a simple total.',
-    hostingSupportHeading: 'Hosting & support',
+      'Example: Basic ({basicPrice}) + Basic ({supportPrice}) — choose both to see a simple total.',
+    hostingSupportHeading: 'Hosting & Support',
     hostingIntroBeforeRender: 'When we host your site, it runs on',
     hostingIntroRender: 'Render',
     goingLiveHeading: 'Going live',
@@ -141,7 +141,7 @@ export const en: Dictionary = {
     goingLiveStep1Title: 'Website package',
     goingLiveStep1Bullet:
       'Your package covers the build only — designing and delivering the site.',
-    goingLiveStep2Title: 'Hosting & support',
+    goingLiveStep2Title: 'Hosting & Support',
     goingLiveStep2BulletPlan:
       'Add a hosting & support plan so we can get your site live, keep it online, and handle technical issues.',
     goingLiveStep2CancellationHeading: 'Cancellation',
@@ -562,7 +562,7 @@ export const en: Dictionary = {
     },
     support: {
       support: {
-        name: 'Basic Support',
+        name: 'Basic',
         summary:
           'Monthly help after your site is live — we fix things and make small updates for you.',
         whyItHelps:
@@ -609,13 +609,64 @@ export const en: Dictionary = {
           'Fixes when something breaks',
           'Small updates',
           'Email help',
-          'Cancel anytime',
           'Works with any package',
         ],
-        cta: 'Ask about Basic Support',
+        cta: 'Ask about Basic',
+      },
+      'business-support': {
+        name: 'Business',
+        summary:
+          'Priority help during business hours — faster replies and extra attention when something needs more work.',
+        whyItHelps:
+          'When you need answers sooner than Basic, we put your site first during the workday so small problems don’t sit.',
+        details: [
+          {
+            id: 'whats-included',
+            label: 'What’s included',
+            items: [
+              'Everything in Basic',
+              'Priority during business hours — your requests go first',
+              'Faster replies when something goes wrong',
+              'Cancel anytime — when you cancel, you are responsible for deploying your site to the internet',
+            ],
+          },
+          {
+            id: 'fix-or-update',
+            label: 'What we fix or update',
+            items: [
+              'Pages, forms, or buttons that stop working',
+              'Small and medium updates like hours, photos, wording, or a new section',
+              'Extra help when a problem needs more work',
+            ],
+          },
+          {
+            id: 'how-contact',
+            label: 'How you contact us',
+            items: [
+              'Email',
+              'Phone',
+              'We reply first during business hours (Monday–Friday, 8 a.m.–4 p.m. EST)',
+            ],
+          },
+          {
+            id: 'who-for',
+            label: 'Who it’s for',
+            items: [
+              'Owners who want quicker help without overnight coverage',
+              'Works with any website package',
+            ],
+          },
+        ],
+        features: [
+          'Everything in Basic',
+          'Priority during business hours',
+          'Faster replies',
+          'Extra help when needed',
+        ],
+        cta: 'Ask about Business',
       },
       ultimate: {
-        name: 'Ultimate Support',
+        name: 'Ultimate',
         summary: 'Help any time of day or night when a down website means lost sales.',
         whyItHelps:
           'If your site goes down overnight and you can’t wait until morning, someone is available around the clock.',
@@ -624,7 +675,7 @@ export const en: Dictionary = {
             id: 'whats-included',
             label: 'What’s included',
             items: [
-              'Everything in Basic Support',
+              'Everything in Business',
               'Help any hour of the day or night',
               'Your site gets first attention when something goes wrong',
               'Cancel anytime — when you cancel, you are responsible for deploying your site to the internet',
@@ -658,11 +709,10 @@ export const en: Dictionary = {
           },
         ],
         features: [
-          'Everything in Basic Support',
+          'Everything in Business',
           'Help day or night',
           'First in line for fixes',
           'Faster replies',
-          'Cancel anytime',
         ],
         cta: 'Ask about Ultimate',
       },
@@ -687,9 +737,11 @@ export const en: Dictionary = {
               {
                 items: [
                   'Uniquely designed for you, not a fill-in-the-blank template',
-                  'Responsive design — your site works on different screen sizes (mobile, tablet, laptop, etc.)',
-                  'Not included: Any plugins — appointment setting tools, ordering tools, and similar add-ons',
-                  'Not included: Custom branded marketing help',
+                  'Responsive design — works on phone, tablet, and laptop',
+                  'Fast loading and secure (HTTPS included)',
+                  'Basic on-page SEO so Google can find you',
+                  'Not included: plugins, booking or ordering tools',
+                  'Not included: custom branded marketing help',
                 ],
               },
               {
@@ -720,14 +772,15 @@ export const en: Dictionary = {
             id: 'you-manage',
             label: 'How you manage it',
             items: [
-              'We walk you through how to use your site and make sure you’re comfortable with it before we call the project finished',
+              'We walk you through the finished site so you’re comfortable with it before we call the project done',
+              '1 round of revisions before launch',
             ],
           },
           {
             id: 'help-after',
             label: 'Help after it’s live',
             items: [
-              'Not included: Hosting — this package is the build only. Add a [hosting plan](#hosting-support) from $50/month to get your site online and keep it running',
+              'Not included: this package is the build only. Add a [hosting plan](#hosting-support) from $19/month to get your site online, keep it secure, and get fixes when something breaks',
             ],
           },
         ],
@@ -746,7 +799,7 @@ export const en: Dictionary = {
           {
             id: 'how-big',
             label: 'How big is the site',
-            items: ['1–2 pages — everything visitors need without a big multi-page site'],
+            items: ['1–2 pages, organized around how customers actually reach you'],
           },
           {
             id: 'looks-like',
@@ -754,20 +807,23 @@ export const en: Dictionary = {
             items: [],
             segments: [
               {
+                lead: 'Everything in Starter, plus:',
+                items: [],
+              },
+              {
                 items: [
-                  'Uniquely designed for your business, not a fill-in-the-blank template',
-                  'Responsive design — your site works on different screen sizes (mobile, tablet, laptop, etc.)',
+                  'Google Maps embed if you have a physical location',
+                  'Multiple ways to reach you — contact form, click-to-call, email link',
+                  'Basic analytics so you can see how many people are visiting',
+                  'Not included: plugins, booking or ordering tools',
                 ],
               },
               {
                 lead: 'Common examples:',
                 items: [
-                  'Origin story',
-                  'Business hours',
-                  'Services/products offered',
-                  'Gallery',
-                  'Email contact form',
-                  'Custom branded marketing help',
+                  'Home + About',
+                  'Home + Services',
+                  'Home + Menu',
                 ],
               },
             ],
@@ -777,24 +833,25 @@ export const en: Dictionary = {
             label: 'How customers use it',
             lead: 'Common examples:',
             items: [
-              'Browse the products or services you offer',
-              'Links to your social media',
-              'Set up an appointment',
-              'A contact form so people can message you',
+              'Browse',
+              'Find your hours/location',
+              'Call or message you directly',
+              'Read what you offer',
             ],
           },
           {
             id: 'you-manage',
             label: 'How you manage it',
             items: [
-              'We walk you through how to use your site and make sure you’re comfortable with it before we call the project finished',
+              'Same walkthrough as Starter',
+              '2 rounds of revisions before launch',
             ],
           },
           {
             id: 'help-after',
             label: 'Help after it’s live',
             items: [
-              'Not included: Hosting — this package is the build only. Add a [hosting plan](#hosting-support) from $50/month to get your site online and keep it running',
+              'Not included: this package is the build only. Add a [hosting plan](#hosting-support) from $19/month',
             ],
           },
         ],
@@ -811,10 +868,7 @@ export const en: Dictionary = {
           {
             id: 'how-big',
             label: 'How big is the site',
-            items: [
-              '3–5 pages',
-              'Example pages: Home, About, Menu or Services, Gallery, Contact',
-            ],
+            items: ['3–5 pages, built to grow with your business'],
           },
           {
             id: 'looks-like',
@@ -822,22 +876,24 @@ export const en: Dictionary = {
             items: [],
             segments: [
               {
+                lead: 'Everything in Basic, plus:',
+                items: [],
+              },
+              {
                 items: [
-                  'Everything Basic includes, spread across multiple pages',
-                  'Space to show more without crowding one page',
+                  'Admin page — update your own hours, photos, and services without calling us',
+                  'Local SEO setup across all pages, not just the homepage',
+                  'Not included: booking, ordering, or membership tools (see Pro)',
                 ],
               },
               {
                 lead: 'Common examples:',
                 items: [
-                  'Dedicated About page',
-                  'Full menu or services with room to explain each item',
-                  'Expanded gallery on its own page',
-                  'Separate contact page',
-                  'Customer login area',
-                  'Online ordering screens',
-                  'A private page where you make updates',
-                  'Custom branded marketing help',
+                  'Home',
+                  'About',
+                  'Services',
+                  'Gallery',
+                  'Contact',
                 ],
               },
             ],
@@ -845,27 +901,27 @@ export const en: Dictionary = {
           {
             id: 'customers-use',
             label: 'How customers use it',
+            lead: 'Common examples:',
             items: [
-              'Customer login accounts when you need them',
-              'Online ordering that matches how you sell',
-              'Request forms when people need to ask for something',
-              'Clear steps from looking around to contacting you or buying',
+              'Compare services',
+              'Check hours',
+              'See past work',
+              'Reach out with questions',
             ],
           },
           {
             id: 'you-manage',
             label: 'How you manage it',
             items: [
-              'A private page where you can change everyday things yourself',
-              'We show you how everything works before we’re done',
-              'We make sure you’re comfortable using it before we call the project finished',
+              'We walk you through the admin page so you can make small updates yourself going forward',
+              '2–3 rounds of revisions before launch',
             ],
           },
           {
             id: 'help-after',
             label: 'Help after it’s live',
             items: [
-              'Not included: Hosting — this package is the build only. Add a [hosting plan](#hosting-support) from $50/month to get your site online and keep it running',
+              'Not included: this package is the build only. Add a [hosting plan](#hosting-support) from $19/month, or Business support at $39/month if you want help beyond fixes',
             ],
           },
         ],
@@ -882,10 +938,7 @@ export const en: Dictionary = {
           {
             id: 'how-big',
             label: 'How big is the site',
-            items: [
-              '6+ pages. Bigger than a normal multi-page website, requiring complex infrastructure architecture.',
-              'Your public website plus custom tools for how your business runs',
-            ],
+            items: ['Built for your process, not a fixed page count'],
           },
           {
             id: 'looks-like',
@@ -893,21 +946,13 @@ export const en: Dictionary = {
             items: [],
             segments: [
               {
-                items: [
-                  'Everything from Basic and Business that still applies',
-                  'Screens built around how your team works day to day',
-                ],
+                lead: 'Everything in Business, plus custom tools tailored to how you actually work — for example: appointment booking, simple inventory tracking, online ordering, or a login area for members or repeat customers',
+                items: [],
               },
               {
-                lead: 'Common examples:',
                 items: [
-                  'Staff dashboard for day-to-day work',
-                  'Custom order and request workflows',
-                  'Appointment or scheduling tools',
-                  'Internal screens for your team',
-                  'Customer-facing steps tailored to how you operate',
-                  'Room to add more tools as you grow',
-                  'Custom branded marketing help',
+                  'A planning call up front to map exactly which tools you need',
+                  'Reasonable revisions throughout the build, not just at the end',
                 ],
               },
             ],
@@ -915,27 +960,26 @@ export const en: Dictionary = {
           {
             id: 'customers-use',
             label: 'How customers use it',
+            lead: 'Common examples:',
             items: [
-              'Tailored steps for customers, your staff, or both',
-              'Built around how you take orders',
-              'Built around how you set appointments',
-              'Built around how you handle requests',
+              'Book an appointment',
+              'Place an order',
+              'Log in to check status',
+              'Manage their own account details',
             ],
           },
           {
             id: 'you-manage',
             label: 'How you manage it',
             items: [
-              'Custom tools so you and your team can run the business from the site',
-              'Built so it can grow with you as needs change',
-              'We make sure you’re comfortable using it before we call the project finished',
+              'We walk you through every custom tool, not just the page content, so you know how to run it day to day',
             ],
           },
           {
             id: 'help-after',
             label: 'Help after it’s live',
             items: [
-              'Three months of Ultimate Support included after your website goes live. After that, additional support is available through a [hosting plan](#hosting-support)',
+              'Not included: this package is the build only. Add a [hosting plan](#hosting-support) from $19/month, or Ultimate support at $99/month for priority response if you’re relying on these tools daily',
             ],
           },
         ],
@@ -961,7 +1005,7 @@ export const en: Dictionary = {
         'Simple email ordering system',
         'Bilingual EN / ES',
       ],
-      packageLabel: 'Business package · $849',
+      packageLabel: 'Business package · $895',
       galleryLabels: {
         '/images/caramel-jo/homepage.jpg': 'Homepage',
         '/images/caramel-jo/menu.jpg': 'Menu',
@@ -979,7 +1023,7 @@ export const en: Dictionary = {
         'Bilingual EN / ES',
         'Call, directions & social links',
       ],
-      packageLabel: 'Business package · $849',
+      packageLabel: 'Business package · $895',
       galleryLabels: {
         '/images/mi-gente/homepage.jpg': 'Homepage',
         '/images/mi-gente/menu.jpg': 'Menu & hours',

@@ -17,7 +17,7 @@ export const es: Dictionary = {
       'Un cuestionario corto sobre tu negocio para que podamos crear una vista previa de tu sitio web a la medida.',
     pricingTitle: 'Precios — Applicreations',
     pricingDescription:
-      'Precios simples para sitios web a la medida — paquetes de pago único más hosting y soporte desde $50 al mes.',
+      'Precios simples para sitios web a la medida — paquetes de pago único más hosting y soporte desde $19 al mes.',
     demosTitle: 'Nuestro trabajo — Applicreations',
     demosDescription:
       'Proyectos reales de clientes de Applicreations — mira cómo se ve cada sitio y qué incluyó.',
@@ -132,8 +132,8 @@ export const es: Dictionary = {
       'Este precio es un punto de partida. Después de que tu sitio web esté construido y en línea, cualquier trabajo, función o servicio adicional que solicites será estimado por Applicreations antes de comenzar ese trabajo.',
     highlightsAria: 'Puntos destacados de {name}',
     exampleTotal:
-      'Ejemplo: Basic ({basicPrice}) + Basic Support ({supportPrice}) — elige ambos para ver un total simple.',
-    hostingSupportHeading: 'Hosting y soporte',
+      'Ejemplo: Basic ({basicPrice}) + Basic ({supportPrice}) — elige ambos para ver un total simple.',
+    hostingSupportHeading: 'Hosting y Soporte',
     hostingIntroBeforeRender: 'Cuando nosotros alojamos tu sitio, funciona en',
     hostingIntroRender: 'Render',
     goingLiveHeading: 'Para publicar tu sitio',
@@ -141,7 +141,7 @@ export const es: Dictionary = {
     goingLiveStep1Title: 'Paquete de sitio web',
     goingLiveStep1Bullet:
       'Tu paquete cubre solo la construcción — diseñar y entregar el sitio.',
-    goingLiveStep2Title: 'Hosting y soporte',
+    goingLiveStep2Title: 'Hosting y Soporte',
     goingLiveStep2BulletPlan:
       'Añade un plan de hosting y soporte para que publiquemos tu sitio, lo mantengamos en línea y resolvamos los problemas técnicos.',
     goingLiveStep2CancellationHeading: 'Cancelación',
@@ -580,7 +580,7 @@ export const es: Dictionary = {
     },
     support: {
       support: {
-        name: 'Basic Support',
+        name: 'Basic',
         summary:
           'Ayuda mensual después de que tu sitio esté en línea — arreglamos cosas y hacemos actualizaciones pequeñas por ti.',
         whyItHelps:
@@ -627,13 +627,64 @@ export const es: Dictionary = {
           'Arreglos cuando algo se descompone',
           'Actualizaciones pequeñas',
           'Ayuda por correo',
-          'Cancela cuando quieras',
           'Funciona con cualquier paquete',
         ],
-        cta: 'Preguntar por Basic Support',
+        cta: 'Preguntar por Basic',
+      },
+      'business-support': {
+        name: 'Business',
+        summary:
+          'Ayuda prioritaria en horario laboral — respuestas más rápidas y atención extra cuando algo requiere más trabajo.',
+        whyItHelps:
+          'Cuando necesitas respuestas antes que con Basic, ponemos tu sitio primero durante el día laboral para que los problemas pequeños no se queden esperando.',
+        details: [
+          {
+            id: 'whats-included',
+            label: 'Qué incluye',
+            items: [
+              'Todo lo de Basic',
+              'Prioridad en horario laboral — tus solicitudes van primero',
+              'Respuestas más rápidas cuando algo sale mal',
+              'Cancela cuando quieras — al cancelar, tú eres responsable de publicar tu sitio en internet',
+            ],
+          },
+          {
+            id: 'fix-or-update',
+            label: 'Qué arreglamos o actualizamos',
+            items: [
+              'Páginas, formularios o botones que dejan de funcionar',
+              'Actualizaciones pequeñas y medianas como horarios, fotos, textos o una sección nueva',
+              'Ayuda adicional cuando un problema requiere más trabajo',
+            ],
+          },
+          {
+            id: 'how-contact',
+            label: 'Cómo nos contactas',
+            items: [
+              'Correo',
+              'Teléfono',
+              'Respondemos primero en horario laboral (lunes a viernes, 8 a.m.–4 p.m. EST)',
+            ],
+          },
+          {
+            id: 'who-for',
+            label: 'Para quién es',
+            items: [
+              'Dueños que quieren ayuda más rápida sin cobertura nocturna',
+              'Funciona con cualquier paquete de sitio web',
+            ],
+          },
+        ],
+        features: [
+          'Todo lo de Basic',
+          'Prioridad en horario laboral',
+          'Respuestas más rápidas',
+          'Ayuda extra cuando se necesita',
+        ],
+        cta: 'Preguntar por Business',
       },
       ultimate: {
-        name: 'Ultimate Support',
+        name: 'Ultimate',
         summary:
           'Ayuda a cualquier hora del día o de la noche cuando un sitio caído significa ventas perdidas.',
         whyItHelps:
@@ -643,7 +694,7 @@ export const es: Dictionary = {
             id: 'whats-included',
             label: 'Qué incluye',
             items: [
-              'Todo lo de Basic Support',
+              'Todo lo de Business',
               'Ayuda a cualquier hora del día o de la noche',
               'Tu sitio recibe atención prioritaria cuando algo sale mal',
               'Cancela cuando quieras — al cancelar, tú eres responsable de publicar tu sitio en internet',
@@ -677,11 +728,10 @@ export const es: Dictionary = {
           },
         ],
         features: [
-          'Todo lo de Basic Support',
+          'Todo lo de Business',
           'Ayuda de día o de noche',
           'Primero en la fila para arreglos',
           'Respuestas más rápidas',
-          'Cancela cuando quieras',
         ],
         cta: 'Preguntar por Ultimate',
       },
@@ -706,9 +756,11 @@ export const es: Dictionary = {
               {
                 items: [
                   'Únicamente diseñado para ti, no una plantilla de rellenar espacios',
-                  'Diseño responsivo — tu sitio funciona en diferentes tamaños de pantalla (móvil, tablet, laptop, etc.)',
-                  'Not included: Cualquier plugin — herramientas para citas, pedidos y complementos similares',
-                  'Not included: Ayuda de marketing con tu marca',
+                  'Diseño responsivo — funciona en teléfono, tablet y laptop',
+                  'Carga rápida y seguro (HTTPS incluido)',
+                  'SEO básico en la página para que Google te encuentre',
+                  'Not included: plugins, herramientas de citas o pedidos',
+                  'Not included: ayuda de marketing con tu marca',
                 ],
               },
               {
@@ -739,14 +791,15 @@ export const es: Dictionary = {
             id: 'you-manage',
             label: 'Cómo lo administras',
             items: [
-              'Te enseñamos a usar tu sitio y nos aseguramos de que te sientas cómodo con él antes de dar el proyecto por terminado',
+              'Te mostramos el sitio terminado para que te sientas cómodo con él antes de dar el proyecto por terminado',
+              '1 ronda de revisiones antes del lanzamiento',
             ],
           },
           {
             id: 'help-after',
             label: 'Ayuda después de publicarlo',
             items: [
-              'Not included: Hosting — este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $50 al mes para poner tu sitio en línea y mantenerlo funcionando',
+              'Not included: este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $19 al mes para poner tu sitio en línea, mantenerlo seguro y recibir arreglos cuando algo se rompa',
             ],
           },
         ],
@@ -765,7 +818,7 @@ export const es: Dictionary = {
           {
             id: 'how-big',
             label: 'Qué tan grande es el sitio',
-            items: ['1–2 páginas — todo lo que los visitantes necesitan sin un sitio grande de varias páginas'],
+            items: ['1–2 páginas, organizadas alrededor de cómo los clientes realmente te encuentran'],
           },
           {
             id: 'looks-like',
@@ -773,20 +826,23 @@ export const es: Dictionary = {
             items: [],
             segments: [
               {
+                lead: 'Todo lo de Starter, más:',
+                items: [],
+              },
+              {
                 items: [
-                  'Únicamente diseñado para tu negocio, no una plantilla de rellenar espacios',
-                  'Diseño responsivo — tu sitio funciona en diferentes tamaños de pantalla (móvil, tablet, laptop, etc.)',
+                  'Mapa de Google Maps si tienes un local físico',
+                  'Varias formas de contactarte — formulario, clic para llamar, enlace de email',
+                  'Analítica básica para que veas cuántas personas visitan',
+                  'Not included: plugins, herramientas de citas o pedidos',
                 ],
               },
               {
                 lead: 'Ejemplos comunes:',
                 items: [
-                  'Historia de origen',
-                  'Horario',
-                  'Servicios/productos',
-                  'Galería',
-                  'Formulario de contacto por email',
-                  'Ayuda de marketing con tu marca',
+                  'Inicio + Nosotros',
+                  'Inicio + Servicios',
+                  'Inicio + Menú',
                 ],
               },
             ],
@@ -796,24 +852,25 @@ export const es: Dictionary = {
             label: 'Cómo lo usan tus clientes',
             lead: 'Ejemplos comunes:',
             items: [
-              'Ver los productos o servicios que ofreces',
-              'Enlaces a tus redes sociales',
-              'Agendar una cita',
-              'Un formulario de contacto para que la gente te escriba',
+              'Explorar',
+              'Encontrar tu horario/ubicación',
+              'Llamarte o escribirte directo',
+              'Leer lo que ofreces',
             ],
           },
           {
             id: 'you-manage',
             label: 'Cómo lo administras',
             items: [
-              'Te enseñamos a usar tu sitio y nos aseguramos de que te sientas cómodo con él antes de dar el proyecto por terminado',
+              'El mismo recorrido que Starter',
+              '2 rondas de revisiones antes del lanzamiento',
             ],
           },
           {
             id: 'help-after',
             label: 'Ayuda después de publicarlo',
             items: [
-              'Not included: Hosting — este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $50 al mes para poner tu sitio en línea y mantenerlo funcionando',
+              'Not included: este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $19 al mes',
             ],
           },
         ],
@@ -834,10 +891,7 @@ export const es: Dictionary = {
           {
             id: 'how-big',
             label: 'Qué tan grande es el sitio',
-            items: [
-              '3–5 páginas',
-              'Páginas de ejemplo: Inicio, Nosotros, Menú o Servicios, Galería, Contacto',
-            ],
+            items: ['3–5 páginas, construido para crecer con tu negocio'],
           },
           {
             id: 'looks-like',
@@ -845,22 +899,24 @@ export const es: Dictionary = {
             items: [],
             segments: [
               {
+                lead: 'Todo lo de Basic, más:',
+                items: [],
+              },
+              {
                 items: [
-                  'Todo lo que incluye Basic, repartido en varias páginas',
-                  'Espacio para mostrar más sin saturar una sola página',
+                  'Página de administración — actualiza tu horario, fotos y servicios sin llamarnos',
+                  'SEO local en todas las páginas, no solo en la de inicio',
+                  'Not included: herramientas de citas, pedidos o membresías (ver Pro)',
                 ],
               },
               {
                 lead: 'Ejemplos comunes:',
                 items: [
-                  'Página dedicada de Nosotros',
-                  'Menú o servicios completos con espacio para explicar cada uno',
-                  'Galería ampliada en su propia página',
-                  'Página de contacto separada',
-                  'Área de inicio de sesión para clientes',
-                  'Pantallas de pedidos en línea',
-                  'Una página privada donde haces actualizaciones',
-                  'Ayuda de marketing con tu marca',
+                  'Inicio',
+                  'Nosotros',
+                  'Servicios',
+                  'Galería',
+                  'Contacto',
                 ],
               },
             ],
@@ -868,27 +924,27 @@ export const es: Dictionary = {
           {
             id: 'customers-use',
             label: 'Cómo lo usan tus clientes',
+            lead: 'Ejemplos comunes:',
             items: [
-              'Cuentas de inicio de sesión para clientes cuando las necesites',
-              'Pedidos en línea que se ajustan a cómo vendes',
-              'Formularios de solicitud cuando la gente necesita pedir algo',
-              'Pasos claros desde explorar hasta contactarte o comprar',
+              'Comparar servicios',
+              'Ver horario',
+              'Ver trabajos anteriores',
+              'Escribir con preguntas',
             ],
           },
           {
             id: 'you-manage',
             label: 'Cómo lo administras',
             items: [
-              'Una página privada donde tú mismo puedes cambiar las cosas del día a día',
-              'Te mostramos cómo funciona todo antes de terminar',
-              'Nos aseguramos de que te sientas cómodo usándolo antes de dar el proyecto por terminado',
+              'Te enseñamos la página de administración para que tú mismo hagas actualizaciones pequeñas de ahora en adelante',
+              '2–3 rondas de revisiones antes del lanzamiento',
             ],
           },
           {
             id: 'help-after',
             label: 'Ayuda después de publicarlo',
             items: [
-              'Not included: Hosting — este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $50 al mes para poner tu sitio en línea y mantenerlo funcionando',
+              'Not included: este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $19 al mes, o soporte Business a $39 al mes si quieres ayuda más allá de los arreglos',
             ],
           },
         ],
@@ -909,10 +965,7 @@ export const es: Dictionary = {
           {
             id: 'how-big',
             label: 'Qué tan grande es el sitio',
-            items: [
-              '6+ páginas. Más grande que un sitio normal de varias páginas, y requiere una arquitectura de infraestructura compleja.',
-              'Tu sitio web público más herramientas a la medida para cómo funciona tu negocio',
-            ],
+            items: ['Construido para tu proceso, no un número fijo de páginas'],
           },
           {
             id: 'looks-like',
@@ -920,21 +973,13 @@ export const es: Dictionary = {
             items: [],
             segments: [
               {
-                items: [
-                  'Todo lo de Basic y Business que siga aplicando',
-                  'Pantallas construidas alrededor de cómo trabaja tu equipo día a día',
-                ],
+                lead: 'Todo lo de Business, más herramientas a la medida de cómo trabajas realmente — por ejemplo: reservas de citas, control sencillo de inventario, pedidos en línea, o un área de inicio de sesión para miembros o clientes frecuentes',
+                items: [],
               },
               {
-                lead: 'Ejemplos comunes:',
                 items: [
-                  'Panel para el personal y el trabajo del día a día',
-                  'Flujos a la medida de pedidos y solicitudes',
-                  'Herramientas de citas o programación',
-                  'Pantallas internas para tu equipo',
-                  'Pasos para clientes adaptados a cómo operas',
-                  'Espacio para agregar más herramientas conforme creces',
-                  'Ayuda de marketing con tu marca',
+                  'Una llamada de planificación al inicio para definir exactamente qué herramientas necesitas',
+                  'Revisiones razonables durante la construcción, no solo al final',
                 ],
               },
             ],
@@ -942,27 +987,26 @@ export const es: Dictionary = {
           {
             id: 'customers-use',
             label: 'Cómo lo usan tus clientes',
+            lead: 'Ejemplos comunes:',
             items: [
-              'Flujos a la medida para clientes, tu personal, o ambos',
-              'Construido alrededor de cómo tomas pedidos',
-              'Construido alrededor de cómo agendas citas',
-              'Construido alrededor de cómo manejas solicitudes',
+              'Agendar una cita',
+              'Hacer un pedido',
+              'Iniciar sesión para ver el estado',
+              'Administrar los datos de su cuenta',
             ],
           },
           {
             id: 'you-manage',
             label: 'Cómo lo administras',
             items: [
-              'Herramientas a la medida para que tú y tu equipo manejen el negocio desde el sitio',
-              'Construido para crecer contigo conforme cambian tus necesidades',
-              'Nos aseguramos de que te sientas cómodo usándolo antes de dar el proyecto por terminado',
+              'Te enseñamos cada herramienta a la medida, no solo el contenido de las páginas, para que sepas cómo usarla día a día',
             ],
           },
           {
             id: 'help-after',
             label: 'Ayuda después de publicarlo',
             items: [
-              'Tres meses de Ultimate Support incluidos después de que tu sitio web esté en línea. Después de eso, hay soporte adicional disponible a través de un [plan de hosting](#hosting-support)',
+              'Not included: este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $19 al mes, o soporte Ultimate a $99 al mes para respuesta prioritaria si dependes de estas herramientas a diario',
             ],
           },
         ],
@@ -988,7 +1032,7 @@ export const es: Dictionary = {
         'Sistema simple de pedidos por correo',
         'Bilingüe EN / ES',
       ],
-      packageLabel: 'Paquete Business · $849',
+      packageLabel: 'Paquete Business · $895',
       galleryLabels: {
         '/images/caramel-jo/homepage.jpg': 'Página de inicio',
         '/images/caramel-jo/menu.jpg': 'Menú',
@@ -1006,7 +1050,7 @@ export const es: Dictionary = {
         'Bilingüe EN / ES',
         'Llamadas, direcciones y enlaces a redes',
       ],
-      packageLabel: 'Paquete Business · $849',
+      packageLabel: 'Paquete Business · $895',
       galleryLabels: {
         '/images/mi-gente/homepage.jpg': 'Página de inicio',
         '/images/mi-gente/menu.jpg': 'Menú y horarios',

@@ -9,6 +9,8 @@ interface SelectToggleProps {
   label: string
   onToggle: () => void
   className?: string
+  /** When set, button width matches "Choose {widthLabel}" (locale-aware). */
+  widthLabel?: string
 }
 
 export function SelectToggle({
@@ -16,9 +18,13 @@ export function SelectToggle({
   label,
   onToggle,
   className,
+  widthLabel,
 }: SelectToggleProps) {
   const { dict, t } = useLocale()
   const chooseLabel = t(dict.pricingPage.choose, { name: label })
+  const widthAnchorLabel = widthLabel
+    ? t(dict.pricingPage.choose, { name: widthLabel })
+    : null
 
   return (
     <button
@@ -37,10 +43,15 @@ export function SelectToggle({
       )}
     >
       {/*
-        Width is always sized by "Choose {label}".
+        Width is sized by "Choose {label}", or by widthLabel when uniform width is needed.
         Selected state overlays check + "Chosen" — color/opacity only, no layout shift.
       */}
       <span className="relative inline-grid place-items-center">
+        {widthAnchorLabel ? (
+          <span className="invisible col-start-1 row-start-1 whitespace-nowrap" aria-hidden>
+            {widthAnchorLabel}
+          </span>
+        ) : null}
         <span
           className={cn(
             'col-start-1 row-start-1 transition-opacity duration-150',

@@ -42,7 +42,7 @@ export interface PricingPlan {
   ctaHref: string
 }
 
-export type SupportPlanId = 'support' | 'ultimate'
+export type SupportPlanId = 'support' | 'business-support' | 'ultimate'
 
 export interface SupportPlan {
   id: SupportPlanId
@@ -64,9 +64,9 @@ const WEBSITE_META: Record<
   { price: number; priceLabel: string; highlighted?: boolean; hash: string }
 > = {
   starter: { price: 295, priceLabel: '$295', highlighted: false, hash: 'starter' },
-  basic: { price: 595, priceLabel: '$595', highlighted: false, hash: 'basic' },
+  basic: { price: 649, priceLabel: '$649', highlighted: false, hash: 'basic' },
   // Names flipped vs prior tiers: Business = former Pro (mid), Pro = former Business (top)
-  business: { price: 849, priceLabel: '$849', highlighted: true, hash: 'business' },
+  business: { price: 895, priceLabel: '$895', highlighted: true, hash: 'business' },
   pro: {
     price: 2200,
     priceLabel: '$2,200',
@@ -79,8 +79,9 @@ const SUPPORT_META: Record<
   SupportPlanId,
   { price: number; highlighted?: boolean }
 > = {
-  support: { price: 50, highlighted: false },
-  ultimate: { price: 250, highlighted: true },
+  support: { price: 19, highlighted: false },
+  'business-support': { price: 39, highlighted: true },
+  ultimate: { price: 99, highlighted: false },
 }
 
 /** One-time fee to build, deploy on Render, then hand hosting off to the client */
@@ -88,21 +89,22 @@ export const BUILD_HANDOFF_FEE = 500
 
 function monthlyPriceLabel(amount: number, locale: Locale = defaultLocale): string {
   const money = `$${amount.toLocaleString('en-US')}`
-  return locale === 'es' ? `${money}/mes` : `${money}/month`
+  return locale === 'es' ? `${money}/mes` : `${money}/mo`
 }
 
 export function getBasicSupport(
   dict: Dictionary = en,
   locale: Locale = defaultLocale
 ) {
+  const price = SUPPORT_META.support.price
   return {
-    price: 50,
-    priceLabel: monthlyPriceLabel(50, locale),
+    price,
+    priceLabel: monthlyPriceLabel(price, locale),
     description: dict.plans.basicSupport.description,
   }
 }
 
-/** Ongoing Support — $50/month (English default for non-UI imports) */
+/** Ongoing Support — lowest monthly plan (English default for non-UI imports) */
 export const BASIC_SUPPORT = getBasicSupport(en)
 
 /** @deprecated Use BASIC_SUPPORT */
@@ -132,7 +134,7 @@ export function getSupportPlans(
   dict: Dictionary = en,
   locale: Locale = defaultLocale
 ): SupportPlan[] {
-  return (['support', 'ultimate'] as const).map((id) => {
+  return (['support', 'business-support', 'ultimate'] as const).map((id) => {
     const meta = SUPPORT_META[id]
     const copy = dict.plans.support[id]
     return {
@@ -213,7 +215,7 @@ export function isPlanId(value: unknown): value is PlanId {
 }
 
 export function isSupportPlanId(value: unknown): value is SupportPlanId {
-  return value === 'support' || value === 'ultimate'
+  return value === 'support' || value === 'business-support' || value === 'ultimate'
 }
 
 export function buildIntrospectHandoffHref(

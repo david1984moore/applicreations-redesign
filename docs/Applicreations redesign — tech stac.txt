@@ -1,0 +1,86 @@
+Applicreations redesign — tech stack
+Marketing site and intake app. No database, no auth, no CMS. Copy lives in TypeScript dictionaries; transactional email is the only outbound service.
+
+11
+Runtime packages
+9
+Dev packages
+6
+Public routes
+3
+API routes
+Declared but unused
+@radix-ui/react-slot is in package.json and never imported. Button has an unused asChild prop that would typically use Slot. Everything else in package.json is referenced.
+Architecture
+Next.js App Router with a root layout (fonts, metadata, CSS) and a locale layout that wraps every page in Navigation, footer, and a React context dictionary. English URLs have no prefix; Spanish uses /es. Middleware rewrites bare English paths into /en/... for the [locale] segment and redirects /en away so it never appears in the URL.
+
+Layer	What it is	Key files
+Edge / request	Locale cookie, Accept-Language, rewrite/redirect	middleware.ts
+App Router	RSC pages + client islands; generateStaticParams for en/es	app/layout.tsx, app/[locale]/
+UI	Custom components, Framer Motion, Lucide, one Radix Progress	components/
+Domain logic	Pricing, Introspect scoring, i18n dictionaries, projects	lib/
+API	POST handlers that validate JSON/FormData and send email	app/api/*/route.ts
+Email	Resend SDK + branded HTML templates	lib/email.ts, lib/email-templates.ts
+Browser storage	localStorage (locale, Introspect draft); sessionStorage (pricing handoff, locale scroll)	LocaleProvider, IntrospectBoard, lib/pricing.ts
+Runtime dependencies
+Locked versions from package-lock.json. Next also pulls SWC, styled-jsx, and optional sharp for image optimization.
+
+Package	Locked	Role in this app
+next	15.5.6	App Router, RSC, middleware, next/font, next/image, Route Handlers. Node ^18.18 || ^19.8 || >=20. Dev server on port 3004.
+react / react-dom	19.1.0	UI runtime. Client components use the 'use client' directive.
+framer-motion	12.23.24	Page/section enter animations, AnimatePresence expand/collapse (pricing, handoff card). Depends on motion-dom / motion-utils.
+lucide-react	0.546.0	SVG icons: nav/pricing/FAQ/Introspect (Chevron, Check, AlertTriangle, Globe2, etc.).
+resend	6.18.1	Transactional email. Requires Node >=20. Transitive: postal-mime, standardwebhooks. @react-email/render is optional and not installed.
+@radix-ui/react-progress	1.1.7	Accessible progress bar on Introspect. Pulls react-context, react-primitive, compose-refs.
+@radix-ui/react-slot	1.2.3	Unused. Typical shadcn asChild pattern; not wired up.
+class-variance-authority	0.7.1	Badge variant classes only.
+clsx	2.1.1	Conditional class lists; used via cn() in lib/utils.ts.
+tailwind-merge	3.3.1	Resolves conflicting Tailwind classes in cn().
+Dev dependencies
+Package	Locked	Role
+typescript	5.9.3	strict, noUncheckedIndexedAccess, noImplicitReturns, jsx preserve, paths @/*
+tailwindcss	4.1.15	Utility CSS via @import "tailwindcss" and @theme in globals.css. No tailwind.config.
+@tailwindcss/postcss	4.1.15	PostCSS plugin in postcss.config.mjs
+eslint	9.38.0	Flat config
+eslint-config-next	15.5.6	next/core-web-vitals + next/typescript via @eslint/eslintrc FlatCompat
+@eslint/eslintrc	^3 (compat)	Bridge for Next's legacy shareable configs
+@types/node	20.19.23	Node typings
+@types/react	19.2.2	React typings
+@types/react-dom	^19	DOM typings
+Routes
+Pages (en unprefixed / es under /es)
+/ · /pricing · /introspect · /demos · /about · /contact
+
+API (POST)
+/api/contact · /api/introspect · /api/pricing-selection
+
+Locale generateStaticParams emits en and es. Loading.tsx exists on pricing, introspect, demos, about, contact.
+
+External services
+Resend — EMAIL_FROM, EMAIL_REPLY_TO, EMAIL_NOTIFY_TO, RESEND_API_KEY.
+
+Google Fonts (build-time) — Fraunces, Source Sans 3, Playfair Display, Poppins via next/font/google (self-hosted after build).
+
+Render — intended host (SCOPE/README). No render.yaml in repo.
+
+Client sites linked — caramelandjo.com, migentebonitamarket.com (outbound only).
+
+Not in this stack
+Category	Status
+Database / ORM	None. No Prisma, Postgres, or file persistence of submissions.
+Auth	None.
+CMS / headless	None. Dictionaries in lib/i18n/dictionaries/{en,es}.ts.
+Payments	None. Pricing is display + email estimate only.
+Analytics / error tracking	None (no GA, Sentry, etc.).
+i18n library	Custom (not next-intl / next-i18next).
+Tests / CI	No *.test.* files; no .github workflows in repo.
+robots.txt / sitemap	Not present.
+State library	None. React useState/context + Web Storage.
+Form library	None. Native inputs + fetch.
+TypeScript and tooling
+Target ES2017, moduleResolution bundler, isolatedModules, Next plugin. Path alias @/* → repo root. Scripts: dev (next dev -p 3004), build, start, lint, type-check, pre-commit, clean, reset. next.config.ts only sets outputFileTracingRoot.
+
+Design system (in-repo, not a package)
+OKLCH tokens in app/globals.css @theme: paper/sand/sky, primary blue scale, 8-point spacing, Perfect Fourth type scale, Fraunces display + Source Sans body. Reduced-motion media query. Coastal wash/grain utilities. Custom UI: Button, Card, Input, Link, Badge, Progress, SpectrumFlipCta, BrandNavLinks — not a full shadcn install.
+
+Source: applicreations-redesign package.json, package-lock.json, app/, lib/, components/, middleware.ts, SCOPE.md. Snapshot Aug 16 2026.

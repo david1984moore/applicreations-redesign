@@ -17,6 +17,8 @@ type PlanFeatureRotatorProps = {
   /** Stagger when cycling begins so cards on the page don’t stay in sync */
   startDelay?: number
   className?: string
+  /** Hide while “What’s included” is expanded so the details aren’t competing with highlights */
+  visible?: boolean
 }
 
 export function PlanFeatureRotator({
@@ -24,12 +26,13 @@ export function PlanFeatureRotator({
   ariaLabel,
   startDelay = 0,
   className,
+  visible = true,
 }: PlanFeatureRotatorProps) {
   const prefersReducedMotion = useReducedMotion()
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    if (prefersReducedMotion || messages.length <= 1) return
+    if (!visible || prefersReducedMotion || messages.length <= 1) return
 
     let cancelled = false
     let timer: ReturnType<typeof setTimeout>
@@ -52,12 +55,12 @@ export function PlanFeatureRotator({
       cancelled = true
       clearTimeout(timer)
     }
-  }, [messages.length, prefersReducedMotion, startDelay])
+  }, [messages.length, prefersReducedMotion, startDelay, visible])
 
   if (messages.length === 0) return null
 
-  if (prefersReducedMotion || messages.length === 1) {
-    return (
+  const inner =
+    prefersReducedMotion || messages.length === 1 ? (
       <div
         className={cn('min-w-0 w-full', RESERVED_LINES_MOBILE, className)}
         aria-label={ariaLabel}
@@ -66,36 +69,48 @@ export function PlanFeatureRotator({
           {messages[0]}
         </p>
       </div>
+    ) : (
+      <div
+        className={cn(
+          'relative min-w-0 w-full overflow-x-hidden max-lg:overflow-hidden',
+          RESERVED_LINES_MOBILE,
+          className
+        )}
+        aria-label={ariaLabel}
+        aria-live="polite"
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.p
+            key={`${index}-${messages[index]}`}
+            initial={{ opacity: 0, x: -SLIDE_OFFSET }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: SLIDE_OFFSET }}
+            transition={{
+              duration: FADE_DURATION,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="text-sm lg:text-base text-gray-600 leading-snug max-lg:absolute max-lg:inset-x-0 max-lg:top-0 max-lg:line-clamp-2"
+          >
+            {messages[index]}
+          </motion.p>
+        </AnimatePresence>
+      </div>
     )
-  }
-
-  const message = messages[index]
 
   return (
-    <div
-      className={cn(
-        'relative min-w-0 w-full overflow-x-hidden max-lg:overflow-hidden',
-        RESERVED_LINES_MOBILE,
-        className
-      )}
-      aria-label={ariaLabel}
-      aria-live="polite"
-    >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.p
-          key={`${index}-${message}`}
-          initial={{ opacity: 0, x: -SLIDE_OFFSET }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: SLIDE_OFFSET }}
-          transition={{
-            duration: FADE_DURATION,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          className="text-sm lg:text-base text-gray-600 leading-snug max-lg:absolute max-lg:inset-x-0 max-lg:top-0 max-lg:line-clamp-2"
+    <AnimatePresence initial={false}>
+      {visible ? (
+        <motion.div
+          key="plan-feature-rotator"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full overflow-hidden"
         >
-          {message}
-        </motion.p>
-      </AnimatePresence>
-    </div>
+          {inner}
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   )
 }

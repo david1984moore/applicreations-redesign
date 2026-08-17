@@ -172,7 +172,6 @@ export type Dictionary = {
     tagline: string
     websitePricing: string
     fullPricingDetails: string
-    /** Landing-only badge on the Basic package card */
     popularPackage: string
     hostingFrom: string
     howItWorks: string
@@ -424,7 +423,7 @@ export type Dictionary = {
     packageDetailLabels: Record<string, string>
     supportDetailLabels: Record<string, string>
     support: Record<
-      'support' | 'ultimate',
+      'support' | 'business-support' | 'ultimate',
       {
         name: string
         summary: string
