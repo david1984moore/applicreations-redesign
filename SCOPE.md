@@ -25,6 +25,8 @@
 
 **Pass 1 (landing) — SPACING + LAYOUT LOCKED Aug 1 2026 (final):** Single-viewport composition in `LandingBoard.tsx` (no desktop scroll). Approved layout: brand + icon nav (Introspect / Projects / Contact) left; simplified website pricing cards right (name centered over larger price, one short summary, More); How it works band bottom with staggered steps, Begin Introspect on the right, Going live footer fully visible. Pricing: Basic $600 / Pro $1,000 / Business $3,000; hosting from $50/month. Visual reference: `docs/landing-board-locked.png`. Exact spacing recipe in `LandingBoard.tsx` header (vh-clamped shell padding + rem gaps). **Do not change landing spacing, alignment, or card format without explicit approval.**
 
+**How it works — LIVE-PREVIEW CORD LOCKED Aug 18 2026 (final):** The laptop-to-foundation cord in `HiwDeviceSketch.tsx` (`wirePath`, `PreviewWire`, stroke, port/jack attachments) is user-approved as absolutely perfect. **Do not edit this cord further.**
+
 **Parking lot — Pass 2:**
 - Simple Introspect form (not the old interactive engine): name, business name, email/phone, what you do, package interest (Basic/Pro/Business), free notes. No sales metrics. No “free demo” language.
 - Drop real project screenshots into `public/images/` (replace SVG stand-ins for Caramel & Jo / Mi Gente Bonita)

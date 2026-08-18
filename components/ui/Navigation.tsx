@@ -87,7 +87,7 @@ export function Navigation() {
             </Link>
 
             {/* Always-visible links (mobile + desktop). No hamburger / dropdown on subpages. */}
-            <div className="flex items-center gap-3 sm:gap-5">
+            <div className="shrink-0">
               <BrandNavLinks variant="subpage" />
             </div>
           </div>

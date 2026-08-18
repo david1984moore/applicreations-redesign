@@ -313,9 +313,11 @@ function DetailGroup({
                 <p className="mb-1 text-xs font-medium text-gray-600">{segment.lead}</p>
               ) : null}
               {example && besideExamples ? (
-                <div className="flex items-start gap-3">
+                <div className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-start lg:gap-3">
                   <div className="min-w-0">{list}</div>
-                  <div className="w-[200px] shrink-0">{besideExamples}</div>
+                  <div className="mx-auto w-full max-w-[200px] lg:mx-0 lg:w-[200px] lg:shrink-0">
+                    {besideExamples}
+                  </div>
                 </div>
               ) : (
                 list
@@ -392,7 +394,7 @@ export function DetailGroups({ groups, className, planId }: DetailGroupsProps) {
   return (
     <div
       className={cn(
-        'grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5',
+        'grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3.5',
         className
       )}
     >

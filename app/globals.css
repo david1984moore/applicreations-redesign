@@ -3,6 +3,8 @@
 /* Smooth scrolling for navigation */
 html {
   scroll-behavior: smooth;
+  /* Keep layout width identical on pages with and without a scrollbar */
+  scrollbar-gutter: stable;
 }
 
 /* Design System — Off-white tan + logo blue */
@@ -269,22 +271,182 @@ h1, h2, h3, h4, h5, h6 {
   animation: fade-direction-switch 90s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
-@keyframes hiw-glow-soft {
-  0%,
+@keyframes hiw-glow-build {
+  0% {
+    filter:
+      drop-shadow(0 0 0 oklch(58% 0.1 310 / 0))
+      drop-shadow(0 0 0 oklch(62% 0.08 310 / 0));
+  }
   100% {
     filter:
-      drop-shadow(0 0 10px oklch(58% 0.14 310 / 0.16))
-      drop-shadow(0 0 22px oklch(58% 0.14 310 / 0.08));
-  }
-  50% {
-    filter:
-      drop-shadow(0 0 18px oklch(58% 0.14 310 / 0.4))
-      drop-shadow(0 0 36px oklch(58% 0.14 310 / 0.2));
+      drop-shadow(0 0 14px oklch(58% 0.1 310 / 0.28))
+      drop-shadow(0 0 32px oklch(62% 0.08 310 / 0.14));
   }
 }
 
-.hiw-glow {
-  animation: hiw-glow-soft 1.5s ease-in-out infinite;
+.hiw-glow-build {
+  animation: hiw-glow-build 2.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes hiw-glow-pulse {
+  0% {
+    opacity: 0;
+  }
+  26% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.hiw-glow-pulse {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  z-index: 0;
+  width: min(24rem, 84%);
+  height: 78%;
+  transform: translate(-50%, -50%);
+  border-radius: 1.75rem;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    oklch(62% 0.1 310 / 0.22) 0%,
+    oklch(58% 0.08 310 / 0.1) 48%,
+    transparent 74%
+  );
+  filter: blur(20px);
+  animation: hiw-glow-pulse 2.72s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes hiw-intro-3-neon {
+  0% {
+    text-shadow: 0 0 0 transparent;
+  }
+  18% {
+    text-shadow:
+      0 0 16px oklch(58% 0.22 310 / 0.95),
+      0 0 32px oklch(62% 0.16 310 / 0.58);
+  }
+  44% {
+    text-shadow: 0 0 0 transparent;
+  }
+  100% {
+    text-shadow: 0 0 0 transparent;
+  }
+}
+
+.hiw-intro-3-neon {
+  animation: hiw-intro-3-neon 0.68s ease-out both;
+}
+
+/* Slow grow with the ring pulse, then hold while the 3 travels toward the viewer. */
+@keyframes hiw-intro-3-grow {
+  0% {
+    transform: translateZ(0) scale(1);
+  }
+  42% {
+    transform: translateZ(0) scale(1.18);
+  }
+  70% {
+    transform: translateZ(0) scale(1.26);
+  }
+  100% {
+    transform: translateZ(0) scale(1.28);
+  }
+}
+
+.hiw-intro-3-grow {
+  display: inline-block;
+  transform-origin: center;
+  will-change: transform;
+  backface-visibility: hidden;
+  text-rendering: geometricPrecision;
+  animation: hiw-intro-3-grow 1.55s cubic-bezier(0.22, 0.55, 0.28, 1) both;
+}
+
+/* 2D compositor scale — avoids 3D matrix snapping that looks like film-reel jumps. */
+@keyframes hiw-tagline-grow {
+  from {
+    transform: translateZ(0) scale(1);
+  }
+  to {
+    transform: translateZ(0) scale(1.28);
+  }
+}
+
+.hiw-tagline-grow {
+  display: inline-block;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  backface-visibility: hidden;
+  text-rendering: geometricPrecision;
+  animation: hiw-tagline-grow 2.4s linear both;
+}
+
+@keyframes hiw-intro-ripple-inner {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.42);
+  }
+  16% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.85);
+  }
+}
+
+@keyframes hiw-intro-ripple-outer {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.55);
+  }
+  20% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.2);
+  }
+}
+
+.hiw-intro-ripple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5.2rem;
+  height: 5.2rem;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    oklch(58% 0.2 310 / 0.22) 0%,
+    oklch(58% 0.22 310 / 0.62) 32%,
+    oklch(62% 0.16 310 / 0.28) 48%,
+    transparent 66%
+  );
+  filter: blur(8px);
+  animation: hiw-intro-ripple-inner 0.78s cubic-bezier(0.15, 0.55, 0.3, 1) forwards;
+}
+
+.hiw-intro-ripple-b {
+  width: 7.4rem;
+  height: 7.4rem;
+  background: radial-gradient(
+    circle,
+    transparent 12%,
+    oklch(58% 0.16 310 / 0.28) 34%,
+    oklch(62% 0.12 310 / 0.16) 50%,
+    transparent 68%
+  );
+  filter: blur(11px);
+  animation: hiw-intro-ripple-outer 1.12s cubic-bezier(0.15, 0.55, 0.3, 1) 0.24s both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -293,10 +455,41 @@ h1, h2, h3, h4, h5, h6 {
     animation: none;
   }
 
-  .hiw-glow {
+  .hiw-glow-build {
     animation: none;
-    filter:
-      drop-shadow(0 0 14px oklch(58% 0.14 310 / 0.28))
-      drop-shadow(0 0 28px oklch(58% 0.14 310 / 0.14));
+    filter: none;
+  }
+
+  .hiw-glow-pulse {
+    animation: none;
+    opacity: 0;
+  }
+
+  .hiw-intro-3-glow {
+    animation: none;
+    text-shadow: none;
+    filter: none;
+  }
+
+  .hiw-intro-3-neon {
+    animation: none;
+    text-shadow: none;
+    filter: none;
+  }
+
+  .hiw-intro-3-grow {
+    animation: none;
+    transform: none;
+  }
+
+  .hiw-tagline-grow {
+    animation: none;
+    transform: none;
+  }
+
+  .hiw-intro-ripple,
+  .hiw-intro-ripple-b {
+    animation: none;
+    display: none;
   }
 }

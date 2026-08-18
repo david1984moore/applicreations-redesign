@@ -102,15 +102,14 @@ export function IconContact({ className }: { className?: string }) {
 }
 
 const NAV_DEFS = [
+  { href: '/contact', key: 'contact' as const, icon: IconContact, match: '/contact' },
   { href: '/introspect', key: 'introspect' as const, icon: IconIntrospect, match: '/introspect' },
   { href: '/demos', key: 'projects' as const, icon: IconProjects, match: '/demos' },
   { href: '/pricing', key: 'pricing' as const, icon: IconPricing, match: '/pricing' },
   { href: '/about', key: 'about' as const, icon: IconAbout, match: '/about' },
-  { href: '/contact', key: 'contact' as const, icon: IconContact, match: '/contact' },
 ] as const
 
-/** Landing page items — no Pricing (section + full pricing details link on board) */
-const LANDING_KEYS = new Set(['introspect', 'projects', 'about', 'contact'])
+const LANDING_KEYS = new Set(['contact', 'introspect', 'projects', 'pricing', 'about'])
 
 type BrandNavLinksProps = {
   variant?: 'landing' | 'subpage'
@@ -148,7 +147,15 @@ export function BrandNavLinks({
   }, [items, router])
 
   return (
-    <div className={cn('contents', className)}>
+    <div
+      className={cn(
+        'grid w-full grid-cols-6 items-start justify-items-center',
+        variant === 'landing'
+          ? 'gap-x-1 sm:gap-x-2 lg:gap-x-3'
+          : 'gap-x-3 sm:gap-x-5',
+        className
+      )}
+    >
       {items.map(({ href, label, icon: Icon, match }) => {
         const active =
           variant === 'subpage' &&
@@ -157,15 +164,12 @@ export function BrandNavLinks({
         const linkClass =
           variant === 'landing'
             ? 'group flex flex-col items-center gap-1.5 text-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
-            : cn(
-                'group flex flex-col items-center gap-0.5 text-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2',
-                active && 'hidden'
-              )
+            : 'group flex w-full flex-col items-center gap-0.5 text-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
 
         const labelClass =
           variant === 'landing'
             ? 'text-[0.8125rem] lg:text-[0.9375rem] font-bold tracking-tight text-gray-900 group-hover:text-gray-700'
-            : 'text-[0.625rem] font-medium tracking-tight text-gray-900 group-hover:text-gray-600'
+            : 'text-[0.625rem] font-medium tracking-tight text-gray-900 group-hover:text-gray-600 whitespace-nowrap'
 
         return (
           <Link
@@ -183,7 +187,10 @@ export function BrandNavLinks({
           </Link>
         )
       })}
-      <LanguageToggle variant={variant} />
+      <LanguageToggle
+        variant={variant}
+        className={variant === 'subpage' ? 'w-full' : undefined}
+      />
     </div>
   )
 }

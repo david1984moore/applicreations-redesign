@@ -171,7 +171,6 @@ export type Dictionary = {
   landing: {
     tagline: string
     websitePricing: string
-    fullPricingDetails: string
     popularPackage: string
     hostingFrom: string
     howItWorks: string
@@ -179,8 +178,14 @@ export type Dictionary = {
     beginIntrospect: string
     steps: {
       introspect: { label: string; detail: string }
-      livePreview: { label: string; detail: string }
-      workingWebsite: { label: string; detail: string }
+      livePreview: { label: string; detail: string; building: string; phoneSuffix: string }
+      workingWebsite: {
+        label: string
+        detail: string
+        review: string
+        revise: string
+        suffix: string
+      }
     }
   }
   common: {

@@ -4,6 +4,8 @@
 
 **⚠️ CRITICAL: NO DELAWARE REFERENCES** - Site must be generic/national, not location-specific. All copy must be truthful.
 
+**⚠️ LOCKED Aug 18 2026 (final) — How it works live-preview cord.** User: absolutely perfect. Do not edit `wirePath` / `PreviewWire` / cord stroke / port-jack attachments in `HiwDeviceSketch.tsx`.
+
 ---
 
 ## Progress Tracking

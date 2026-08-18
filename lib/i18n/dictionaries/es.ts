@@ -36,7 +36,6 @@ export const es: Dictionary = {
   landing: {
     tagline: 'Aplicaciones y sitios web a la medida',
     websitePricing: 'Precios de sitios web',
-    fullPricingDetails: 'Ver todos los precios →',
     popularPackage: 'Popular',
     hostingFrom: '*Hosting y soporte desde {price}',
     howItWorks: 'Cómo funciona',
@@ -49,11 +48,16 @@ export const es: Dictionary = {
       },
       livePreview: {
         label: 'Vista previa en vivo',
-        detail: 'Un sitio de prueba que puedes abrir, navegar y probar tú mismo.',
+        detail: 'Un sitio de prueba que puedes abrir, navegar y probar tú mismo…',
+        building: 'Applicreations se pone a trabajar en tu vista previa.',
+        phoneSuffix: 'incluso en tu teléfono',
       },
       workingWebsite: {
         label: 'Sitio web funcionando',
-        detail: 'Lo revisamos contigo, terminamos la construcción y entregamos el sitio real.',
+        detail: 'Lo revisamos contigo, hacemos revisiones, terminamos la construcción y entregamos el sitio real.',
+        review: 'Lo revisamos contigo,',
+        revise: 'hacemos revisiones,',
+        suffix: 'terminamos la construcción y entregamos el sitio real.',
       },
     },
   },
@@ -75,7 +79,7 @@ export const es: Dictionary = {
     role: 'Fundador, Applicreations',
     p1: 'Crecí dibujando con distintos medios — lápiz, pluma y tinta, carboncillo, pasteles y acuarela. Con el tiempo trabajé como chef, expresando mi lado creativo a través del sabor y la presentación de los ingredientes en el plato.',
     p2: 'Mientras aprendía por mi cuenta diseño web y software desde 2021, en el camino noté que muchos pequeños negocios locales batallan para presentarse con dignidad en línea — o terminan con sitios genéricos de Wix, GoDaddy, Squarespace y similares. Cada vez más, en un mundo enfocado más en las máquinas que en las personas, me sentí atraído al desarrollo web que pone a las personas primero — construir exactamente lo que cada cliente quiere, en sus términos. Así que comencé Applicreations en 2025.',
-    p3: 'Los constructores de sitios genéricos suelen ser rápidos, pero pueden hacerte sentir como un número más. En Applicreations no hay plantillas genéricas — cada proyecto es original y hecho a la medida de lo que realmente quieres. Cada negocio tiene una identidad distinta, y eso merece una presencia en línea respetable. Ayudo a las personas a echar raíces digitales únicas — no una plantilla para todos. Espero poder ayudarte a echar las tuyas.',
+    p3: 'Los constructores de sitios genéricos suelen ser rápidos, pero pueden hacerte sentir como un número más. En Applicreations no hay plantillas genéricas — cada proyecto es original y hecho a la medida de lo que realmente quieres. Cada negocio tiene una identidad distinta, y eso merece una presencia en línea respetable. Ayudo a las personas a echar raíces digitales únicas. Espero poder ayudarte a echar las tuyas.',
   },
   contact: {
     eyebrow: 'Contacto',

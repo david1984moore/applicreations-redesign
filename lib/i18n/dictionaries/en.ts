@@ -36,7 +36,6 @@ export const en: Dictionary = {
   landing: {
     tagline: 'Custom apps and websites',
     websitePricing: 'Website Pricing',
-    fullPricingDetails: 'Full pricing details →',
     popularPackage: 'Popular',
     hostingFrom: '*Hosting & support from {price}',
     howItWorks: 'How it works',
@@ -49,11 +48,16 @@ export const en: Dictionary = {
       },
       livePreview: {
         label: 'Live preview',
-        detail: 'A practice site you can open, click through, and try yourself.',
+        detail: 'A practice site you can open, click through, and try yourself…',
+        building: 'Applicreations gets to work on your preview.',
+        phoneSuffix: 'even on your phone',
       },
       workingWebsite: {
         label: 'Working website',
-        detail: 'We review with you, finish the build, and deliver the real site.',
+        detail: 'We review with you, make revisions, finish the build, and deliver the real site.',
+        review: 'We review with you,',
+        revise: 'make revisions,',
+        suffix: 'finish the build, and deliver the real site.',
       },
     },
   },
@@ -75,7 +79,7 @@ export const en: Dictionary = {
     role: 'Founder, Applicreations',
     p1: 'I grew up drawing with different mediums — pencil, pen and ink, charcoal, pastels, and watercolor. Eventually I worked as a chef, expressing my creative tendencies through flavor and presenting ingredients on a plate.',
     p2: "While teaching myself web design and software starting in 2021, along the way I've noticed that many small local businesses struggle to present themselves respectfully online — or end up with generic-looking sites from Wix, GoDaddy, Squarespace, and the like. Increasingly, in a world focused more on machines than people, I felt drawn to web development that puts people first — building exactly what each client wants, on their terms. So I started Applicreations in 2025.",
-    p3: 'Generic website builders are often fast, but they can leave you feeling like a number. There are no generic templates at Applicreations — every project is original and custom tailored to what you actually want. Every business has a different identity, and that deserves a respectful online presence. I help people plant unique digital roots — not a one-size-fits-all template. I look forward to helping you plant yours.',
+    p3: 'Generic website builders are often fast, but they can leave you feeling like a number. There are no generic templates at Applicreations — every project is original and custom tailored to what you actually want. Every business has a different identity, and that deserves a respectful online presence. I help people plant unique digital roots. I look forward to helping you plant yours.',
   },
   contact: {
     eyebrow: 'Contact',

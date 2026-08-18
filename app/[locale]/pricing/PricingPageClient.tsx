@@ -644,7 +644,7 @@ export default function PricingPageClient() {
                     aria-controls="build-handoff-details"
                     className="cursor-pointer w-full px-3.5 py-3 sm:px-4 sm:py-3.5 text-left"
                   >
-                    <div className="flex items-center justify-between gap-x-3 gap-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
                       <span className="flex min-w-0 items-center gap-2">
                         <AlertTriangle
                           className="h-4 w-4 shrink-0 text-red-600"
