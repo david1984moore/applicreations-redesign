@@ -29,6 +29,8 @@ export interface Project {
   brandFont?: BrandFont
   /** Optional mark shown on the project picker card */
   logo?: string
+  /** Square photo used on the picker card when there is no logo */
+  thumb?: string
   /** Package used for this build (shown on /demos) */
   packageLabel: string
   /** Live client site */
@@ -58,6 +60,7 @@ const PROJECT_BASE: ProjectBase[] = [
     galleryShape: 'phone',
     accent: '#c4a484',
     brandFont: 'caramel',
+    thumb: '/images/caramel-jo/card-thumb.jpg',
     siteUrl: 'https://caramelandjo.com/',
   },
   {

@@ -84,13 +84,13 @@ export function LanguageToggle({
 
   const buttonClass =
     variant === 'landing'
-      ? 'group flex flex-col items-center gap-1.5 text-center rounded-md outline-none cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
-      : 'group flex flex-col items-center gap-0.5 text-center rounded-md outline-none cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
+      ? 'group flex min-w-0 w-full flex-col items-center gap-1.5 text-center rounded-md outline-none cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
+      : 'group flex min-w-0 w-full flex-col items-center gap-0.5 text-center rounded-md outline-none cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
 
   const labelClass =
     variant === 'landing'
-      ? 'text-[0.8125rem] lg:text-[0.9375rem] font-bold tracking-tight'
-      : 'text-[0.625rem] font-medium tracking-tight'
+      ? 'text-[0.6875rem] sm:text-[0.8125rem] lg:text-[0.9375rem] font-bold tracking-tight'
+      : 'text-[0.5625rem] sm:text-[0.625rem] font-medium tracking-tight'
 
   return (
     <button
@@ -103,7 +103,7 @@ export function LanguageToggle({
       <span className="inline-flex text-gray-900 transition-colors duration-200 group-hover:text-gray-600">
         <IconLanguage className={resolvedIconSize} />
       </span>
-      <span className={cn(labelClass, 'tabular-nums')}>
+          <span className={cn(labelClass, 'tabular-nums whitespace-nowrap')}>
         <span className={cn(!isEs ? 'text-gray-900' : 'text-gray-400')}>
           {dict.nav.languageEn}
         </span>

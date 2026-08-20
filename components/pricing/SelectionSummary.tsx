@@ -48,18 +48,25 @@ export function SelectionSummary({
   const [emailMessage, setEmailMessage] = useState('')
   const [mobileExpanded, setMobileExpanded] = useState(false)
 
-  const packagePrice = selectedPlan?.price ?? 0
+  const quoted = Boolean(selectedPlan?.contactForPricing)
+  const packagePrice = quoted ? 0 : (selectedPlan?.price ?? 0)
   const handoffFee = selectedBuildHandoff ? BUILD_HANDOFF_FEE : 0
   const oneTime = packagePrice + handoffFee
   const monthly = selectedSupport?.price ?? 0
-  const deposit = selectedPlan ? Math.round(packagePrice / 2) : null
+  const deposit =
+    selectedPlan && !quoted ? Math.round(packagePrice / 2) : null
   const goLiveDue =
     deposit != null
       ? deposit + (selectedSupport ? monthly : 0) + handoffFee
       : handoffFee > 0
         ? handoffFee
         : null
-  const oneTimeLabel = oneTime > 0 ? formatMoney(oneTime, locale) : '$0'
+  const oneTimeLabel =
+    quoted && selectedPlan
+      ? selectedPlan.priceLabel
+      : oneTime > 0
+        ? formatMoney(oneTime, locale)
+        : '$0'
   const totalLabel = selectedSupport
     ? t(p.totalWithMonthly, {
         oneTime: oneTimeLabel,
@@ -145,7 +152,9 @@ export function SelectionSummary({
                   {t(p.packageSuffix, { name: selectedPlan.name })}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {t(p.oneTimeSuffix, { price: selectedPlan.priceLabel })}
+                  {selectedPlan.contactForPricing
+                    ? selectedPlan.priceLabel
+                    : t(p.oneTimeSuffix, { price: selectedPlan.priceLabel })}
                 </p>
               </div>
               <button

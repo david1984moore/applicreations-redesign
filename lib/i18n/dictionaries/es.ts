@@ -18,7 +18,7 @@ export const es: Dictionary = {
     pricingTitle: 'Precios — Applicreations',
     pricingDescription:
       'Precios simples para sitios web a la medida — paquetes de pago único más hosting y soporte desde $19 al mes.',
-    demosTitle: 'Nuestro trabajo — Applicreations',
+    demosTitle: 'Proyectos — Applicreations',
     demosDescription:
       'Proyectos reales de clientes de Applicreations — mira cómo se ve cada sitio y qué incluyó.',
   },
@@ -41,23 +41,24 @@ export const es: Dictionary = {
     howItWorks: 'Cómo funciona',
     threeSteps: 'Tres pasos simples para tener tu sitio web…',
     beginIntrospect: 'Comenzar la Introspección',
+    getFreePreview: 'Obtener vista previa gratis',
     steps: {
       introspect: {
         label: 'Introspección',
-        detail: 'Unas preguntas fáciles sobre tu negocio — solo cuéntanos qué haces.',
+        detail: 'Responde unas preguntas sobre tu proyecto.',
       },
       livePreview: {
-        label: 'Vista previa en vivo',
-        detail: 'Un sitio de prueba que puedes abrir, navegar y probar tú mismo…',
+        label: 'Vista previa gratis',
+        detail: 'Un sitio web gratis que puedes navegar y probar tú mismo.',
         building: 'Applicreations se pone a trabajar en tu vista previa.',
-        phoneSuffix: 'incluso en tu teléfono',
+        phoneSuffix: 'Incluso en tu teléfono.',
       },
       workingWebsite: {
         label: 'Sitio web funcionando',
-        detail: 'Lo revisamos contigo, hacemos revisiones, terminamos la construcción y entregamos el sitio real.',
-        review: 'Lo revisamos contigo,',
-        revise: 'hacemos revisiones,',
-        suffix: 'terminamos la construcción y entregamos el sitio real.',
+        detail: 'Lo revisamos contigo, hacemos revisiones. La construcción está terminada y el sitio web real está entregado.',
+        review: 'Lo revisamos contigo.',
+        revise: 'Luego hacemos revisiones.',
+        suffix: 'La construcción está terminada y el sitio web real está entregado.',
       },
     },
   },
@@ -105,8 +106,7 @@ export const es: Dictionary = {
     errorGeneric: 'Algo salió mal. Por favor intenta de nuevo.',
   },
   demos: {
-    title: 'Nuestro trabajo',
-    intro: 'Elige un proyecto para ver cómo se ve y qué incluyó.',
+    title: 'Proyectos',
     chooseProjectAria: 'Elige un proyecto',
     screensAria: 'Pantallas de {title}',
     showLabel: 'Mostrar {label}',
@@ -125,6 +125,7 @@ export const es: Dictionary = {
     wantLikeThis: '¿Quieres algo así?',
     startOrEmail: 'Comienza con la Introspección — o escríbenos directamente.',
     beginIntrospect: 'Comenzar la Introspección',
+    getStarted: 'Comenzar',
     contact: 'Contacto',
   },
   pricingPage: {
@@ -260,7 +261,7 @@ export const es: Dictionary = {
     selectionEmailSubjectWithPlan: 'Tu selección de Applicreations — {name}',
     selectionEmailSubjectWithSupport: 'Tu selección de Applicreations — {name}',
     selectionEmailBodyHeader: 'Tu selección de Applicreations',
-    selectionEmailWebsitePackage: 'Paquete de sitio web: {name} — {price} pago único',
+    selectionEmailWebsitePackage: 'Paquete de sitio web: {name} — {price}',
     selectionEmailWebsiteNone: 'Paquete de sitio web: (ninguno seleccionado)',
     selectionEmailMonthlyCare: 'Cuidado mensual: {name} — {price}',
     selectionEmailMonthlyNone: 'Cuidado mensual: (ninguno seleccionado)',
@@ -565,6 +566,7 @@ export const es: Dictionary = {
     },
   },
   plans: {
+    contactForPricing: 'Contactar para precio',
     basicSupport: {
       description:
         'Arreglos y ayuda continua para tu sitio cuando algo se descompone o necesita una actualización pequeña.',
@@ -1036,7 +1038,7 @@ export const es: Dictionary = {
         'Sistema simple de pedidos por correo',
         'Bilingüe EN / ES',
       ],
-      packageLabel: 'Paquete Business · $895',
+      packageLabel: 'Paquete Business · $999',
       galleryLabels: {
         '/images/caramel-jo/homepage.jpg': 'Página de inicio',
         '/images/caramel-jo/menu.jpg': 'Menú',
@@ -1054,7 +1056,7 @@ export const es: Dictionary = {
         'Bilingüe EN / ES',
         'Llamadas, direcciones y enlaces a redes',
       ],
-      packageLabel: 'Paquete Business · $895',
+      packageLabel: 'Paquete Business · $999',
       galleryLabels: {
         '/images/mi-gente/homepage.jpg': 'Página de inicio',
         '/images/mi-gente/menu.jpg': 'Menú y horarios',

@@ -30,11 +30,11 @@ export function Navigation() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-paper/85 backdrop-blur-md">
-        <nav className="max-w-[90rem] mx-auto px-3 sm:px-6 lg:px-8">
-          <div className={`flex items-center justify-between ${SITE_NAV_HEIGHT_CLASS}`}>
+        <nav className="max-w-[90rem] mx-auto px-2 sm:px-6 lg:px-8">
+          <div className={`flex w-full min-w-0 items-start justify-between gap-x-1 pt-3 sm:items-center sm:pt-0 ${SITE_NAV_HEIGHT_CLASS}`}>
             <Link
               href={href('/')}
-              className="relative flex items-center cursor-pointer group z-10 shrink-0"
+              className="relative z-10 flex shrink-0 cursor-pointer items-center self-start group sm:self-center"
               aria-label={dict.nav.homeAria}
             >
               <Image
@@ -86,8 +86,8 @@ export function Navigation() {
               </svg>
             </Link>
 
-            {/* Always-visible links (mobile + desktop). No hamburger / dropdown on subpages. */}
-            <div className="shrink-0">
+            {/* Mobile: fill leftover space evenly. Desktop: cluster on the right. */}
+            <div className="min-w-0 flex-1 sm:flex-none">
               <BrandNavLinks variant="subpage" />
             </div>
           </div>

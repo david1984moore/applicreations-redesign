@@ -31,6 +31,7 @@ import {
   getPlans,
   getSupportPlans,
   type PlanId,
+  type PricingPlan,
   type SupportPlanId,
 } from '@/lib/pricing'
 import { cn } from '@/lib/utils'
@@ -43,6 +44,27 @@ const introLinkClass =
 
 const whatsIncludedLinkClass =
   'cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-[oklch(52%_0.16_295)] hover:text-[oklch(45%_0.15_295)]'
+
+function WebsitePlanPrice({
+  plan,
+  oneTimeLabel,
+  className,
+}: {
+  plan: PricingPlan
+  oneTimeLabel: string
+  className?: string
+}) {
+  return (
+    <p className={className}>
+      {plan.priceLabel}
+      {!plan.contactForPricing ? (
+        <span className="ml-1.5 text-xs font-sans font-normal text-gray-500">
+          {oneTimeLabel}
+        </span>
+      ) : null}
+    </p>
+  )
+}
 
 /** Icons for cancel-takeover items — order matches dictionary arrays (en/es). */
 const CANCEL_ITEM_ICONS: LucideIcon[] = [
@@ -196,12 +218,16 @@ export default function PricingPageClient() {
                             <h2 className="font-display text-2xl text-gray-900 leading-none min-w-0">
                               {plan.name}
                             </h2>
-                            <p className="font-display text-xl text-primary-700 whitespace-nowrap leading-none shrink-0">
-                              {plan.priceLabel}
-                              <span className="ml-1.5 text-xs font-sans font-normal text-gray-500">
-                                {p.oneTime}
-                              </span>
-                            </p>
+                            <WebsitePlanPrice
+                              plan={plan}
+                              oneTimeLabel={p.oneTime}
+                              className={cn(
+                                'font-display text-xl text-primary-700 leading-none shrink-0',
+                                plan.contactForPricing
+                                  ? 'whitespace-normal text-right max-w-[9.5rem]'
+                                  : 'whitespace-nowrap'
+                              )}
+                            />
                           </div>
                           <PlanFeatureRotator
                             messages={plan.features}
@@ -250,12 +276,14 @@ export default function PricingPageClient() {
                             />
                           </div>
                           <div className="flex flex-col items-center justify-self-center text-center px-2">
-                            <p className="font-display text-2xl text-primary-700 whitespace-nowrap leading-none">
-                              {plan.priceLabel}
-                              <span className="ml-1.5 text-xs font-sans font-normal text-gray-500">
-                                {p.oneTime}
-                              </span>
-                            </p>
+                            <WebsitePlanPrice
+                              plan={plan}
+                              oneTimeLabel={p.oneTime}
+                              className={cn(
+                                'font-display text-2xl text-primary-700 leading-none',
+                                plan.contactForPricing ? 'whitespace-normal' : 'whitespace-nowrap'
+                              )}
+                            />
                             <button
                               type="button"
                               onClick={() => togglePlanOpen(plan.id)}
@@ -698,9 +726,9 @@ export default function PricingPageClient() {
                             <LinkRenderText
                               text={t(p.goingLiveStep2HandoffExample, {
                                 planName: plans[0]?.name ?? 'Starter',
-                                planPrice: plans[0]?.priceLabel ?? '$295',
+                                planPrice: plans[0]?.priceLabel ?? '$349',
                                 handoffFee: p.goingLiveStep2HandoffFee,
-                                total: `$${((plans[0]?.price ?? 295) + BUILD_HANDOFF_FEE).toLocaleString('en-US')}`,
+                                total: `$${((plans[0]?.price ?? 349) + BUILD_HANDOFF_FEE).toLocaleString('en-US')}`,
                               })}
                             />
                           </p>

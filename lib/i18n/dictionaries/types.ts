@@ -176,6 +176,7 @@ export type Dictionary = {
     howItWorks: string
     threeSteps: string
     beginIntrospect: string
+    getFreePreview: string
     steps: {
       introspect: { label: string; detail: string }
       livePreview: { label: string; detail: string; building: string; phoneSuffix: string }
@@ -233,7 +234,6 @@ export type Dictionary = {
   }
   demos: {
     title: string
-    intro: string
     chooseProjectAria: string
     screensAria: string
     showLabel: string
@@ -252,6 +252,7 @@ export type Dictionary = {
     wantLikeThis: string
     startOrEmail: string
     beginIntrospect: string
+    getStarted: string
     contact: string
   }
   pricingPage: {
@@ -424,6 +425,7 @@ export type Dictionary = {
     emailLabels: Record<string, string>
   }
   plans: {
+    contactForPricing: string
     basicSupport: { description: string }
     packageDetailLabels: Record<string, string>
     supportDetailLabels: Record<string, string>

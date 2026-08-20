@@ -288,6 +288,23 @@ h1, h2, h3, h4, h5, h6 {
   animation: hiw-glow-build 2.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
+.hiw-blurb {
+  overflow: visible;
+}
+
+.hiw-blurb p {
+  text-shadow:
+    0 1px 0 oklch(97% 0.012 85 / 0.5),
+    0 1px 2px oklch(22% 0.03 50 / 0.16);
+}
+
+.hiw-blurb-over {
+  text-shadow:
+    0 1px 0 oklch(97% 0.012 85 / 0.72),
+    0 1px 2px oklch(22% 0.03 50 / 0.28),
+    0 4px 10px oklch(97% 0.012 85 / 0.55);
+}
+
 @keyframes hiw-glow-pulse {
   0% {
     opacity: 0;
@@ -369,23 +386,100 @@ h1, h2, h3, h4, h5, h6 {
   animation: hiw-intro-3-grow 1.55s cubic-bezier(0.22, 0.55, 0.28, 1) both;
 }
 
-/* 2D compositor scale — avoids 3D matrix snapping that looks like film-reel jumps. */
+/* Paint the tagline at 3×, then GPU-scale that bitmap. Scaling a 1× layer
+   up looks blurry and can snap when Chrome re-rasters; this stays sharp.
+   Scale and fade share one clock. Slow approach, then most of the extra
+   size dumps in a last-beat rush toward the viewer (linear() so the join
+   stays continuous). Fade starts as the rush begins, so the letters get
+   bigger on screen, then drop out before they spill into the left column.
+   Max 3× visual (already invisible at the peak). */
+.hiw-tagline-slot {
+  position: relative;
+  display: block;
+  overflow: visible;
+}
+
+.hiw-tagline-ghost {
+  visibility: hidden;
+  display: block;
+}
+
+.hiw-tagline-live {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 300%;
+  font-size: 300%;
+  line-height: inherit;
+  text-align: center;
+  transform: translate(-50%, -50%) translateZ(0) scale(0.3333);
+  transform-origin: 50% 50%;
+  opacity: 1;
+  will-change: transform, opacity;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  font-kerning: none;
+  font-variant-ligatures: none;
+  backface-visibility: hidden;
+}
+
 @keyframes hiw-tagline-grow {
   from {
-    transform: translateZ(0) scale(1);
+    transform: translate(-50%, -50%) translateZ(0) scale(0.3333);
   }
   to {
-    transform: translateZ(0) scale(1.28);
+    transform: translate(-50%, -50%) translateZ(0) scale(1);
+  }
+}
+
+@keyframes hiw-tagline-fade {
+  0%,
+  68% {
+    opacity: 1;
+  }
+  76% {
+    opacity: 0.28;
+  }
+  82%,
+  100% {
+    opacity: 0;
   }
 }
 
 .hiw-tagline-grow {
-  display: inline-block;
-  transform-origin: 50% 50%;
-  will-change: transform;
-  backface-visibility: hidden;
-  text-rendering: geometricPrecision;
-  animation: hiw-tagline-grow 2.4s linear both;
+  animation:
+    hiw-tagline-grow 2.8s
+      linear(
+        0,
+        0.038 5%,
+        0.07 10%,
+        0.098 15%,
+        0.122 20%,
+        0.144 25%,
+        0.164 30%,
+        0.184 35%,
+        0.204 40%,
+        0.226 45%,
+        0.25 50%,
+        0.276 55%,
+        0.306 60%,
+        0.34 65%,
+        0.378 70%,
+        0.412 74%,
+        0.45 78%,
+        0.5 82%,
+        0.57 86%,
+        0.67 90%,
+        0.78 93%,
+        0.86 95%,
+        0.93 97%,
+        0.975 98.5%,
+        1
+      )
+      both,
+    hiw-tagline-fade 2.8s linear both;
 }
 
 @keyframes hiw-intro-ripple-inner {
@@ -449,6 +543,50 @@ h1, h2, h3, h4, h5, h6 {
   animation: hiw-intro-ripple-outer 1.12s cubic-bezier(0.15, 0.55, 0.3, 1) 0.24s both;
 }
 
+@keyframes hiw-digit-shake {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  12% {
+    transform: translate3d(calc(var(--sx, 1) * -1.5px), 0.45px, 0)
+      rotate(calc(var(--sr, 1) * -8deg));
+  }
+  24% {
+    transform: translate3d(calc(var(--sx, 1) * 1.9px), -0.35px, 0)
+      rotate(calc(var(--sr, 1) * 9deg));
+  }
+  36% {
+    transform: translate3d(calc(var(--sx, 1) * -1.8px), 0.4px, 0)
+      rotate(calc(var(--sr, 1) * -7deg));
+  }
+  48% {
+    transform: translate3d(calc(var(--sx, 1) * 1.6px), -0.28px, 0)
+      rotate(calc(var(--sr, 1) * 6deg));
+  }
+  62% {
+    transform: translate3d(calc(var(--sx, 1) * -1.15px), 0.22px, 0)
+      rotate(calc(var(--sr, 1) * -4deg));
+  }
+  76% {
+    transform: translate3d(calc(var(--sx, 1) * 0.7px), -0.12px, 0)
+      rotate(calc(var(--sr, 1) * 2.4deg));
+  }
+  88% {
+    transform: translate3d(calc(var(--sx, 1) * -0.35px), 0, 0)
+      rotate(calc(var(--sr, 1) * -1deg));
+  }
+}
+
+.hiw-digit-shake {
+  display: inline-block;
+  transform-origin: 50% 58%;
+  will-change: transform;
+  backface-visibility: hidden;
+  animation: hiw-digit-shake var(--shake-ms, 420ms)
+    cubic-bezier(0.32, 0.18, 0.28, 0.96) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bg-fade-pro,
   .bg-fade-next {
@@ -484,12 +622,18 @@ h1, h2, h3, h4, h5, h6 {
 
   .hiw-tagline-grow {
     animation: none;
-    transform: none;
+    transform: translate(-50%, -50%) translateZ(0) scale(0.3333);
+    opacity: 1;
   }
 
   .hiw-intro-ripple,
   .hiw-intro-ripple-b {
     animation: none;
     display: none;
+  }
+
+  .hiw-digit-shake {
+    animation: none;
+    transform: none;
   }
 }

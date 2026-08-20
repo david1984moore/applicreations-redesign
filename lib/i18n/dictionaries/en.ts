@@ -18,7 +18,7 @@ export const en: Dictionary = {
     pricingTitle: 'Pricing — Applicreations',
     pricingDescription:
       'Simple pricing for custom websites — one-time packages plus hosting & support from $19/month.',
-    demosTitle: 'Our work — Applicreations',
+    demosTitle: 'Projects — Applicreations',
     demosDescription:
       'Real client projects by Applicreations — see how each site looks and what went into it.',
   },
@@ -41,23 +41,24 @@ export const en: Dictionary = {
     howItWorks: 'How it works',
     threeSteps: 'Three simple steps to get your website…',
     beginIntrospect: 'Begin Introspect',
+    getFreePreview: 'Get Free Preview',
     steps: {
       introspect: {
         label: 'Introspect',
-        detail: 'A few easy questions about your business — just tell us what you do.',
+        detail: 'Answer a few questions about your project.',
       },
       livePreview: {
-        label: 'Live preview',
-        detail: 'A practice site you can open, click through, and try yourself…',
+        label: 'Free preview',
+        detail: 'A free website you can click through and try yourself.',
         building: 'Applicreations gets to work on your preview.',
-        phoneSuffix: 'even on your phone',
+        phoneSuffix: 'Even on your phone.',
       },
       workingWebsite: {
         label: 'Working website',
-        detail: 'We review with you, make revisions, finish the build, and deliver the real site.',
-        review: 'We review with you,',
-        revise: 'make revisions,',
-        suffix: 'finish the build, and deliver the real site.',
+        detail: 'We review with you, make revisions. The build is finished and the real website is delivered.',
+        review: 'We review with you.',
+        revise: 'Then we make revisions.',
+        suffix: 'The build is finished and the real website is delivered.',
       },
     },
   },
@@ -105,8 +106,7 @@ export const en: Dictionary = {
     errorGeneric: 'Something went wrong. Please try again.',
   },
   demos: {
-    title: 'Our work',
-    intro: 'Pick a project to see how it looks and what went into it.',
+    title: 'Projects',
     chooseProjectAria: 'Choose a project',
     screensAria: '{title} screens',
     showLabel: 'Show {label}',
@@ -125,6 +125,7 @@ export const en: Dictionary = {
     wantLikeThis: 'Want something like this?',
     startOrEmail: 'Start with Introspect — or email us directly.',
     beginIntrospect: 'Begin Introspect',
+    getStarted: 'Get Started',
     contact: 'Contact',
   },
   pricingPage: {
@@ -259,7 +260,7 @@ export const en: Dictionary = {
     selectionEmailSubjectWithPlan: 'Your Applicreations selection — {name}',
     selectionEmailSubjectWithSupport: 'Your Applicreations selection — {name}',
     selectionEmailBodyHeader: 'Your Applicreations selection',
-    selectionEmailWebsitePackage: 'Website package: {name} — {price} one-time',
+    selectionEmailWebsitePackage: 'Website package: {name} — {price}',
     selectionEmailWebsiteNone: 'Website package: (none selected)',
     selectionEmailMonthlyCare: 'Monthly care: {name} — {price}',
     selectionEmailMonthlyNone: 'Monthly care: (none selected)',
@@ -547,6 +548,7 @@ export const en: Dictionary = {
     },
   },
   plans: {
+    contactForPricing: 'Contact for pricing',
     basicSupport: {
       description:
         'Ongoing fixes and help for your site when something breaks or needs a small update.',
@@ -1009,7 +1011,7 @@ export const en: Dictionary = {
         'Simple email ordering system',
         'Bilingual EN / ES',
       ],
-      packageLabel: 'Business package · $895',
+      packageLabel: 'Business package · $999',
       galleryLabels: {
         '/images/caramel-jo/homepage.jpg': 'Homepage',
         '/images/caramel-jo/menu.jpg': 'Menu',
@@ -1027,7 +1029,7 @@ export const en: Dictionary = {
         'Bilingual EN / ES',
         'Call, directions & social links',
       ],
-      packageLabel: 'Business package · $895',
+      packageLabel: 'Business package · $999',
       galleryLabels: {
         '/images/mi-gente/homepage.jpg': 'Homepage',
         '/images/mi-gente/menu.jpg': 'Menu & hours',

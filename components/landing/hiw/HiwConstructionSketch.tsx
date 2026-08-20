@@ -147,7 +147,7 @@ function House({
       >
         <path d="M176 106 L217 70 L258 106 Z" fill={ROOF} />
         <path d="M182 106 L217 76 L252 106 Z" fill={ROOF_EDGE} opacity="0.35" />
-        <rect x="236" y="78" width="8" height="16" fill={C.navy} />
+        <rect x="190" y="78" width="8" height="16" fill={C.navy} />
       </motion.g>
     </g>
   )
@@ -466,6 +466,7 @@ function UpperBody({
   leanStrike = 1,
   leanRaised = -6,
   swingX = -3.4,
+  hang = 90,
 }: {
   swinging: boolean
   strike: number
@@ -476,16 +477,17 @@ function UpperBody({
   leanStrike?: number
   leanRaised?: number
   swingX?: number
+  hang?: number
 }) {
   const cock = useHammerCock(swinging)
   const lean = lerp(leanStrike, leanRaised, cock)
 
   return (
     <g transform={`rotate(${lean})`}>
+      <IdleArm x={idle.x} y={idle.y} cock={cock} hang={hang} />
       <g transform="translate(0.4 -11.6)">
         <ProfileTorso />
       </g>
-      <IdleArm x={idle.x} y={idle.y} cock={cock} />
       <ellipse cx="1.2" cy="-22.4" rx="2.2" ry="3.2" fill={SKIN} />
       <g transform="translate(1.6 -29.2)">
         <ProfileHead />
@@ -581,9 +583,10 @@ function PoseGround({ swinging, kneel }: { swinging: boolean; kneel: number }) {
           elbowRaised={lerp(-102, -78, t)}
           leanStrike={lerp(1, 18, t)}
           swingX={lerp(-3.4, 1.2, t)}
+          hang={90}
           idle={{
-            x: lerp(-5.4, -3.8, t),
-            y: lerp(-18.8, -16.2, t),
+            x: lerp(7.4, 6.6, t),
+            y: lerp(-18.4, -16.0, t),
           }}
         />
       </g>
@@ -613,7 +616,8 @@ function PoseRoof({ swinging }: { swinging: boolean }) {
         raised={-46}
         elbowStrike={-62}
         elbowRaised={-104}
-        idle={{ x: -4.8, y: -16.8 }}
+        hang={90}
+        idle={{ x: 7.2, y: -16.6 }}
       />
     </g>
   )

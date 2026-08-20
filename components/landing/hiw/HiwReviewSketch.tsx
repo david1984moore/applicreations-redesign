@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { animate, motion } from 'framer-motion'
 import { C } from '@/components/pricing/ExampleScreenRotator'
 import { Backdrop, Rocks, Worker } from '@/components/landing/hiw/HiwConstructionSketch'
@@ -8,7 +8,24 @@ import { HiwWorkingWebsiteSketch } from '@/components/landing/hiw/HiwDeviceSketc
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const CROSS = { duration: 1.05, ease: EASE }
+const SCREENS_CROSS = { duration: 1.12, ease: EASE }
 const SOFT = { duration: 0.86, ease: EASE }
+
+/** Keep a fading layer mounted through its opacity out, then drop it so it cannot flash later. */
+function useKeepMounted(active: boolean, holdMs: number) {
+  const [held, setHeld] = useState(active)
+
+  useEffect(() => {
+    if (active) {
+      setHeld(true)
+      return
+    }
+    const id = window.setTimeout(() => setHeld(false), holdMs)
+    return () => window.clearTimeout(id)
+  }, [active, holdMs])
+
+  return active || held
+}
 
 const HAT = 'oklch(84% 0.17 92)'
 const HAT_BRIM = 'oklch(76% 0.15 88)'
@@ -30,6 +47,17 @@ const DRESS = 'oklch(62% 0.13 18)'
 const DRESS_D = 'oklch(54% 0.12 16)'
 const BLOUSE = 'oklch(96% 0.012 85)'
 const FIGURE = 1.28
+const SNAP = { duration: 0.48, ease: EASE }
+/** Smoke starts this far before the house-to-screens cut, so it reads as “lived in.” */
+const HOUSE_SMOKE_LEAD_MS = 2800
+const HOUSE_SMOKE_MIN_MS = 2400
+const TRUNK = 'oklch(46% 0.09 55)'
+const LEAF = 'oklch(58% 0.12 145)'
+const LEAF_D = 'oklch(50% 0.11 150)'
+const LEAF_L = 'oklch(66% 0.11 140)'
+const ASPHALT = 'oklch(58% 0.02 260)'
+const ASPHALT_L = 'oklch(68% 0.02 260)'
+const CAR = 'oklch(42% 0.08 255)'
 
 export type ReviewBeat = 'review' | 'house' | 'screens'
 type PointAt = 'window' | 'door' | 'roof'
@@ -51,67 +79,82 @@ export function HiwStep3Cinema({
 }: HiwStep3CinemaProps) {
   const [beat, setBeat] = useState<ReviewBeat>('review')
   const [screensReady, setScreensReady] = useState(false)
+  const onBeatRef = useRef(onBeat)
+  onBeatRef.current = onBeat
+
+  const reviewOn = beat === 'review'
+  const houseOn = beat === 'house'
+  const screensOn = beat === 'screens'
+  const showReview = useKeepMounted(reviewOn, CROSS.duration * 1000)
+  const showHouse = useKeepMounted(houseOn, CROSS.duration * 1000)
+  const showScreens = useKeepMounted(screensOn, SCREENS_CROSS.duration * 1000)
 
   useEffect(() => {
     if (!playing) return
 
     setBeat('review')
     setScreensReady(false)
-    onBeat?.('review')
+    onBeatRef.current?.('review')
 
     const timers = [
       window.setTimeout(() => {
         setBeat('house')
-        onBeat?.('house')
+        onBeatRef.current?.('house')
       }, reviewMs),
       window.setTimeout(() => {
         setBeat('screens')
         setScreensReady(true)
-        onBeat?.('screens')
+        onBeatRef.current?.('screens')
       }, reviewMs + houseMs),
     ]
     return () => {
       for (const id of timers) window.clearTimeout(id)
     }
-  }, [playing, reviewMs, houseMs, onBeat])
+  }, [playing, reviewMs, houseMs])
 
   return (
-    <div className="relative w-full min-h-[17rem] sm:min-h-[18.5rem]">
-      <motion.div
-        className="absolute inset-0 flex items-end justify-center"
-        initial={false}
-        animate={{ opacity: beat === 'review' ? 1 : 0 }}
-        transition={CROSS}
-        aria-hidden
-      >
-        <TableReview playing={playing && beat === 'review'} />
-      </motion.div>
+    <div className="relative isolate w-full min-h-[17rem] sm:min-h-[18.5rem]">
+      {showReview ? (
+        <motion.div
+          className="absolute inset-0 flex items-end justify-center"
+          initial={false}
+          animate={{ opacity: reviewOn ? 1 : 0 }}
+          transition={CROSS}
+          aria-hidden
+        >
+          <TableReview playing={playing && reviewOn} />
+        </motion.div>
+      ) : null}
 
-      <motion.div
-        className="absolute inset-0 flex items-end justify-center"
-        initial={false}
-        animate={{ opacity: beat === 'house' ? 1 : 0 }}
-        transition={CROSS}
-        aria-hidden
-      >
-        <HouseWalkthrough playing={playing && beat === 'house'} />
-      </motion.div>
+      {showHouse ? (
+        <motion.div
+          className="absolute inset-0 flex items-end justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: houseOn ? 1 : 0 }}
+          transition={CROSS}
+          aria-hidden
+        >
+          <HouseWalkthrough playing={playing && houseOn} duration={houseMs} />
+        </motion.div>
+      ) : null}
 
-      <motion.div
-        className="absolute inset-0 flex items-start justify-center pt-2 sm:pt-3"
-        initial={false}
-        animate={{ opacity: beat === 'screens' ? 1 : 0 }}
-        transition={{ duration: 1.12, ease: EASE }}
-        aria-hidden
-      >
-        {screensReady ? (
-          <HiwWorkingWebsiteSketch
-            playing={playing && beat === 'screens'}
-            duration={screensMs}
-            entrance="fade"
-          />
-        ) : null}
-      </motion.div>
+      {showScreens ? (
+        <motion.div
+          className="absolute inset-0 flex items-start justify-center pt-2 sm:pt-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: screensOn ? 1 : 0 }}
+          transition={SCREENS_CROSS}
+          aria-hidden
+        >
+          {screensReady ? (
+            <HiwWorkingWebsiteSketch
+              playing={playing && screensOn}
+              duration={screensMs}
+              entrance="fade"
+            />
+          ) : null}
+        </motion.div>
+      ) : null}
     </div>
   )
 }
@@ -151,9 +194,16 @@ function TableReview({ playing }: { playing: boolean }) {
   )
 }
 
-function HouseWalkthrough({ playing }: { playing: boolean }) {
+function HouseWalkthrough({
+  playing,
+  duration,
+}: {
+  playing: boolean
+  duration: number
+}) {
   const [polish, setPolish] = useState(0)
   const [point, setPoint] = useState<PointAt>('window')
+  const [smoking, setSmoking] = useState(false)
   const talk = useTalkCycle(playing)
 
   useEffect(() => {
@@ -162,20 +212,28 @@ function HouseWalkthrough({ playing }: { playing: boolean }) {
       setPoint('window')
       return
     }
+    setSmoking(false)
+    const smokeAt = Math.max(HOUSE_SMOKE_MIN_MS, duration - HOUSE_SMOKE_LEAD_MS)
     const timers = [
       window.setTimeout(() => {
         setPolish(1)
         setPoint('door')
-      }, 920),
+      }, 360),
       window.setTimeout(() => {
         setPolish(2)
         setPoint('roof')
-      }, 2680),
+      }, 820),
+      window.setTimeout(() => {
+        setPolish(3)
+      }, 1280),
+      window.setTimeout(() => {
+        setSmoking(true)
+      }, smokeAt),
     ]
     return () => {
       for (const id of timers) window.clearTimeout(id)
     }
-  }, [playing])
+  }, [playing, duration])
 
   return (
     <svg
@@ -184,14 +242,14 @@ function HouseWalkthrough({ playing }: { playing: boolean }) {
       className="h-auto w-full overflow-visible"
       aria-hidden
     >
-      <ellipse cx="220" cy="172" rx="148" ry="7" fill="oklch(78% 0.03 75 / 0.28)" />
+      <ellipse cx="220" cy="172" rx="168" ry="7" fill="oklch(78% 0.03 75 / 0.28)" />
       <g transform="translate(412 172) scale(1.36) translate(-384 -170)">
         <Backdrop />
         <Rocks />
       </g>
 
       <g transform="translate(208 170) scale(1.48) translate(-217 -162)">
-        <WalkHouse polish={polish} point={point} />
+        <WalkHouse polish={polish} smoking={smoking} />
       </g>
 
       <ClientWoman talking={talk < 0.5} point={point} />
@@ -199,7 +257,7 @@ function HouseWalkthrough({ playing }: { playing: boolean }) {
         <Worker phase="walls" swinging={playing} />
       </g>
 
-      <SpeechDots x={90} y={34} visible={playing && talk < 0.5} />
+      <SpeechDots x={62} y={34} visible={playing && talk < 0.5} />
       <SpeechDots x={292} y={12} visible={playing && talk >= 0.5} />
     </svg>
   )
@@ -221,12 +279,18 @@ function SideChair({ x, y, flip = false }: { x: number; y: number; flip?: boolea
   )
 }
 
-function WalkHouse({ polish, point }: { polish: number; point: PointAt }) {
+function WalkHouse({ polish, smoking }: { polish: number; smoking: boolean }) {
   const painted = polish >= 1
   const finished = polish >= 2
+  const expanded = polish >= 3
 
   return (
     <g>
+      <motion.g initial={false} animate={{ opacity: expanded ? 1 : 0 }} transition={SNAP}>
+        <YardTree x={128} y={154} s={0.92} round />
+        <YardTree x={262} y={154} s={0.72} />
+      </motion.g>
+
       <rect
         x="176"
         y="152"
@@ -244,8 +308,60 @@ function WalkHouse({ polish, point }: { polish: number; point: PointAt }) {
         strokeWidth="0.6"
         initial={false}
         animate={{ opacity: painted ? 1 : 0 }}
-        transition={SOFT}
+        transition={SNAP}
       />
+
+      <motion.g initial={false} animate={{ opacity: expanded ? 1 : 0 }} transition={SNAP}>
+        <path d="M118 162 L146 154 L182 154 L176 162 Z" fill={ASPHALT} />
+        <path d="M118 162 L176 162 L168 166 L112 166 Z" fill={ASPHALT_L} />
+        <rect
+          x="144"
+          y="154"
+          width="38"
+          height="8"
+          rx="1"
+          fill={CONCRETE}
+          stroke={CONCRETE_DARK}
+          strokeWidth="0.7"
+        />
+        <rect
+          x="148"
+          y="122"
+          width="34"
+          height="34"
+          fill={C.cream}
+          stroke={C.navy}
+          strokeWidth="1.05"
+        />
+        <rect
+          x="148"
+          y="122"
+          width="34"
+          height="34"
+          fill="oklch(94% 0.03 75)"
+          opacity="0.92"
+        />
+        <path d="M145 124 L165 106 L185 124 Z" fill={ROOF_FINE} />
+        <path d="M150 124 L165 110 L180 124 Z" fill={ROOF_EDGE} opacity="0.32" />
+        <rect
+          x="154"
+          y="132"
+          width="22"
+          height="24"
+          rx="0.8"
+          fill="oklch(48% 0.04 250)"
+          stroke={C.navy}
+          strokeWidth="0.75"
+        />
+        <path
+          d="M165 132 V156 M154 140 H176 M154 148 H176"
+          stroke={C.navy}
+          strokeWidth="0.55"
+          opacity="0.7"
+        />
+        <rect x="174.4" y="142" width="1.5" height="2.2" rx="0.3" fill={C.gold} />
+        <ParkedCar x={132} y={150} />
+      </motion.g>
 
       <rect
         x="182"
@@ -264,7 +380,7 @@ function WalkHouse({ polish, point }: { polish: number; point: PointAt }) {
         fill="oklch(94% 0.03 75)"
         initial={false}
         animate={{ opacity: painted ? 0.92 : 0 }}
-        transition={{ duration: 1.4, ease: EASE }}
+        transition={SNAP}
       />
       <rect x="186" y="108" width="62" height="4" fill={C.sand} />
       <motion.rect
@@ -275,7 +391,7 @@ function WalkHouse({ polish, point }: { polish: number; point: PointAt }) {
         fill={C.coral}
         initial={false}
         animate={{ opacity: finished ? 1 : 0 }}
-        transition={SOFT}
+        transition={SNAP}
       />
 
       <rect
@@ -297,31 +413,37 @@ function WalkHouse({ polish, point }: { polish: number; point: PointAt }) {
         fill={C.coral}
         initial={false}
         animate={{ opacity: painted ? 1 : 0 }}
-        transition={SOFT}
+        transition={SNAP}
       />
       <circle cx="219.5" cy="141" r="1.05" fill={C.gold} />
 
       <Window x={188} y={114} />
       <Window x={226} y={114} />
-      <motion.g initial={false} animate={{ opacity: painted ? 1 : 0 }} transition={SOFT}>
+      <motion.g initial={false} animate={{ opacity: painted ? 1 : 0 }} transition={SNAP}>
         <FlowerBox x={186} y={126} />
         <FlowerBox x={224} y={126} />
       </motion.g>
-      <motion.g initial={false} animate={{ opacity: finished ? 1 : 0 }} transition={SOFT}>
+      <motion.g initial={false} animate={{ opacity: finished ? 1 : 0 }} transition={SNAP}>
         <Shutter x={182.6} y={114} />
         <Shutter x={204.2} y={114} />
         <Shutter x={220.6} y={114} />
         <Shutter x={242.2} y={114} />
         <circle cx="201.6" cy="132" r="2.4" fill={C.gold} opacity="0.9" />
         <path d="M201.6 134.4 V146" stroke={C.navy} strokeWidth="0.7" />
+        <rect x="198.8" y="144.6" width="5.6" height="7.4" rx="0.6" fill={WOOD} />
         <path
           d="M170 154 C174 146 180 144 184 148"
           fill="none"
           stroke="oklch(52% 0.12 145)"
           strokeWidth="1.4"
         />
-        <ellipse cx="172" cy="146" rx="4.4" ry="5.2" fill="oklch(58% 0.12 145)" />
-        <ellipse cx="178" cy="143" rx="3.6" ry="4.4" fill="oklch(66% 0.11 140)" />
+        <ellipse cx="172" cy="146" rx="4.4" ry="5.2" fill={LEAF} />
+        <ellipse cx="178" cy="143" rx="3.6" ry="4.4" fill={LEAF_L} />
+        <ellipse cx="248" cy="148" rx="5" ry="5.6" fill={LEAF} />
+        <ellipse cx="256" cy="150" rx="4.2" ry="4.6" fill={LEAF_L} />
+        <rect x="264.2" y="146" width="1.5" height="8" rx="0.4" fill={WOOD_D} />
+        <rect x="262.4" y="142.4" width="5.4" height="4.2" rx="0.7" fill={C.navy} />
+        <rect x="266.6" y="143.6" width="1.6" height="1.5" rx="0.3" fill={C.coral} />
       </motion.g>
 
       <path d="M176 106 L217 70 L258 106 Z" fill={ROOF} />
@@ -331,21 +453,106 @@ function WalkHouse({ polish, point }: { polish: number; point: PointAt }) {
         fill={ROOF_FINE}
         initial={false}
         animate={{ opacity: finished ? 0.85 : 0 }}
-        transition={{ duration: 1.35, ease: EASE }}
+        transition={SNAP}
       />
-      <rect x="236" y="78" width="8" height="16" fill={C.navy} />
+      <rect x="190" y="78" width="8" height="16" fill={C.navy} />
       <motion.rect
-        x="236"
+        x="190"
         y="74"
         width="8"
         height="4"
         fill={C.coral}
         initial={false}
         animate={{ opacity: finished ? 1 : 0 }}
-        transition={SOFT}
+        transition={SNAP}
       />
+      <ChimneySmoke on={smoking} />
+    </g>
+  )
+}
 
-      <PointGlow at={point} />
+function ChimneySmoke({ on }: { on: boolean }) {
+  return (
+    <motion.g
+      initial={false}
+      animate={{ opacity: on ? 1 : 0 }}
+      transition={{ duration: 0.55, ease: EASE }}
+    >
+      {[0, 1, 2].map((i) => (
+        <motion.ellipse
+          key={i}
+          cx={194}
+          cy={72}
+          rx={2.1}
+          ry={1.8}
+          fill="oklch(88% 0.008 80)"
+          stroke="oklch(62% 0.02 70)"
+          strokeWidth="0.4"
+          animate={{
+            cx: [194, 196.4, 199.6],
+            cy: [72, 61, 48],
+            rx: [1.3, 2.7, 4.1],
+            ry: [1.1, 2.5, 3.7],
+            opacity: [0, 0.72, 0],
+          }}
+          transition={{
+            duration: 2.45,
+            delay: i * 0.72,
+            repeat: Infinity,
+            ease: 'easeOut',
+          }}
+        />
+      ))}
+    </motion.g>
+  )
+}
+
+function YardTree({
+  x,
+  y,
+  s = 1,
+  round = false,
+}: {
+  x: number
+  y: number
+  s?: number
+  round?: boolean
+}) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      {round ? (
+        <>
+          <rect x="-2.4" y="-18" width="4.8" height="18" rx="1.3" fill={TRUNK} />
+          <circle cx="-7" cy="-22" r="8.4" fill={LEAF_D} />
+          <circle cx="7.2" cy="-21" r="7.8" fill={LEAF_L} />
+          <circle cx="0" cy="-28" r="10.2" fill={LEAF} />
+        </>
+      ) : (
+        <>
+          <rect x="-1.7" y="-14" width="3.4" height="14" rx="1" fill={TRUNK} />
+          <path d="M0 -34 L10.5 -15 H-10.5 Z" fill={LEAF_D} />
+          <path d="M0 -28 L9 -12 H-9 Z" fill={LEAF} />
+          <path d="M0 -20 L7.4 -6 H-7.4 Z" fill={LEAF_L} />
+        </>
+      )}
+    </g>
+  )
+}
+
+function ParkedCar({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <ellipse cx="14" cy="10.2" rx="13" ry="1.5" fill="oklch(70% 0.03 75 / 0.4)" />
+      <rect x="1.2" y="3.4" width="24.6" height="6.2" rx="1.6" fill={CAR} />
+      <path d="M6.2 3.4 L9.2 -1.6 H18.6 L22.4 3.4 Z" fill={CAR} />
+      <path d="M9.6 -0.8 H18 L20.6 3.2 H7.8 Z" fill={C.skySoft} />
+      <path d="M13.6 -0.8 V3.2" stroke={C.navy} strokeWidth="0.45" />
+      <circle cx="7.2" cy="9.2" r="2.35" fill={C.ink} />
+      <circle cx="7.2" cy="9.2" r="1" fill={C.muted} />
+      <circle cx="20.6" cy="9.2" r="2.35" fill={C.ink} />
+      <circle cx="20.6" cy="9.2" r="1" fill={C.muted} />
+      <rect x="24.2" y="4.4" width="1.5" height="1.8" rx="0.3" fill={C.gold} />
+      <rect x="1.4" y="4.6" width="1.2" height="1.6" rx="0.3" fill={C.coral} />
     </g>
   )
 }
@@ -386,24 +593,6 @@ function Shutter({ x, y }: { x: number; y: number }) {
   )
 }
 
-function PointGlow({ at }: { at: PointAt }) {
-  const pos =
-    at === 'window' ? { x: 196, y: 120 } : at === 'door' ? { x: 215, y: 140 } : { x: 217, y: 86 }
-  return (
-    <motion.circle
-      cx={pos.x}
-      cy={pos.y}
-      r="7.5"
-      fill="oklch(78% 0.1 85 / 0.28)"
-      stroke={C.gold}
-      strokeWidth="0.8"
-      initial={false}
-      animate={{ cx: pos.x, cy: pos.y, opacity: [0.2, 0.85, 0.35] }}
-      transition={{ duration: 1.4, ease: EASE, opacity: { duration: 1.6, repeat: Infinity } }}
-    />
-  )
-}
-
 function WomanHair({ cx, cy }: { cx: number; cy: number }) {
   return (
     <g>
@@ -420,59 +609,100 @@ function WomanHair({ cx, cy }: { cx: number; cy: number }) {
   )
 }
 
+function BodyLean({
+  talking,
+  children,
+  pivot,
+  amount,
+}: {
+  talking: boolean
+  children: ReactNode
+  pivot: { x: number; y: number }
+  amount: number
+}) {
+  return (
+    <g transform={`translate(${pivot.x} ${pivot.y})`}>
+      <motion.g
+        initial={false}
+        animate={{ rotate: talking ? amount : 0 }}
+        transition={SOFT}
+      >
+        <g transform={`translate(${-pivot.x} ${-pivot.y})`}>{children}</g>
+      </motion.g>
+    </g>
+  )
+}
+
 function ClientWoman({ talking, point }: { talking: boolean; point: PointAt }) {
   const pose =
     point === 'window'
-      ? { shoulder: -16, elbow: -14 }
+      ? { shoulder: -8, elbow: -18 }
       : point === 'door'
-        ? { shoulder: 12, elbow: -10 }
-        : { shoulder: -36, elbow: -18 }
+        ? { shoulder: 10, elbow: -22 }
+        : { shoulder: -20, elbow: -24 }
 
   return (
-    <g transform={`translate(92 170) scale(1.92)`}>
+    <g transform={`translate(46 170) scale(1.92)`}>
       <ellipse cx="1.4" cy="0.6" rx="5.6" ry="2.1" fill={C.hair} />
       <rect x="-4" y="-10" width="5.4" height="11" rx="2.2" fill="oklch(42% 0.04 260)" />
       <rect x="0.6" y="-9.8" width="5.6" height="10.8" rx="2.2" fill="oklch(36% 0.04 255)" />
-      <path
-        d="M-6.6 -16.4 C-7.4 -6.8 -4.4 -2.4 0.4 -1.8 C6 -2.6 7.6 -8.6 6.4 -17 C4.8 -9.2 -3.6 -8.6 -6.6 -16.4 Z"
-        fill={DRESS}
-      />
-      <path d="M-5.4 -16.8 C-4.8 -11.2 5.4 -11 6 -17 Z" fill={DRESS_D} />
-      <JointedArm
-        x={-4.4}
-        y={-20.6}
-        shoulder={talking ? 98 : 104}
-        elbow={talking ? 22 : 16}
-        upper={6.8}
-        lower={7.4}
-        r1={2.45}
-        r2={2.05}
-        r3={1.8}
-        fill={C.skin}
-        cap={BLOUSE}
-      />
-      <rect x="-5.8" y="-28.6" width="12.4" height="13.8" rx="5.4" fill={BLOUSE} />
-      <JointedArm
-        x={4.8}
-        y={-20.4}
-        shoulder={pose.shoulder + (talking ? -5 : 0)}
-        elbow={pose.elbow + (talking ? -6 : 0)}
-        upper={7.8}
-        lower={8.4}
-        r1={2.5}
-        r2={2.1}
-        r3={1.85}
-        fill={C.skin}
-        cap={BLOUSE}
-        duration={0.9}
-        hand
-      />
-      <motion.g animate={{ rotate: talking ? -3 : 0, y: talking ? -0.5 : 0 }} transition={SOFT}>
-        <circle cx="1" cy="-31.4" r="6.2" fill={C.skin} />
-        <WomanHair cx={1} cy={-31.4} />
-        <ellipse cx="3.6" cy="-31.8" rx="1.05" ry="1.3" fill={C.ink} />
-        <path d="M2.6 -28.6 Q3.8 -27.8 5 -28.7" fill="none" stroke={C.lip} strokeWidth="0.7" />
-      </motion.g>
+      <BodyLean talking={talking} pivot={{ x: 0.6, y: -16 }} amount={-2.4}>
+        <JointedArm
+          x={-7.6}
+          y={-24.6}
+          shoulder={talking ? 102 : 108}
+          elbow={talking ? 16 : 10}
+          upper={7.2}
+          lower={7.6}
+          r1={2.4}
+          r2={2.05}
+          r3={1.8}
+          fill={C.skin}
+          sleeve={3.6}
+          sleeveFill={BLOUSE}
+        />
+        <path
+          d="M-6.6 -16.4 C-7.4 -6.8 -4.4 -2.4 0.4 -1.8 C6 -2.6 7.6 -8.6 6.4 -17 C4.8 -9.2 -3.6 -8.6 -6.6 -16.4 Z"
+          fill={DRESS}
+        />
+        <path d="M-5.4 -16.8 C-4.8 -11.2 5.4 -11 6 -17 Z" fill={DRESS_D} />
+        <path
+          d="M-4.8 -16.4
+             C-6.8 -18.6 -8.2 -21.6 -8.0 -24.6
+             C-7.8 -26.6 -6.0 -28.2 -3.4 -28.6
+             C-1.0 -29.0 3.2 -29.0 5.4 -28.4
+             C7.8 -27.8 8.6 -26.2 8.4 -24.4
+             C8.6 -21.4 7.2 -18.4 5.4 -16.2
+             C2.2 -15.4 -1.8 -15.4 -4.8 -16.4 Z"
+          fill={BLOUSE}
+        />
+        <ellipse cx="-7.4" cy="-24.6" rx="3.2" ry="2.8" fill={BLOUSE} />
+        <ellipse cx="8.0" cy="-24.4" rx="3.2" ry="2.8" fill={BLOUSE} />
+        <ellipse cx="1" cy="-28.2" rx="2.15" ry="2.4" fill={C.skin} />
+        <JointedArm
+          x={8.0}
+          y={-24.4}
+          shoulder={pose.shoulder + (talking ? -4 : 0)}
+          elbow={pose.elbow + (talking ? -5 : 0)}
+          upper={8.0}
+          lower={8.2}
+          r1={2.5}
+          r2={2.15}
+          r3={1.9}
+          fill={C.skin}
+          cap={BLOUSE}
+          sleeve={3.8}
+          sleeveFill={BLOUSE}
+          duration={0.9}
+          hand
+        />
+        <motion.g animate={{ rotate: talking ? -3 : 0, y: talking ? -0.5 : 0 }} transition={SOFT}>
+          <circle cx="1" cy="-31.4" r="6.2" fill={C.skin} />
+          <WomanHair cx={1} cy={-31.4} />
+          <ellipse cx="3.6" cy="-31.8" rx="1.05" ry="1.3" fill={C.ink} />
+          <path d="M2.6 -28.6 Q3.8 -27.8 5 -28.7" fill="none" stroke={C.lip} strokeWidth="0.7" />
+        </motion.g>
+      </BodyLean>
     </g>
   )
 }
@@ -482,47 +712,64 @@ function SitClient({ x, talking }: { x: number; talking: boolean }) {
     <g transform={`translate(${x} 148) scale(${FIGURE})`}>
       <rect x="6.4" y="6.2" width="5.4" height="16.4" rx="2.4" fill="oklch(42% 0.04 260)" />
       <rect x="1.4" y="6.4" width="5.4" height="16.2" rx="2.4" fill="oklch(36% 0.04 255)" />
-      <JointedArm
-        x={-4.6}
-        y={-12.2}
-        shoulder={talking ? 74 : 80}
-        elbow={talking ? 22 : 28}
-        upper={6.4}
-        lower={7}
-        r1={2.7}
-        r2={2.25}
-        r3={1.95}
-        fill={C.skin}
-        cap={BLOUSE}
-      />
-      <path
-        d="M-6.8 -2.4
+      <BodyLean talking={talking} pivot={{ x: 1, y: -3 }} amount={-2.2}>
+        <JointedArm
+          x={-7.4}
+          y={-13.2}
+          shoulder={talking ? 96 : 102}
+          elbow={talking ? 28 : 34}
+          upper={6.8}
+          lower={7.2}
+          r1={2.45}
+          r2={2.1}
+          r3={1.85}
+          fill={C.skin}
+          sleeve={3.4}
+          sleeveFill={BLOUSE}
+        />
+        <path
+          d="M-6.8 -2.4
            C-7.8 3.2 -4.2 7.6 1.6 8.2
            C8.4 8.6 13.6 6.2 14.2 1.8
            C12.8 -1.4 5.2 -3.6 0.2 -3.8
            C-3.4 -3.8 -6.2 -3.2 -6.8 -2.4 Z"
-        fill={DRESS}
-      />
-      <rect x="-6" y="-16.8" width="13.2" height="15.8" rx="6" fill={BLOUSE} />
-      <motion.g animate={{ rotate: talking ? -4 : 0, y: talking ? -0.6 : 0 }} transition={SOFT}>
-        <circle cx="1.2" cy="-21.8" r="6.2" fill={C.skin} />
-        <WomanHair cx={1.2} cy={-21.8} />
-        <ellipse cx="4.2" cy="-22.2" rx="1.05" ry="1.3" fill={C.ink} />
-        <path d="M3.2 -19 Q4.4 -18.2 5.6 -19.1" fill="none" stroke={C.lip} strokeWidth="0.75" />
-      </motion.g>
-      <JointedArm
-        x={5.2}
-        y={-12.4}
-        shoulder={talking ? -4 : 8}
-        elbow={talking ? -38 : -48}
-        upper={7.4}
-        lower={8}
-        r1={2.7}
-        r2={2.25}
-        r3={2}
-        fill={C.skin}
-        cap={BLOUSE}
-      />
+          fill={DRESS}
+        />
+        <path
+          d="M-5.0 -2.6
+             C-6.8 -5.6 -8.0 -9.6 -7.6 -13.2
+             C-7.4 -15.2 -5.6 -16.8 -3.2 -17.0
+             C-0.6 -17.2 3.4 -17.0 5.6 -16.4
+             C7.8 -15.8 8.4 -14.2 8.2 -12.6
+             C8.4 -9.0 7.0 -5.4 5.2 -2.4
+             C2.0 -1.6 -2.0 -1.6 -5.0 -2.6 Z"
+          fill={BLOUSE}
+        />
+        <ellipse cx="-7.2" cy="-13.2" rx="3.15" ry="2.7" fill={BLOUSE} />
+        <ellipse cx="8.0" cy="-13.0" rx="3.15" ry="2.7" fill={BLOUSE} />
+        <ellipse cx="1.2" cy="-17.2" rx="2.1" ry="2.2" fill={C.skin} />
+        <JointedArm
+          x={8.0}
+          y={-13.0}
+          shoulder={talking ? -6 : 2}
+          elbow={talking ? -40 : -48}
+          upper={7.4}
+          lower={7.6}
+          r1={2.55}
+          r2={2.2}
+          r3={1.95}
+          fill={C.skin}
+          cap={BLOUSE}
+          sleeve={3.6}
+          sleeveFill={BLOUSE}
+        />
+        <motion.g animate={{ rotate: talking ? -4 : 0, y: talking ? -0.6 : 0 }} transition={SOFT}>
+          <circle cx="1.2" cy="-21.8" r="6.2" fill={C.skin} />
+          <WomanHair cx={1.2} cy={-21.8} />
+          <ellipse cx="4.2" cy="-22.2" rx="1.05" ry="1.3" fill={C.ink} />
+          <path d="M3.2 -19 Q4.4 -18.2 5.6 -19.1" fill="none" stroke={C.lip} strokeWidth="0.75" />
+        </motion.g>
+      </BodyLean>
     </g>
   )
 }
@@ -532,52 +779,53 @@ function SitBuilder({ x, talking }: { x: number; talking: boolean }) {
     <g transform={`translate(${x} 148) scale(-${FIGURE}, ${FIGURE})`}>
       <rect x="6.6" y="6" width="5.6" height="16.6" rx="2.4" fill={PANT_D} />
       <rect x="1.4" y="6.2" width="5.6" height="16.4" rx="2.4" fill={PANTS} />
-      <JointedArm
-        x={-4.8}
-        y={-12.4}
-        shoulder={talking ? 72 : 78}
-        elbow={talking ? 20 : 26}
-        upper={6.6}
-        lower={7.2}
-        r1={2.85}
-        r2={2.35}
-        r3={2.05}
-        fill={SKIN_D}
-        cap={VEST}
-      />
-      <path
-        d="M-6.6 -1.8
+      <BodyLean talking={talking} pivot={{ x: 1, y: -3 }} amount={-2.2}>
+        <JointedArm
+          x={-4.6}
+          y={-12.2}
+          shoulder={talking ? 80 : 86}
+          elbow={talking ? 16 : 22}
+          upper={6.6}
+          lower={7.2}
+          r1={2.7}
+          r2={2.25}
+          r3={1.95}
+          fill={SKIN_D}
+        />
+        <path
+          d="M-6.6 -1.8
            C-7.4 3.6 -3.2 8 2.2 8.4
            C8.6 8.6 13.8 6 14.4 1.6
            C13 -1.6 5.6 -3.2 0.6 -3.4
            C-3 -3.4 -6 -3 -6.6 -1.8 Z"
-        fill={VEST}
-      />
-      <rect x="-6.2" y="-16.6" width="14.4" height="16.4" rx="6.2" fill={VEST} />
-      <rect x="-4.4" y="-7.2" width="11" height="3.2" rx="1.3" fill={STRIPE} />
-      <rect x="-4.4" y="-1.4" width="11" height="3.2" rx="1.3" fill={STRIPE} />
-      <motion.g animate={{ rotate: talking ? -5 : 0, y: talking ? -0.5 : 0 }} transition={SOFT}>
-        <circle cx="1.2" cy="-22" r="6.2" fill={SKIN} />
-        <ellipse cx="1.4" cy="-27.6" rx="8.4" ry="1.65" fill={HAT_BRIM} />
-        <path
-          d="M-4.6 -27.8 C-4.8 -35.2 -0.4 -39.2 2.4 -39.4 C6.2 -39.6 9 -35.2 8.6 -27.8 Z"
-          fill={HAT}
+          fill={VEST}
         />
-        <ellipse cx="4.2" cy="-22.4" rx="1.05" ry="1.3" fill={C.ink} />
-      </motion.g>
-      <JointedArm
-        x={5.4}
-        y={-12.6}
-        shoulder={talking ? -6 : 6}
-        elbow={talking ? -36 : -46}
-        upper={7.6}
-        lower={8.2}
-        r1={2.85}
-        r2={2.35}
-        r3={2.05}
-        fill={SKIN}
-        cap={VEST}
-      />
+        <rect x="-6.2" y="-16.6" width="14.4" height="16.4" rx="6.2" fill={VEST} />
+        <rect x="-4.4" y="-7.2" width="11" height="3.2" rx="1.3" fill={STRIPE} />
+        <rect x="-4.4" y="-1.4" width="11" height="3.2" rx="1.3" fill={STRIPE} />
+        <JointedArm
+          x={5.0}
+          y={-12.6}
+          shoulder={talking ? -10 : 4}
+          elbow={talking ? -32 : -42}
+          upper={7.4}
+          lower={7.8}
+          r1={2.85}
+          r2={2.35}
+          r3={2.05}
+          fill={SKIN}
+          cap={VEST}
+        />
+        <motion.g animate={{ rotate: talking ? -5 : 0, y: talking ? -0.5 : 0 }} transition={SOFT}>
+          <circle cx="1.2" cy="-22" r="6.2" fill={SKIN} />
+          <ellipse cx="1.4" cy="-27.6" rx="8.4" ry="1.65" fill={HAT_BRIM} />
+          <path
+            d="M-4.6 -27.8 C-4.8 -35.2 -0.4 -39.2 2.4 -39.4 C6.2 -39.6 9 -35.2 8.6 -27.8 Z"
+            fill={HAT}
+          />
+          <ellipse cx="4.2" cy="-22.4" rx="1.05" ry="1.3" fill={C.ink} />
+        </motion.g>
+      </BodyLean>
     </g>
   )
 }
@@ -647,6 +895,8 @@ function JointedArm({
   r3 = 1.85,
   fill,
   cap,
+  sleeve = 0,
+  sleeveFill,
   duration = 0.78,
   hand = false,
 }: {
@@ -661,6 +911,8 @@ function JointedArm({
   r3?: number
   fill: string
   cap?: string
+  sleeve?: number
+  sleeveFill?: string
   duration?: number
   hand?: boolean
 }) {
@@ -679,7 +931,20 @@ function JointedArm({
             ) : null}
           </motion.g>
         </g>
-        {cap ? <circle cx={0} cy={0} r={r1 + 0.25} fill={cap} /> : null}
+        {sleeve > 0 && sleeveFill ? (
+          <Limb
+            x1={0}
+            y1={0}
+            x2={sleeve}
+            y2={0}
+            r1={r1 + 0.45}
+            r2={r2 + 0.15}
+            fill={sleeveFill}
+          />
+        ) : null}
+        {cap || sleeveFill ? (
+          <circle cx={0} cy={0} r={r1 + 0.7} fill={cap ?? sleeveFill} />
+        ) : null}
       </motion.g>
     </g>
   )

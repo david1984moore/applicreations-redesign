@@ -26,20 +26,28 @@ const SCENE_FADE = 1.05
 const SCROLL_S = 2.6
 const LIVE_SCROLL_S = 2.8
 const LAPTOP_OUT_S = 2.6
-const PHONE_IN_S = 2.85
+export const PHONE_IN_S = 2.85
+/** Preview caption is gone this long before “Even on your phone.” */
+export const PHONE_CAPTION_LEAD_S = 0.32
+/** Caption starts this long before the handset has fully settled. */
+export const PHONE_CAPTION_EARLY_S = 0.2
 const GROW_S = 2.15
 const HOUSE_FADE_S = 2.15
 const WIRE_FADE_S = 0.9
+const WIRE_DRAW_S = 1.65
 const WIRE_OUT_S = 0.22
 const LAND = [0.16, 1, 0.3, 1] as const
 /** Slow start so the laptop eases into the grow instead of jumping. */
 const GROW_EASE = [0.42, 0.0, 0.22, 1] as const
+/** Cord draws out of the port without the expo snap of EASE. */
+const WIRE_DRAW_EASE = [0.42, 0.0, 0.2, 1] as const
 /** Cord leaves almost immediately, still a short fade rather than a cut. */
 const WIRE_OUT_EASE = [0.3, 0, 0.55, 1] as const
 const PREVIEW_AT = 0.125
 const SWING_KNEEL_AT = 0.035
 const FOUNDATION_AT = 0.09
-const WIRE_AT = 0.11
+/** After the laptop is in the DOM so the cord can draw instead of popping in. */
+const WIRE_AT = 0.14
 const STAND_AT = 0.16
 const LADDER_AT = 0.275
 const CLIMB_AT = 0.285
@@ -61,6 +69,22 @@ const PAGE_H = 340
 const PAGE_STACK = 2.3
 const HOME_TEA_SCROLL = -44
 const GALLERY_STOOL_SCROLL = -47
+
+/** Keep a fading layer mounted through its opacity out, then drop it so it cannot flash later. */
+function useKeepMounted(active: boolean, holdMs: number) {
+  const [held, setHeld] = useState(active)
+
+  useEffect(() => {
+    if (active) {
+      setHeld(true)
+      return
+    }
+    const id = window.setTimeout(() => setHeld(false), holdMs)
+    return () => window.clearTimeout(id)
+  }, [active, holdMs])
+
+  return active || held
+}
 
 function navCursor(count: number, index: number) {
   const w = count >= 6 ? 13 : count >= 5 ? 15 : 18
@@ -1176,6 +1200,8 @@ function PreviewWire({
     }
   }, [visible, fromRef, toRef])
 
+  const keepWire = useKeepMounted(visible && Boolean(d), WIRE_OUT_S * 1000)
+
   return (
     <motion.div
       ref={hostRef}
@@ -1183,7 +1209,7 @@ function PreviewWire({
       initial={false}
       animate={{ opacity: visible ? 1 : 0 }}
       transition={{
-        duration: visible ? WIRE_FADE_S : WIRE_OUT_S,
+        duration: visible ? 0.12 : WIRE_OUT_S,
         ease: visible ? EASE : WIRE_OUT_EASE,
       }}
       aria-hidden
@@ -1193,14 +1219,17 @@ function PreviewWire({
         height={size.h}
         className="overflow-visible"
       >
-        {d ? (
-          <path
+        {d && keepWire ? (
+          <motion.path
             d={d}
             fill="none"
             stroke="oklch(22% 0.015 50)"
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeLinejoin="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: WIRE_DRAW_S, ease: WIRE_DRAW_EASE }}
           />
         ) : null}
       </svg>
@@ -1208,11 +1237,13 @@ function PreviewWire({
   )
 }
 
+export type PreviewBeat = 'build' | 'preview' | 'clear' | 'phone'
+
 export function HiwLivePreviewSketch({
   playing,
   duration,
   onBeat,
-}: SketchProps & { onBeat?: (beat: 'build' | 'preview' | 'phone') => void }) {
+}: SketchProps & { onBeat?: (beat: PreviewBeat) => void }) {
   const [device, setDevice] = useState<'build' | 'phone'>('build')
   const [shot, setShot] = useState<BuildShot>('foundation')
   const [phase, setPhase] = useState<WorkerPhase>('kneel')
@@ -1238,33 +1269,12 @@ export function HiwLivePreviewSketch({
   const [phoneCard, setPhoneCard] = useState<ScreenCard | null>(null)
   const portRef = useRef<SVGRectElement>(null)
   const jackRef = useRef<SVGRectElement>(null)
+  const onBeatRef = useRef(onBeat)
+  onBeatRef.current = onBeat
 
   useEffect(() => {
     if (!playing) {
-      setDevice('build')
-      setShot('foundation')
-      setPhase('kneel')
-      setShowFoundation(false)
-      setShowWire(false)
-      setSwinging(false)
-      setPreviewLevel(0)
-      setHouseGone(false)
-      setGrown(false)
-      setLaptopGone(false)
-      setScene('home')
-      setScroll(0)
-      setScrollDuration(LIVE_SCROLL_S)
-      setScrollEase(SCROLL_EASE)
-      setNavIndex(0)
-      setCursor(null)
-      setCard(null)
-      setPhoneScene('about')
-      setPhoneScroll(0)
-      setPhoneScrollDuration(2.4)
-      setPhoneScrollEase(CRAWL_EASE)
-      setPhoneNav(1)
-      setPhoneCard(null)
-      onBeat?.('build')
+      // Keep the phone on screen. Resetting here replays the kneeling worker.
       return
     }
 
@@ -1293,10 +1303,7 @@ export function HiwLivePreviewSketch({
         setPhase('roof')
         setSwinging(true)
       }, duration * CLIMB_AT),
-      window.setTimeout(() => {
-        setPreviewLevel(3)
-        onBeat?.('preview')
-      }, duration * DETAIL_AT),
+      window.setTimeout(() => setPreviewLevel(3), duration * DETAIL_AT),
       window.setTimeout(() => setSwinging(false), duration * SWING_REST_AT),
       window.setTimeout(() => {
         setHouseGone(true)
@@ -1305,6 +1312,7 @@ export function HiwLivePreviewSketch({
         setScrollEase(PAN_EASE)
         setScroll(HOME_TEA_SCROLL * 0.4)
         setCursor({ x: HIT.open.x, y: HIT.open.y, click: false, intent: 'glide' })
+        onBeatRef.current?.('preview')
       }, duration * GROW_AT),
       window.setTimeout(() => {
         setScrollDuration(1.6)
@@ -1386,8 +1394,12 @@ export function HiwLivePreviewSketch({
         setPhoneScroll(0)
         setPhoneScrollDuration(0)
         setPhoneScrollEase(SCROLL_EASE)
-        onBeat?.('phone')
+        onBeatRef.current?.('clear')
       }, duration * PHONE_IN_AT),
+      window.setTimeout(
+        () => onBeatRef.current?.('phone'),
+        duration * PHONE_IN_AT + (PHONE_IN_S - PHONE_CAPTION_EARLY_S) * 1000
+      ),
       window.setTimeout(() => {
         setPhoneScene('products')
         setPhoneNav(phoneProducts)
@@ -1428,93 +1440,101 @@ export function HiwLivePreviewSketch({
     return () => {
       for (const id of timers) window.clearTimeout(id)
     }
-  }, [playing, duration, onBeat])
+  }, [playing, duration])
 
   const laptopNavCount = LIVE_SCENES.length
   const phoneNavCount = LIVE_PHONE_SCENES.length
   const showPhone = device === 'phone'
-  const wireOn = showWire && !houseGone && !laptopGone && !showPhone
+  const laptopOn = previewLevel > 0 && !laptopGone && !showPhone
+  const houseOn = !houseGone && !laptopGone && !showPhone
+  const keepLaptop = useKeepMounted(laptopOn, LAPTOP_OUT_S * 1000)
+  const keepHouse = useKeepMounted(houseOn, HOUSE_FADE_S * 1000)
+  const wireOn = showWire && houseOn
   const growTransition = {
     duration: grown ? GROW_S : 0.55,
     ease: grown ? GROW_EASE : EASE,
   }
 
   return (
-    <div className="relative w-full min-h-[18rem] sm:min-h-[20rem]">
-      <motion.div
-        className="absolute left-0 top-0 z-[1] flex origin-center items-start justify-start"
-        initial={false}
-        animate={{
-          width: grown ? '84%' : '68%',
-          maxWidth: grown ? '36rem' : '30rem',
-          opacity: laptopGone || showPhone ? 0 : previewLevel === 0 ? 0 : 1,
-          scale: laptopGone || showPhone ? 1.08 : 1,
-        }}
-        transition={{
-          width: growTransition,
-          maxWidth: growTransition,
-          opacity: {
-            duration: laptopGone || showPhone ? LAPTOP_OUT_S : 0.45,
-            ease: laptopGone || showPhone ? LAPTOP_OUT_EASE : EASE,
-          },
-          scale: {
-            duration: laptopGone || showPhone ? LAPTOP_OUT_S : 0.45,
-            ease: laptopGone || showPhone ? LAPTOP_OUT_EASE : EASE,
-          },
-        }}
-      >
-        {previewLevel > 0 ? (
-          <PerspectiveShell rotateY={11} rotateX={5} className="w-full">
-            <LaptopChrome
-              scene={scene}
-              scroll={scroll}
-              navCount={laptopNavCount}
-              navIndex={navIndex}
-              scrollDuration={scrollDuration}
-              scrollEase={scrollEase}
-              cursor={grown && !laptopGone ? cursor : null}
-              cursorKind="hand"
-              finish="preview"
-              card={laptopGone || showPhone ? null : card}
-              cablePort={wireOn}
-              portRef={portRef}
-              className="relative"
-            >
-              <motion.div
-                className="absolute inset-0"
-                initial={false}
-                animate={{ opacity: grown || laptopGone || showPhone ? 0 : 1 }}
-                transition={{
-                  duration: grown || laptopGone || showPhone ? GROW_S : 0.4,
-                  ease: grown || laptopGone || showPhone ? GROW_EASE : EASE,
-                }}
+    <div className="relative isolate w-full min-h-[18rem] sm:min-h-[20rem]">
+      {keepLaptop ? (
+        <motion.div
+          className="absolute left-0 top-0 z-[1] flex origin-center items-start justify-start"
+          initial={{ opacity: 0, width: '68%', maxWidth: '30rem', scale: 1 }}
+          animate={{
+            width: grown ? '84%' : '68%',
+            maxWidth: grown ? '36rem' : '30rem',
+            opacity: laptopOn ? 1 : 0,
+            scale: laptopOn ? 1 : 1.08,
+          }}
+          transition={{
+            width: growTransition,
+            maxWidth: growTransition,
+            opacity: {
+              duration: laptopOn ? 0.45 : LAPTOP_OUT_S,
+              ease: laptopOn ? EASE : LAPTOP_OUT_EASE,
+            },
+            scale: {
+              duration: laptopOn ? 0.45 : LAPTOP_OUT_S,
+              ease: laptopOn ? EASE : LAPTOP_OUT_EASE,
+            },
+          }}
+        >
+          {previewLevel > 0 ? (
+            <PerspectiveShell rotateY={11} rotateX={5} className="w-full">
+              <LaptopChrome
+                scene={scene}
+                scroll={scroll}
+                navCount={laptopNavCount}
+                navIndex={navIndex}
+                scrollDuration={scrollDuration}
+                scrollEase={scrollEase}
+                cursor={grown && laptopOn ? cursor : null}
+                cursorKind="hand"
+                finish="preview"
+                card={laptopOn ? card : null}
+                cablePort={wireOn}
+                portRef={portRef}
+                className="relative"
               >
-                <HiwBuildPage level={previewLevel} />
-              </motion.div>
-            </LaptopChrome>
-          </PerspectiveShell>
-        ) : null}
-      </motion.div>
+                <motion.div
+                  className="absolute inset-0"
+                  initial={false}
+                  animate={{ opacity: grown || !laptopOn ? 0 : 1 }}
+                  transition={{
+                    duration: grown || !laptopOn ? GROW_S : 0.4,
+                    ease: grown || !laptopOn ? GROW_EASE : EASE,
+                  }}
+                >
+                  <HiwBuildPage level={previewLevel} />
+                </motion.div>
+              </LaptopChrome>
+            </PerspectiveShell>
+          ) : null}
+        </motion.div>
+      ) : null}
 
       <PreviewWire visible={wireOn} fromRef={portRef} toRef={jackRef} />
 
-      <motion.div
-        className="absolute bottom-[-0.2rem] right-0 z-[3] w-[50%] overflow-visible sm:w-[48%] lg:w-[46%]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: houseGone || laptopGone || showPhone ? 0 : 1 }}
-        transition={{
-          duration: houseGone ? HOUSE_FADE_S : 0.5,
-          ease: houseGone ? GROW_EASE : EASE,
-        }}
-      >
-        <HiwConstructionSketch
-          shot={shot}
-          phase={phase}
-          showFoundation={showFoundation}
-          swinging={playing && swinging}
-          jackRef={jackRef}
-        />
-      </motion.div>
+      {keepHouse ? (
+        <motion.div
+          className="absolute bottom-[-0.2rem] right-0 z-[3] w-[50%] overflow-visible sm:w-[48%] lg:w-[46%]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: houseOn ? 1 : 0 }}
+          transition={{
+            duration: houseOn ? 0.5 : HOUSE_FADE_S,
+            ease: houseOn ? EASE : GROW_EASE,
+          }}
+        >
+          <HiwConstructionSketch
+            shot={shot}
+            phase={phase}
+            showFoundation={showFoundation}
+            swinging={playing && swinging}
+            jackRef={jackRef}
+          />
+        </motion.div>
+      ) : null}
 
       <motion.div
         className="absolute inset-0 z-[4] flex items-center justify-center pt-2 sm:pt-3"
@@ -1556,9 +1576,6 @@ function useWanderScroll(playing: boolean, resetKey: string | number) {
 
   useEffect(() => {
     if (!playing) {
-      setScroll(0)
-      setScrollDuration(2.4)
-      setScrollEase(SCROLL_EASE)
       return
     }
     setScroll(0)
@@ -1644,16 +1661,6 @@ export function HiwWorkingWebsiteSketch({
 
   useEffect(() => {
     if (!playing) {
-      setLaptopScene('home')
-      setPhoneScene('products')
-      setTabletScene('services')
-      setLaptopNav(0)
-      setPhoneNav(3)
-      setTabletNav(3)
-      setCursor(null)
-      setLaptopCard(null)
-      setPhoneCard(null)
-      setPinScroll(null)
       return
     }
     const aboutNav = navCursor(laptopNavCount, 1)

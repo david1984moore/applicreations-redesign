@@ -30,6 +30,8 @@ export interface PricingPlan {
   name: string
   price: number
   priceLabel: string
+  /** Custom quote — show priceLabel instead of a dollar amount */
+  contactForPricing?: boolean
   /** One short line for the landing viewport */
   shortSummary: string
   summary: string
@@ -61,18 +63,13 @@ export interface SupportPlan {
 
 const WEBSITE_META: Record<
   PlanId,
-  { price: number; priceLabel: string; highlighted?: boolean; hash: string }
+  { price: number; highlighted?: boolean; hash: string; contactForPricing?: boolean }
 > = {
-  starter: { price: 295, priceLabel: '$295', highlighted: false, hash: 'starter' },
-  basic: { price: 649, priceLabel: '$649', highlighted: false, hash: 'basic' },
+  starter: { price: 349, highlighted: false, hash: 'starter' },
+  basic: { price: 699, highlighted: false, hash: 'basic' },
   // Names flipped vs prior tiers: Business = former Pro (mid), Pro = former Business (top)
-  business: { price: 895, priceLabel: '$895', highlighted: true, hash: 'business' },
-  pro: {
-    price: 2200,
-    priceLabel: '$2,200',
-    highlighted: false,
-    hash: 'pro',
-  },
+  business: { price: 999, highlighted: true, hash: 'business' },
+  pro: { price: 0, contactForPricing: true, highlighted: false, hash: 'pro' },
 }
 
 const SUPPORT_META: Record<
@@ -118,7 +115,10 @@ export function getPlans(dict: Dictionary = en, locale: Locale = defaultLocale):
       id,
       name: copy.name,
       price: meta.price,
-      priceLabel: meta.priceLabel,
+      priceLabel: meta.contactForPricing
+        ? dict.plans.contactForPricing
+        : formatMoney(meta.price, locale),
+      contactForPricing: meta.contactForPricing,
       shortSummary: copy.shortSummary,
       summary: copy.summary,
       details: copy.details,
@@ -290,12 +290,16 @@ export function formatSelectionForEmail(
   locale: Locale = defaultLocale,
   buildHandoff = false
 ): SelectionEmailContent {
-  const oneTime = (plan?.price ?? 0) + (buildHandoff ? BUILD_HANDOFF_FEE : 0)
+  const quoted = Boolean(plan?.contactForPricing)
+  const oneTime =
+    (quoted ? 0 : (plan?.price ?? 0)) + (buildHandoff ? BUILD_HANDOFF_FEE : 0)
   const monthly = support?.price ?? 0
   const totalLine = [
-    plan || buildHandoff
-      ? `${formatMoney(oneTime, locale)} ${dict.pricingPage.oneTime}`
-      : null,
+    quoted && plan
+      ? plan.priceLabel
+      : plan || buildHandoff
+        ? `${formatMoney(oneTime, locale)} ${dict.pricingPage.oneTime}`
+        : null,
     support
       ? `${formatMoney(monthly, locale)}${locale === 'es' ? '/mes' : '/mo'}`
       : null,
@@ -304,10 +308,15 @@ export function formatSelectionForEmail(
     .join(' + ')
 
   const p = dict.pricingPage
+  const websitePrice = plan
+    ? quoted
+      ? plan.priceLabel
+      : `${plan.priceLabel} ${p.oneTime}`
+    : ''
   const websiteLine = plan
     ? p.selectionEmailWebsitePackage
         .replace('{name}', plan.name)
-        .replace('{price}', plan.priceLabel)
+        .replace('{price}', websitePrice)
     : p.selectionEmailWebsiteNone
   const careLine = buildHandoff
     ? p.selectionEmailBuildHandoff.replace(
@@ -321,7 +330,7 @@ export function formatSelectionForEmail(
       : p.selectionEmailMonthlyNone
 
   const websiteValue = plan
-    ? `${plan.name} — ${plan.priceLabel} ${p.oneTime}`
+    ? `${plan.name} — ${websitePrice}`
     : p.noPackage
   const careValue = buildHandoff
     ? p.selectionEmailBuildHandoff

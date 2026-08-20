@@ -13,9 +13,9 @@ import { motion } from 'framer-motion'
  * single source of truth — do not restyle the mark inline elsewhere.
  */
 export const BRAND_LOCKUP = {
-  /** Wordmark type. */
+  /** Wordmark type. Mobile is sized to keep “Applicreations” on one line. */
   nameClass:
-    'font-display text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl text-gray-900 leading-[1.05] tracking-tight',
+    'font-display w-fit max-w-full whitespace-nowrap text-[1.85rem] sm:text-5xl lg:text-[3.25rem] xl:text-6xl text-gray-900 leading-[1.05] tracking-tight',
   /** Clearance above the letters so the lifted mark does not clip. */
   headingClearanceClass: 'pt-7 sm:pt-8 lg:pt-9',
   /**

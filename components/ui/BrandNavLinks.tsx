@@ -149,47 +149,54 @@ export function BrandNavLinks({
   return (
     <div
       className={cn(
-        'grid w-full grid-cols-6 items-start justify-items-center',
         variant === 'landing'
-          ? 'gap-x-1 sm:gap-x-2 lg:gap-x-3'
-          : 'gap-x-3 sm:gap-x-5',
+          ? 'grid w-full min-w-0 grid-cols-6 items-start justify-items-center gap-x-0 sm:gap-x-2 lg:gap-x-3'
+          : 'grid w-full min-w-0 grid-cols-6 items-start justify-items-center gap-x-0 sm:flex sm:w-auto sm:items-center sm:gap-x-10',
         className
       )}
     >
-      {items.map(({ href, label, icon: Icon, match }) => {
-        const active =
-          variant === 'subpage' &&
-          (barePath === match || barePath.startsWith(`${match}/`))
+      <div
+        className={
+          variant === 'subpage'
+            ? 'contents sm:flex sm:items-center sm:gap-x-6'
+            : 'contents'
+        }
+      >
+        {items.map(({ href, label, icon: Icon, match }) => {
+          const active =
+            variant === 'subpage' &&
+            (barePath === match || barePath.startsWith(`${match}/`))
 
-        const linkClass =
-          variant === 'landing'
-            ? 'group flex flex-col items-center gap-1.5 text-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
-            : 'group flex w-full flex-col items-center gap-0.5 text-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
+          const linkClass =
+            variant === 'landing'
+              ? 'group flex min-w-0 w-full flex-col items-center gap-1.5 text-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
+              : 'group flex min-w-0 w-full flex-col items-center gap-0.5 text-center rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 sm:w-auto'
 
-        const labelClass =
-          variant === 'landing'
-            ? 'text-[0.8125rem] lg:text-[0.9375rem] font-bold tracking-tight text-gray-900 group-hover:text-gray-700'
-            : 'text-[0.625rem] font-medium tracking-tight text-gray-900 group-hover:text-gray-600 whitespace-nowrap'
+          const labelClass =
+            variant === 'landing'
+              ? 'text-[0.6875rem] sm:text-[0.8125rem] lg:text-[0.9375rem] font-bold tracking-tight text-gray-900 group-hover:text-gray-700 whitespace-nowrap'
+              : 'text-[0.5625rem] sm:text-[0.625rem] font-medium tracking-tight text-gray-900 group-hover:text-gray-600 whitespace-nowrap'
 
-        return (
-          <Link
-            key={match}
-            href={href}
-            prefetch
-            aria-current={active ? 'page' : undefined}
-            className={linkClass}
-            onClick={() => onNavigate?.()}
-          >
-            <span className="inline-flex text-gray-900 transition-colors duration-200 group-hover:text-gray-600">
-              <Icon className={resolvedIconSize} />
-            </span>
-            <span className={labelClass}>{label}</span>
-          </Link>
-        )
-      })}
+          return (
+            <Link
+              key={match}
+              href={href}
+              prefetch
+              aria-current={active ? 'page' : undefined}
+              className={linkClass}
+              onClick={() => onNavigate?.()}
+            >
+              <span className="inline-flex text-gray-900 transition-colors duration-200 group-hover:text-gray-600">
+                <Icon className={resolvedIconSize} />
+              </span>
+              <span className={labelClass}>{label}</span>
+            </Link>
+          )
+        })}
+      </div>
       <LanguageToggle
         variant={variant}
-        className={variant === 'subpage' ? 'w-full' : undefined}
+        className={variant === 'subpage' ? 'w-full sm:w-auto' : undefined}
       />
     </div>
   )

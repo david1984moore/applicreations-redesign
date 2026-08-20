@@ -11,23 +11,27 @@
  *
  * Desktop spacing:
  * - Shell: lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)]
- * - Column gap: lg:gap-x-8 xl:gap-x-10
+ * - Column gap: lg:gap-x-8 xl:gap-x-10; HIW column lg:pl-16 xl:pl-20 so the wash can clear nav / pricing
  *
  * How it works cinema:
  * - No card — stage sits on the tan page wash, fills right column height
  * - Intro: staggered 3D fly-in (How it works → 3 → tagline), inner+outer glow pulse,
- *   3 grows then fades toward the viewer; tagline follows and sits alone, then step 1
+ *   3 grows then fades toward the viewer; tagline follows, surges past, then step 1
  *   → three sequential steps with cartoon sketches
- *   → recap finale (tagline zoom-in, three points, then centered Get Started)
- * - Skip cinema on locale swap / reduced motion.
+ *   → recap finale (tagline zoom-in, three points, then centered Get Free Preview)
+ * - Finale CTA blooms a logo-violet wash on the right of a slight curve
+ * - Skip cinema on locale swap / reduced motion / in-site return to home
+ *   (a refresh starts a new JS lifetime, so the cinema plays again)
  */
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import { HowItWorksStage } from '@/components/landing/hiw/HowItWorksStage'
+import { HiwPageWash } from '@/components/landing/hiw/HiwPageWash'
 import { BrandLockup } from '@/components/ui/BrandLockup'
 import { BrandNavLinks } from '@/components/ui/BrandNavLinks'
+import { hasPlayedHiwCinema, markHiwCinemaPlayed } from '@/lib/hiw-cinema'
 import { isLocaleTransition } from '@/lib/i18n/locale-transition'
 import { getBasicSupport, getPlans } from '@/lib/pricing'
 import { cn } from '@/lib/utils'
@@ -53,15 +57,25 @@ export function LandingBoard() {
   const basicSupport = useMemo(() => getBasicSupport(dict, locale), [dict, locale])
   // Locale swaps remount this board — skip fade/slide so the page doesn't flash
   const [skipIntro] = useState(() => isLocaleTransition())
+  const [playedHiw] = useState(() => hasPlayedHiwCinema())
   const prefersReducedMotion = useReducedMotion()
-  const instantHiw = skipIntro || !!prefersReducedMotion
+  const instantHiw = skipIntro || !!prefersReducedMotion || playedHiw
   const [hiwExpanded, setHiwExpanded] = useState(instantHiw)
   const [hiwReady, setHiwReady] = useState(instantHiw)
+  const [washVisible, setWashVisible] = useState(instantHiw)
+  const showFinaleWash = useCallback(() => setWashVisible(true), [])
+
+  useEffect(() => {
+    // Defer so React Strict Mode's remount still sees an unplayed cinema.
+    const id = window.setTimeout(() => markHiwCinemaPlayed(), 0)
+    return () => window.clearTimeout(id)
+  }, [])
 
   useEffect(() => {
     if (instantHiw) {
       setHiwExpanded(true)
       setHiwReady(true)
+      setWashVisible(true)
       return
     }
     const id = window.setTimeout(() => setHiwExpanded(true), HIW_MOTION.compactHoldMs)
@@ -76,8 +90,9 @@ export function LandingBoard() {
 
   return (
     <section className="landing-board relative flex flex-col overflow-x-hidden lg:h-full lg:overflow-hidden">
+      <HiwPageWash visible={washVisible} instant={instantHiw} />
       {/* Atmosphere */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_0%_0%,oklch(92%_0.03_230/0.35),transparent_55%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_100%_10%,oklch(93%_0.03_80/0.55),transparent_50%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(165deg,oklch(98%_0.012_85)_0%,oklch(96%_0.02_80)_45%,oklch(97%_0.015_90)_100%)]" />
@@ -86,7 +101,7 @@ export function LandingBoard() {
       </div>
 
       {/* LOCKED shell — cream edges + centered board; vh clamps keep HIW unclipped on short laptops */}
-      <div className="relative z-10 flex flex-1 flex-col max-w-[90rem] w-full mx-auto px-4 sm:px-6 lg:px-10 xl:px-12 pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)] min-h-0">
+      <div className="relative z-10 flex flex-1 flex-col max-w-[90rem] w-full mx-auto px-3 sm:px-6 lg:px-10 xl:px-12 pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)] min-h-0">
         <div className="flex w-full flex-col gap-4 lg:flex-1 lg:min-h-0 lg:grid lg:grid-cols-12 lg:gap-x-8 xl:gap-x-10 lg:gap-y-0">
           {/* Left column — brand, nav, and pricing share one full-width column edge */}
           <div className="lg:col-span-7 flex w-full min-w-0 flex-col lg:pr-2 lg:self-start">
@@ -150,7 +165,14 @@ export function LandingBoard() {
                       <h3 className="font-display text-lg font-bold text-gray-900 leading-none tracking-tight">
                         {plan.name}
                       </h3>
-                      <p className="mt-1.5 font-display text-2xl font-bold text-primary-600 leading-none tabular-nums">
+                      <p
+                        className={cn(
+                          'mt-1.5 font-display font-bold text-primary-600',
+                          plan.contactForPricing
+                            ? 'text-[0.95rem] leading-tight px-0.5'
+                            : 'text-2xl leading-none tabular-nums'
+                        )}
+                      >
                         {plan.priceLabel}
                       </p>
 
@@ -188,7 +210,7 @@ export function LandingBoard() {
               ease: easeOut,
             }}
             className={cn(
-              'lg:col-span-5 lg:flex lg:flex-col lg:min-h-0',
+              'lg:col-span-5 lg:flex lg:flex-col lg:min-h-0 lg:pl-16 xl:pl-20',
               hiwExpanded
                 ? 'relative flex min-h-[20rem] flex-col overflow-visible lg:min-h-0 lg:flex-1'
                 : 'relative flex h-11 shrink-0 flex-col overflow-hidden'
@@ -202,7 +224,11 @@ export function LandingBoard() {
               }
             >
               <div className="min-h-0 overflow-visible lg:h-full">
-                <HowItWorksStage started={hiwReady} instant={instantHiw} />
+                <HowItWorksStage
+                  started={hiwReady}
+                  instant={instantHiw}
+                  onCtaAppear={showFinaleWash}
+                />
               </div>
             </div>
           </motion.div>
