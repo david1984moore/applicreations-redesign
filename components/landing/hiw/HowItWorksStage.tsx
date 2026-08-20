@@ -424,7 +424,7 @@ function FinaleCinema({
 }: {
   beat: FinaleBeat
   threeSteps: string
-  recap: readonly { label: string; Icon: LucideIcon }[]
+  recap: readonly { n: string; label: string; Icon: LucideIcon }[]
   ctaLabel: string
   ctaHref: string
   timings: IntroTimings

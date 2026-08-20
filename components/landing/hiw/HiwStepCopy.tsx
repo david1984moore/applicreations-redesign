@@ -110,6 +110,15 @@ export type HiwCaptionPlacement =
 
 type CaptionPose = { opacity: number; y?: number; x?: number; scale: number }
 
+type CaptionEase = readonly [number, number, number, number]
+
+type CaptionTransition = {
+  opacity: { duration: number; ease: CaptionEase; delay?: number }
+  scale: { duration: number; ease: CaptionEase }
+  x: { duration: number; ease: CaptionEase }
+  y: { duration: number; ease: CaptionEase }
+}
+
 type CaptionStyle = {
   seat: 'heading' | 'stage'
   slot: string
@@ -119,8 +128,8 @@ type CaptionStyle = {
   preSink?: CaptionPose
   exit: CaptionPose
   leave: CaptionPose
-  transition: ReturnType<typeof floatTransition>
-  exitTransition?: ReturnType<typeof floatTransition>
+  transition: CaptionTransition
+  exitTransition?: CaptionTransition
 }
 
 /** Safe pockets only — never on the sketch, cable, or devices.
