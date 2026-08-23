@@ -131,7 +131,7 @@ export function HiwStep3Cinema({
   }, [playing, reviewMs, captionGapMs, reviseMs, houseMs])
 
   return (
-    <div className="relative isolate w-full min-h-[17rem] sm:min-h-[18.5rem]">
+    <div className="relative isolate w-full min-h-[22rem] overflow-visible sm:min-h-[20rem] lg:min-h-[18.5rem]">
       {showReview ? (
         <motion.div
           className="absolute inset-0 flex items-end justify-center"
@@ -158,7 +158,7 @@ export function HiwStep3Cinema({
 
       {showScreens ? (
         <motion.div
-          className="absolute inset-0 flex items-start justify-center pt-2 sm:pt-3"
+          className="absolute inset-0 flex items-start justify-center overflow-visible pt-1 sm:pt-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: screensOn ? 1 : 0 }}
           transition={SCREENS_CROSS}

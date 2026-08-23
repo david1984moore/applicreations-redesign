@@ -164,16 +164,31 @@ body {
 
 /* Mobile: kill horizontal rubber-band / sideways drag while scrolling.
    Use hidden (not clip) on html/body — clip on one axis forces the other
-   axis to clip too, which blocks vertical page scroll. */
+   axis to clip too, which blocks vertical page scroll.
+   Leave overscroll-y at the default so Safari and Chrome keep pull-to-refresh.
+   contain:paint stays on page boards (not a wrapper around the fixed nav)
+   so cinema / 3D transforms cannot stretch the document past the footer. */
 @media (max-width: 1023px) {
   html,
   body {
     overflow-x: hidden;
     overscroll-behavior-x: none;
-    overscroll-behavior-y: none;
     max-width: 100%;
     height: auto;
     min-height: 0;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .landing-board,
+  .about-board,
+  .contact-board {
+    contain: paint;
   }
 }
 
@@ -389,6 +404,17 @@ h1, h2, h3, h4, h5, h6 {
   backface-visibility: hidden;
   text-rendering: geometricPrecision;
   animation: hiw-intro-3-grow 1.55s cubic-bezier(0.22, 0.55, 0.28, 1) both;
+}
+
+@media (max-width: 1023px) {
+  @keyframes hiw-intro-3-grow {
+    0% {
+      transform: translateZ(0) scale(1);
+    }
+    100% {
+      transform: translateZ(0) scale(1.12);
+    }
+  }
 }
 
 /* Paint the tagline at 3×, then GPU-scale that bitmap. Scaling a 1× layer

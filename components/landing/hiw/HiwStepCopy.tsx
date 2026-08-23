@@ -1,6 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import { C } from '@/components/pricing/ExampleScreenRotator'
@@ -16,6 +16,20 @@ const PHONE_FLOW = [0.42, 0, 0.22, 1] as const
 
 function keepLayer(_latest: unknown, generated: string) {
   return generated.includes('translateZ') ? generated : `${generated} translateZ(0)`
+}
+
+function usePhoneStage() {
+  const [phone, setPhone] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const apply = () => setPhone(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
+  return phone
 }
 
 function floatTransition(
@@ -115,6 +129,19 @@ export type HiwCaptionPlacement =
   | 'justRight'
   | 'house'
   | 'screens'
+
+/** Phone: keep copy inside the stage, never in the desktop right-column pockets. */
+const PHONE_CAPTION_SLOT: Record<HiwCaptionPlacement, string> = {
+  form: 'absolute inset-x-3 top-[2.35rem] origin-top text-center',
+  build: 'absolute inset-x-3 bottom-1 origin-bottom text-center',
+  preview: 'absolute inset-x-3 bottom-1 origin-bottom text-center',
+  phone: 'absolute inset-x-3 bottom-1 origin-bottom text-center',
+  review: 'absolute inset-x-3 top-[6.5rem] origin-bottom text-center',
+  revise: 'absolute inset-x-3 top-[6.5rem] origin-bottom text-center',
+  justRight: 'absolute inset-x-3 top-[6.5rem] origin-bottom text-center',
+  house: 'absolute inset-x-3 bottom-2 origin-bottom text-center',
+  screens: 'absolute inset-x-3 top-[1.35rem] origin-bottom text-center',
+}
 
 export type HiwCaptionContent = {
   text: string
@@ -300,28 +327,42 @@ export function HiwCaption({
   leaveMs,
   preSinkMs,
 }: HiwCaptionProps) {
+  const phoneStage = usePhoneStage()
   const style = CAPTION_STYLE[placement]
   const heading = style.seat === 'heading'
+  const slot = phoneStage ? PHONE_CAPTION_SLOT[placement] : style.slot
+  const restPose = phoneStage
+    ? { opacity: 1, x: 0, y: 0, scale: 1 }
+    : style.animate
+  const leavePose = phoneStage
+    ? { ...style.leave, x: 0 }
+    : style.leave
+  const exitPose = phoneStage
+    ? { ...style.exit, x: 0 }
+    : style.exit
+  const dropPose = phoneStage
+    ? { ...style.leave, x: 0 }
+    : style.leave
   const leaveTransition = leaveMs
     ? sinkLeaveTransition(leaveMs / 1000)
     : (style.exitTransition ?? LEAVE_TRANSITION)
   const screensDrop = Boolean(style.preSink && (preSink || leaving))
   const fadeDelayS = Math.max(0, (preSinkMs ?? 2100) / 1000)
   const dropTransition = screensDropTransition(SCREENS_DROP_S, fadeDelayS)
-  const dropPose = style.leave
 
   return (
     <motion.div
       className={cn(
         'hiw-blurb pointer-events-none will-change-transform [backface-visibility:hidden]',
-        style.slot,
+        slot,
         heading ? 'text-center lg:text-left' : 'z-[6]',
         (placement === 'house' || placement === 'preview') && 'hiw-blurb-over',
+        phoneStage && 'max-lg:whitespace-normal',
       )}
-      initial={style.initial}
-      animate={screensDrop ? dropPose : leaving ? style.leave : style.animate}
+      initial={phoneStage ? { opacity: 0, x: 0, y: 8, scale: 0.99 } : style.initial}
+      animate={screensDrop ? dropPose : leaving ? leavePose : restPose}
       exit={{
-        ...style.exit,
+        ...exitPose,
         transition: screensDrop ? dropTransition : leaveTransition,
       }}
       transition={
@@ -343,7 +384,8 @@ export function HiwCaption({
               : placement === 'form' || placement === 'preview' || heading
                 ? 'text-[1.0625rem] sm:text-[1.18rem]'
                 : 'text-[1.0625rem] sm:text-[1.15rem]',
-          placement === 'form' && 'sm:whitespace-nowrap',
+          placement === 'form' && !phoneStage && 'sm:whitespace-nowrap',
+          phoneStage && 'whitespace-normal',
         )}
         style={{
           color: C.ink,

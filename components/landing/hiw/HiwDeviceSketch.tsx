@@ -1563,7 +1563,7 @@ export function HiwLivePreviewSketch({
         style={{ pointerEvents: 'none' }}
       >
         {grown || laptopGone || showPhone ? (
-          <div className="w-[10rem] origin-center sm:w-[11.5rem] lg:w-[12.5rem]">
+          <div className="w-[8.25rem] origin-center sm:w-[11.5rem] lg:w-[12.5rem]">
             <PerspectiveShell rotateY={-11} rotateX={5}>
               <PhoneChrome
                 scene={phoneScene}
@@ -1765,12 +1765,12 @@ export function HiwWorkingWebsiteSketch({
           : 'flex -translate-y-2 flex-col items-center sm:-translate-y-3 lg:-translate-y-5'
       }
     >
-      <div className={`flex items-end justify-center ${fadeIn ? 'gap-3 sm:gap-4' : 'gap-2 sm:gap-3'}`}>
+      <div className={`flex items-end justify-center ${fadeIn ? 'gap-2.5 sm:gap-4' : 'gap-2 sm:gap-3'}`}>
         <motion.div
           className={
             fadeIn
-              ? 'relative w-[11.75rem] origin-bottom sm:w-[14.25rem] lg:w-[15.75rem]'
-              : 'relative w-[13rem] origin-bottom sm:w-[16rem] lg:w-[18rem]'
+              ? 'relative w-[9.25rem] origin-bottom sm:w-[14.25rem] lg:w-[15.75rem]'
+              : 'relative w-[10.25rem] origin-bottom sm:w-[16rem] lg:w-[18rem]'
           }
           initial={fadeIn ? { opacity: 0, y: 12 } : { x: -96, y: -34, scale: 0.56, opacity: 0 }}
           animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
@@ -1794,8 +1794,8 @@ export function HiwWorkingWebsiteSketch({
         <motion.div
           className={
             fadeIn
-              ? 'relative w-[5.5rem] origin-bottom sm:w-[6.75rem] lg:w-[7.35rem]'
-              : 'relative w-[6.5rem] origin-bottom sm:w-[7.75rem] lg:w-[8.5rem]'
+              ? 'relative w-[4.35rem] origin-bottom sm:w-[6.75rem] lg:w-[7.35rem]'
+              : 'relative w-[5rem] origin-bottom sm:w-[7.75rem] lg:w-[8.5rem]'
           }
           initial={fadeIn ? { opacity: 0, y: 16 } : { x: 96, y: -30, scale: 0.56, opacity: 0 }}
           animate={{ x: 0, y: fadeIn ? 6 : 2, scale: 1, opacity: 1 }}
@@ -1819,8 +1819,8 @@ export function HiwWorkingWebsiteSketch({
       <motion.div
         className={
           fadeIn
-            ? 'relative z-0 mt-3 w-[7.75rem] origin-bottom sm:w-[9.25rem] lg:w-[10.25rem]'
-            : 'relative z-0 -mt-1 w-[8.75rem] origin-bottom sm:mt-0 sm:w-[10.25rem] lg:w-[11.25rem]'
+            ? 'relative z-0 mt-2 w-[6.15rem] origin-bottom sm:mt-3 sm:w-[9.25rem] lg:w-[10.25rem]'
+            : 'relative z-0 -mt-1 w-[6.75rem] origin-bottom sm:mt-0 sm:w-[10.25rem] lg:w-[11.25rem]'
         }
         initial={fadeIn ? { opacity: 0, y: 14 } : { y: -22, scale: 0.5, opacity: 0 }}
         animate={{ y: fadeIn ? 0 : -8, scale: 1, opacity: 1 }}

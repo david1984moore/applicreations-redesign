@@ -695,6 +695,20 @@ function FinaleCinema({
   )
 }
 
+function usePhoneStage() {
+  const [phone, setPhone] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const apply = () => setPhone(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
+  return phone
+}
+
 function IntroCinema({
   pose,
   howItWorks,
@@ -706,6 +720,7 @@ function IntroCinema({
   threeSteps: string
   timings: IntroTimings
 }) {
+  const phoneStage = usePhoneStage()
   const leaving = pose === 'exit'
   const glowThree = pose !== 'enter'
   const pieceIn = (index: number) => ({
@@ -750,7 +765,7 @@ function IntroCinema({
             {howItWorks}
           </motion.p>
           <motion.p
-            className="font-display relative origin-center mt-3 text-6xl font-semibold leading-none text-[oklch(68%_0.15_230)] antialiased lg:mt-3.5 lg:text-7xl lg:text-[oklch(58%_0.14_310)]"
+            className="font-display relative origin-center mt-3 text-5xl font-semibold leading-none text-[oklch(68%_0.15_230)] antialiased sm:text-6xl lg:mt-3.5 lg:text-7xl lg:text-[oklch(58%_0.14_310)]"
             initial={{
               scale: INTRO_FLY.hidden.scale,
               rotateX: INTRO_FLY.hidden.rotateX,
@@ -760,9 +775,9 @@ function IntroCinema({
             animate={
               leaving
                 ? {
-                    scale: 1.88,
-                    rotateX: -11,
-                    z: 150,
+                    scale: phoneStage ? 1.22 : 1.88,
+                    rotateX: phoneStage ? -6 : -11,
+                    z: phoneStage ? 36 : 150,
                     transformPerspective: 1100,
                   }
                 : {
@@ -1140,7 +1155,7 @@ export function HowItWorksStage({
     phase.name === 'intro' ? phase.pose : 'exit'
 
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-col items-center justify-start overflow-x-clip overflow-y-clip px-2 py-2 sm:min-h-[16rem] sm:px-3 lg:min-h-0 lg:justify-center lg:overflow-visible lg:px-2 lg:py-1">
+    <div className="relative flex w-full flex-col items-center justify-start overflow-x-clip px-2 py-2 max-lg:min-h-[22rem] sm:px-3 lg:h-full lg:min-h-0 lg:justify-center lg:overflow-visible lg:px-2 lg:py-1">
       <p className="sr-only" aria-live="polite">
         {liveRegion}
       </p>

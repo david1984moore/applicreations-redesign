@@ -703,7 +703,7 @@ export function IntrospectBoard() {
   return (
     <section
       className={cn(
-        'relative bg-paper coastal-wash overflow-x-hidden',
+        'relative bg-paper coastal-wash overflow-x-hidden max-lg:[contain:paint]',
         // Desktop: welcome/success fit one screen. Mobile: content height only (no empty band).
         lockViewport && 'lg:h-[calc(100svh-var(--spacing-12)-1.75rem)] lg:overflow-hidden'
       )}

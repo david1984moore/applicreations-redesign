@@ -9,6 +9,8 @@
  * - Desktop left (~7/12): brand + icon nav, then 4-up vertical website pricing cards
  * - Desktop right (~5/12): How it works cinematic stage (fills remaining height)
  * - Mobile stack: brand → nav → How it works → pricing (cinema is first after chrome)
+ * - Mobile cinema is in-flow (no clip box) so each scene can render fully;
+ *   contain:paint keeps intro/step transforms from stretching past the footer
  *
  * Desktop spacing:
  * - Shell: lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)]
@@ -77,7 +79,7 @@ export function LandingBoard() {
   }, [skipCinema])
 
   return (
-    <section className="landing-board relative flex flex-col overflow-x-clip max-lg:overflow-hidden lg:h-full lg:overflow-hidden">
+    <section className="landing-board relative flex flex-col overflow-x-clip max-lg:[contain:paint] lg:h-full lg:overflow-hidden">
       <HiwPageWash visible={washVisible} instant={skipCinema} />
       {/* Atmosphere */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
@@ -130,10 +132,10 @@ export function LandingBoard() {
               delay: HIW_MOTION.cardDelay,
               ease: easeOut,
             }}
-            className="relative z-10 order-2 flex h-[min(23.5rem,calc(100svh-11rem))] flex-col overflow-hidden lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
+            className="relative z-10 order-2 flex w-full flex-col overflow-x-clip max-lg:min-h-[22rem] max-lg:[contain:paint] lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
           >
-            <div className="flex h-full min-h-0 flex-1 flex-col lg:grid lg:grid-rows-[1fr]">
-              <div className="min-h-0 overflow-hidden lg:h-full lg:overflow-visible">
+            <div className="flex w-full flex-col max-lg:min-h-[22rem] lg:h-full lg:min-h-0 lg:flex-1 lg:grid lg:grid-rows-[1fr]">
+              <div className="w-full max-lg:overflow-visible lg:h-full lg:min-h-0 lg:overflow-visible">
                 <HowItWorksStage
                   started
                   instant={staticFinale}
