@@ -580,6 +580,8 @@ export type Dictionary = {
       clientEmailLinkLabel: string
       emailQuestions: string
       ownerEmailSubject: string
+      ownerEmailTitle: string
+      ownerEmailIntro: string
     }
     introspect: {
       invalidBody: string
@@ -596,6 +598,8 @@ export type Dictionary = {
       clientEmailLinkLabel: string
       emailQuestions: string
       ownerEmailSubject: string
+      ownerEmailTitle: string
+      ownerEmailIntro: string
     }
     pricingSelection: {
       invalidBody: string
@@ -603,6 +607,9 @@ export type Dictionary = {
       selectionRequired: string
       success: string
       emailQuestions: string
+      ownerEmailSubject: string
+      ownerEmailTitle: string
+      ownerEmailIntro: string
     }
   }
 }

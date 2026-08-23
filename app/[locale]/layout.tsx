@@ -6,6 +6,7 @@ import { Navigation } from '@/components/ui/Navigation'
 import { SiteFooter } from '@/components/ui/SiteFooter'
 import { isLocale, locales, type Locale } from '@/lib/i18n/config'
 import { getDictionary } from '@/lib/i18n/get-dictionary'
+import { pageMetadata } from '@/lib/page-metadata'
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }))
@@ -19,33 +20,12 @@ export async function generateMetadata({
   const { locale: raw } = await params
   const locale: Locale = isLocale(raw) ? raw : 'en'
   const dict = getDictionary(locale)
-  const title = dict.meta.homeTitle
-  const description = dict.meta.homeDescription
-  return {
-    title,
-    description,
-    openGraph: {
-      type: 'website',
-      siteName: dict.brand.name,
-      title,
-      description,
-      locale: locale === 'es' ? 'es_ES' : 'en_US',
-      images: [
-        {
-          url: '/og-image.png',
-          width: 1200,
-          height: 630,
-          alt: `${dict.brand.name} — ${dict.landing.tagline}`,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ['/og-image.png'],
-    },
-  }
+  return pageMetadata({
+    locale,
+    title: dict.meta.homeTitle,
+    description: dict.meta.homeDescription,
+    path: '/',
+  })
 }
 
 export default async function LocaleLayout({
@@ -63,8 +43,10 @@ export default async function LocaleLayout({
     <LocaleProvider locale={raw} dictionary={dictionary}>
       <LocaleTransitionGuard />
       <Navigation />
-      {children}
-      <SiteFooter />
+      <div className="site-page">
+        {children}
+        <SiteFooter />
+      </div>
     </LocaleProvider>
   )
 }

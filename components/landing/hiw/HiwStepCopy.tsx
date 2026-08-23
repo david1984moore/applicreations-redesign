@@ -18,7 +18,7 @@ function keepLayer(_latest: unknown, generated: string) {
   return generated.includes('translateZ') ? generated : `${generated} translateZ(0)`
 }
 
-function usePhoneStage() {
+export function usePhoneStage() {
   const [phone, setPhone] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches
   )
@@ -130,18 +130,22 @@ export type HiwCaptionPlacement =
   | 'house'
   | 'screens'
 
-/** Phone: keep copy inside the stage, never in the desktop right-column pockets. */
-const PHONE_CAPTION_SLOT: Record<HiwCaptionPlacement, string> = {
-  form: 'absolute inset-x-3 top-[2.35rem] origin-top text-center',
-  build: 'absolute inset-x-3 bottom-1 origin-bottom text-center',
-  preview: 'absolute inset-x-3 bottom-1 origin-bottom text-center',
-  phone: 'absolute inset-x-3 bottom-1 origin-bottom text-center',
-  review: 'absolute inset-x-3 top-[6.5rem] origin-bottom text-center',
-  revise: 'absolute inset-x-3 top-[6.5rem] origin-bottom text-center',
-  justRight: 'absolute inset-x-3 top-[6.5rem] origin-bottom text-center',
-  house: 'absolute inset-x-3 bottom-2 origin-bottom text-center',
-  screens: 'absolute inset-x-3 top-[1.35rem] origin-bottom text-center',
+/** Phone sketch-only pocket — below the handset, never across the screen. */
+const PHONE_SKETCH_SLOT: Record<HiwCaptionPlacement, string> = {
+  form: 'absolute inset-x-3 top-2 origin-top text-center',
+  build: 'absolute inset-x-3 top-2 origin-top text-center',
+  preview: 'absolute inset-x-3 top-2 origin-top text-center',
+  phone: 'absolute inset-x-2 bottom-1 origin-bottom text-center',
+  review: 'absolute inset-x-3 top-2 origin-top text-center',
+  revise: 'absolute inset-x-3 top-2 origin-top text-center',
+  justRight: 'absolute inset-x-3 top-2 origin-top text-center',
+  house: 'absolute inset-x-3 top-2 origin-top text-center',
+  screens: 'absolute inset-x-3 top-2 origin-top text-center',
 }
+
+/** In-flow heading band — used on phone so copy never paints over the art. */
+const PHONE_FLOW_SLOT =
+  'relative mx-auto w-full max-w-[20.5rem] origin-top px-1 text-center'
 
 export type HiwCaptionContent = {
   text: string
@@ -194,7 +198,7 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   },
   build: {
     seat: 'stage',
-    slot: 'absolute left-[70%] top-[8.15rem] right-[4%] origin-left text-left sm:left-[72%] sm:top-[9.5rem] sm:right-[5%] lg:left-[74%] lg:top-[11.5rem] lg:right-[5.5%]',
+    slot: 'absolute left-[70%] top-[8.15rem] right-[4%] origin-center text-center sm:left-[72%] sm:top-[9.5rem] sm:right-[5%] lg:left-[74%] lg:top-[11.5rem] lg:right-[5.5%]',
     initial: { opacity: 0, y: 14, scale: 0.98 },
     animate: { opacity: 1, y: -18, scale: 1 },
     exit: { opacity: 0, y: -28, scale: 1.02 },
@@ -311,6 +315,8 @@ type HiwCaptionProps = {
   preSink?: boolean
   leaveMs?: number
   preSinkMs?: number
+  /** Sit in the heading band (phone) instead of the stage overlay. */
+  flow?: boolean
 }
 
 export function HiwCaption({
@@ -326,11 +332,16 @@ export function HiwCaption({
   preSink = false,
   leaveMs,
   preSinkMs,
+  flow = false,
 }: HiwCaptionProps) {
   const phoneStage = usePhoneStage()
   const style = CAPTION_STYLE[placement]
   const heading = style.seat === 'heading'
-  const slot = phoneStage ? PHONE_CAPTION_SLOT[placement] : style.slot
+  const slot = flow
+    ? PHONE_FLOW_SLOT
+    : phoneStage
+      ? PHONE_SKETCH_SLOT[placement]
+      : style.slot
   const restPose = phoneStage
     ? { opacity: 1, x: 0, y: 0, scale: 1 }
     : style.animate

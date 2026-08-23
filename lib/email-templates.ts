@@ -9,14 +9,18 @@ const COLORS = {
   wash: '#f4f1ea',
   card: '#fffefb',
   border: '#e5e0d6',
-  text: '#1f2937',
+  text: '#2c2824',
   muted: '#6b6560',
-  primary: '#2f6f9f',
+  primary: '#3a6aa8',
   rule: '#e8e2d8',
 } as const
 
 export function getEmailAssetBase(): string {
-  return getSiteUrl()
+  const url = getSiteUrl()
+  if (url.includes('localhost') || url.includes('127.0.0.1')) {
+    return 'https://applicreations.com'
+  }
+  return url
 }
 
 export function escapeHtml(value: string): string {
@@ -41,16 +45,18 @@ export type BrandedEmailInput = {
   paragraphs?: string[]
   bullets?: string[]
   notes?: string[]
+  /** Long plain-text block (owner dumps). */
+  preformatted?: string
   linkHref?: string
   linkLabel?: string
   signoff?: string
   footer: string
 }
 
-function linkifyHello(footer: string): string {
+function linkifyBrandEmail(footer: string): string {
   return escapeHtml(footer).replace(
-    'hello@applicreations.com',
-    `<a href="mailto:hello@applicreations.com" style="color:${COLORS.primary};text-decoration:none;">hello@applicreations.com</a>`
+    /([a-z0-9._%+-]+@applicreations\.com)/gi,
+    `<a href="mailto:$1" style="color:${COLORS.primary};text-decoration:none;">$1</a>`
   )
 }
 
@@ -101,6 +107,10 @@ export function brandedEmailHtml(input: BrandedEmailInput): string {
     )
     .join('')
 
+  const preformattedHtml = input.preformatted
+    ? `<pre style="margin:0 0 16px;padding:14px 16px;background:${COLORS.wash};border:1px solid ${COLORS.border};border-radius:10px;font-family:${FONT};font-size:13px;line-height:1.5;color:${COLORS.text};white-space:pre-wrap;word-break:break-word;">${escapeHtml(input.preformatted)}</pre>`
+    : ''
+
   const linkHtml =
     input.linkHref && input.linkLabel
       ? `<p style="margin:16px 0 0;font-family:${FONT};font-size:14px;line-height:1.4;">
@@ -145,6 +155,7 @@ export function brandedEmailHtml(input: BrandedEmailInput): string {
                 ${introHtml}
                 ${rowsHtml}
                 ${paragraphsHtml}
+                ${preformattedHtml}
                 ${bulletsHtml}
                 ${notesHtml}
                 ${signoffHtml}
@@ -152,7 +163,7 @@ export function brandedEmailHtml(input: BrandedEmailInput): string {
 
                 <div style="margin-top:28px;padding-top:16px;border-top:1px solid ${COLORS.rule};">
                   <p style="margin:0;font-family:${FONT};font-size:13px;line-height:1.4;color:${COLORS.muted};">
-                    ${linkifyHello(input.footer)}
+                    ${linkifyBrandEmail(input.footer)}
                   </p>
                 </div>
               </td>

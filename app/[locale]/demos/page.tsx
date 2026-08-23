@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { isLocale, type Locale } from '@/lib/i18n/config'
 import { getDictionary } from '@/lib/i18n/get-dictionary'
+import { pageMetadata } from '@/lib/page-metadata'
 import DemosPageClient from './DemosPageClient'
 
 export async function generateMetadata({
@@ -11,10 +12,12 @@ export async function generateMetadata({
   const { locale: raw } = await params
   const locale: Locale = isLocale(raw) ? raw : 'en'
   const dict = getDictionary(locale)
-  return {
+  return pageMetadata({
+    locale,
     title: dict.meta.demosTitle,
     description: dict.meta.demosDescription,
-  }
+    path: '/demos',
+  })
 }
 
 export default function DemosPage() {

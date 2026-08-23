@@ -41,7 +41,7 @@ export const es: Dictionary = {
     howItWorks: 'Cómo funciona',
     threeSteps: 'Tres pasos simples para tener tu sitio web…',
     beginIntrospect: 'Comenzar la Introspección',
-    getFreePreview: 'Obtener vista previa gratis',
+    getFreePreview: 'Comenzar',
     seeMore: 'Ver más',
     steps: {
       introspect: {
@@ -49,9 +49,9 @@ export const es: Dictionary = {
         detail: 'Responde unas preguntas sobre tu proyecto.',
       },
       livePreview: {
-        label: 'Vista previa gratis',
+        label: 'Sitio demo',
         detail: 'Tienes un sitio de prueba para probar...',
-        building: 'Applicreations se pone a trabajar en tu sitio de vista previa.',
+        building: 'Entonces, nos ponemos a trabajar en construir tu vista previa.',
         phoneSuffix: 'Incluso en tu teléfono.',
       },
       workingWebsite: {
@@ -329,7 +329,7 @@ export const es: Dictionary = {
     scheduleGoLiveWithHandoff:
       '50% restante del paquete ({packageHalf}) + construir y entregar ({handoff})',
     continueToIntrospect: 'Continuar a la Introspección',
-    emailThisSelection: 'Enviarme esta selección por correo',
+    emailThisSelection: 'Enviar mi selección por correo',
     yourEmailSrOnly: 'Tu correo electrónico',
     emailPlaceholder: 'tu@ejemplo.com',
     emailInvalid: 'Por favor escribe un correo válido.',
@@ -1376,8 +1376,10 @@ export const es: Dictionary = {
       clientEmailSignoff: '— Applicreations',
       clientEmailLinkLabel: 'Volver a Applicreations',
       emailQuestions:
-        '¿Preguntas? Responde a este correo o escribe a hello@applicreations.com.',
+        '¿Preguntas? Responde a este correo o escribe a solutions@applicreations.com.',
       ownerEmailSubject: 'Formulario de contacto: {name}',
+      ownerEmailTitle: 'Nuevo mensaje de contacto',
+      ownerEmailIntro: 'Alguien envió el formulario de contacto de Applicreations.',
     },
     introspect: {
       invalidBody: 'Solicitud inválida.',
@@ -1394,8 +1396,10 @@ export const es: Dictionary = {
       clientEmailSignoff: '— Applicreations',
       clientEmailLinkLabel: 'Continuar en Applicreations',
       emailQuestions:
-        '¿Preguntas? Responde a este correo o escribe a hello@applicreations.com.',
+        '¿Preguntas? Responde a este correo o escribe a solutions@applicreations.com.',
       ownerEmailSubject: 'Introspección: {business} — {plan}',
+      ownerEmailTitle: 'Nueva Introspección',
+      ownerEmailIntro: 'Llegó un cuestionario nuevo para {business}.',
     },
     pricingSelection: {
       invalidBody: 'Solicitud inválida.',
@@ -1403,7 +1407,10 @@ export const es: Dictionary = {
       selectionRequired: 'Por favor selecciona primero un paquete o un plan de soporte.',
       success: '¡Enviado! Revisa tu bandeja de entrada para ver el resumen de tu selección.',
       emailQuestions:
-        '¿Preguntas? Responde a este correo o escribe a hello@applicreations.com.',
+        '¿Preguntas? Responde a este correo o escribe a solutions@applicreations.com.',
+      ownerEmailSubject: 'Selección de precios enviada a {email}',
+      ownerEmailTitle: 'Selección de precios enviada',
+      ownerEmailIntro: 'Un visitante se envió esta selección a {email}.',
     },
   },
 }

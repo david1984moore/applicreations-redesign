@@ -17,8 +17,10 @@ import {
   HiwCaption,
   HiwStepCopy,
   SCREENS_SINK_FADE_S,
+  usePhoneStage,
   type HiwCaptionContent,
 } from '@/components/landing/hiw/HiwStepCopy'
+import { getDictionary } from '@/lib/i18n/get-dictionary'
 import { HiwFormSketch, hiwFormGlowAtMs } from '@/components/landing/hiw/HiwFormSketch'
 import {
   HiwLivePreviewSketch,
@@ -695,20 +697,6 @@ function FinaleCinema({
   )
 }
 
-function usePhoneStage() {
-  const [phone, setPhone] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches
-  )
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023px)')
-    const apply = () => setPhone(mq.matches)
-    apply()
-    mq.addEventListener('change', apply)
-    return () => mq.removeEventListener('change', apply)
-  }, [])
-  return phone
-}
-
 function IntroCinema({
   pose,
   howItWorks,
@@ -1008,7 +996,8 @@ export function HowItWorksStage({
   replayFinale = false,
   onCtaAppear,
 }: HowItWorksStageProps) {
-  const { dict, href, locale } = useLocale()
+  const { href, locale } = useLocale()
+  const dict = getDictionary(locale)
   const [phase, setPhase] = useState<CinemaPhase>(() =>
     instant || replayFinale
       ? { name: 'finale', beat: 'cta' }
@@ -1353,19 +1342,27 @@ function StepScene({
       : artMs / 1000
   const artFadeDelay = sinking ? 0.02 : 0
   const pulseMs = glowMs + (staggeredExit?.artFadeMs ?? 0)
+  const phoneStage = usePhoneStage()
+  const isPhoneCaption = caption?.placement === 'phone'
+  const isPreviewCaption = caption?.placement === 'preview'
   const sketchCaption =
-    caption?.placement === 'preview' || caption?.placement === 'phone'
+    isPhoneCaption || (!phoneStage && isPreviewCaption) ? caption : null
+  const overlayCaption =
+    !phoneStage && caption && !isPhoneCaption && !isPreviewCaption
       ? caption
       : null
-  const stageCaption =
-    caption && caption.placement !== 'preview' && caption.placement !== 'phone'
-      ? caption
-      : null
+  const headingCaption =
+    phoneStage && caption && !isPhoneCaption ? caption : null
 
   return (
     <div className="relative flex flex-col items-center overflow-visible px-1 pt-2 pb-2 sm:px-2 sm:pt-4 lg:absolute lg:inset-0 lg:pt-2 lg:pb-0">
       <div className="relative z-[2] flex w-full shrink-0 justify-center lg:justify-start lg:pl-1">
-        <div className="relative min-h-[2.85rem] w-full max-w-[22rem] overflow-visible sm:min-h-[3.1rem] lg:min-h-[3.4rem] lg:max-w-[24rem]">
+        <div
+          className={cn(
+            'relative w-full max-w-[22rem] overflow-visible lg:max-w-[24rem]',
+            phoneStage ? 'min-h-[5.5rem]' : 'min-h-[2.85rem] sm:min-h-[3.1rem] lg:min-h-[3.4rem]'
+          )}
+        >
           <motion.div
             className="mx-auto w-max origin-center will-change-transform [backface-visibility:hidden] lg:mx-0"
             initial={{ opacity: 0, x: SLIDE.copyIn, y: 92 }}
@@ -1381,21 +1378,43 @@ function StepScene({
           >
             {copy}
           </motion.div>
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-[3]">
+            <AnimatePresence>
+              {captionOn && headingCaption ? (
+                <HiwCaption
+                  key={headingCaption.placement}
+                  text={headingCaption.text}
+                  placement={headingCaption.placement}
+                  prefix={headingCaption.prefix}
+                  prefixDelayMs={headingCaption.prefixDelayMs}
+                  suffix={headingCaption.suffix}
+                  suffixDelayMs={headingCaption.suffixDelayMs}
+                  ellipsis={headingCaption.ellipsis}
+                  ellipsisDelayMs={headingCaption.ellipsisDelayMs}
+                  leaving={leaving || sinking}
+                  preSink={captionPreSink}
+                  leaveMs={sinkExit ? sinkMs : undefined}
+                  preSinkMs={preSinkDurationMs ?? glowMs}
+                  flow
+                />
+              ) : null}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
       <div className="pointer-events-none absolute inset-0 z-[8] overflow-visible">
         <AnimatePresence>
-          {captionOn && stageCaption ? (
+          {captionOn && overlayCaption ? (
             <HiwCaption
-              key={stageCaption.placement}
-              text={stageCaption.text}
-              placement={stageCaption.placement}
-              prefix={stageCaption.prefix}
-              prefixDelayMs={stageCaption.prefixDelayMs}
-              suffix={stageCaption.suffix}
-              suffixDelayMs={stageCaption.suffixDelayMs}
-              ellipsis={stageCaption.ellipsis}
-              ellipsisDelayMs={stageCaption.ellipsisDelayMs}
+              key={overlayCaption.placement}
+              text={overlayCaption.text}
+              placement={overlayCaption.placement}
+              prefix={overlayCaption.prefix}
+              prefixDelayMs={overlayCaption.prefixDelayMs}
+              suffix={overlayCaption.suffix}
+              suffixDelayMs={overlayCaption.suffixDelayMs}
+              ellipsis={overlayCaption.ellipsis}
+              ellipsisDelayMs={overlayCaption.ellipsisDelayMs}
               leaving={leaving || sinking}
               preSink={captionPreSink}
               leaveMs={sinkExit ? sinkMs : undefined}
@@ -1408,7 +1427,7 @@ function StepScene({
         {showArt ? (
           <motion.div
             key="art"
-            className="relative mt-3 flex w-full items-center justify-center will-change-transform [backface-visibility:hidden] sm:mt-4 lg:mt-5"
+            className="relative mt-8 flex w-full items-center justify-center will-change-transform [backface-visibility:hidden] lg:mt-5"
             initial={{ opacity: 0, x: SLIDE.artIn }}
             animate={{
               opacity: leaving || sinking ? 0 : 1,

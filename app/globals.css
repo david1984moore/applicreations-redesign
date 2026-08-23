@@ -159,36 +159,52 @@ body {
   line-height: 1.65;
   background: var(--color-background);
   color: var(--color-text);
-  overflow-x: hidden;
 }
 
-/* Mobile: kill horizontal rubber-band / sideways drag while scrolling.
-   Use hidden (not clip) on html/body — clip on one axis forces the other
-   axis to clip too, which blocks vertical page scroll.
-   Leave overscroll-y at the default so Safari and Chrome keep pull-to-refresh.
-   contain:paint stays on page boards (not a wrapper around the fixed nav)
-   so cinema / 3D transforms cannot stretch the document past the footer. */
+/* Mobile (iOS Chrome + Safari): one document scrollport, then clip
+   descendant overflow so 3D / filter paint cannot add space under the footer.
+   overflow-x:hidden on BOTH html and body makes each a Y-scroll container
+   (visible + hidden on the other axis computes to auto). iOS then lets you
+   scroll past the copyright through a tall empty band that reads as footer.
+   Leave overscroll-y default so pull-to-refresh still works.
+   Do not put clip-path / contain / transform on .site-page — that would
+   trap position:fixed UI (nav is outside; pricing bar / demos lightbox
+   stay inside). */
 @media (max-width: 1023px) {
-  html,
-  body {
+  html {
     overflow-x: hidden;
+    overflow-y: auto;
     overscroll-behavior-x: none;
-    max-width: 100%;
+    scrollbar-gutter: auto;
     height: auto;
     min-height: 0;
+    max-width: 100%;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
 
   body {
+    overflow: visible;
+    height: auto;
+    min-height: 0;
+    max-width: 100%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  .site-page {
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
     position: relative;
-    isolation: isolate;
   }
 
   .landing-board,
   .about-board,
   .contact-board {
     contain: paint;
+    overflow: hidden;
+    clip-path: inset(0);
   }
 }
 

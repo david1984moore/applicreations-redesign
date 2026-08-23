@@ -1,24 +1,18 @@
 import { Resend } from 'resend'
+import { getFromAddress, getReplyToAddress } from '@/lib/brand-contact'
 
 export type SendEmailInput = {
   to: string
   subject: string
   text: string
   html?: string
-  /** Override default EMAIL_REPLY_TO / solutions@ when set (e.g. client email for owner notify). */
+  /** Override default reply-to (e.g. client email for owner notify). */
   replyTo?: string
 }
 
 export type SendEmailResult =
   | { ok: true; id: string }
   | { ok: false; message: string; code?: 'missing_config' | 'send_failed' }
-
-function getFromAddress(): string {
-  return (
-    process.env.EMAIL_FROM?.trim() ||
-    'Applicreations <solutions@applicreations.com>'
-  )
-}
 
 /** Send a transactional email via Resend. Requires RESEND_API_KEY. */
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
@@ -28,7 +22,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
       ok: false,
       code: 'missing_config',
       message:
-        'Email isn’t configured yet. Add RESEND_API_KEY to your environment to send selection emails.',
+        'Email isn’t configured yet. Add RESEND_API_KEY to your environment to send emails.',
     }
   }
 
@@ -36,13 +30,12 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   const { data, error } = await resend.emails.send({
     from: getFromAddress(),
     to: input.to,
-    replyTo:
-      input.replyTo?.trim() ||
-      process.env.EMAIL_REPLY_TO?.trim() ||
-      'solutions@applicreations.com',
+    replyTo: input.replyTo?.trim() || getReplyToAddress(),
     subject: input.subject,
     text: input.text,
-    html: input.html ?? `<pre style="font-family:ui-sans-serif,system-ui,sans-serif;white-space:pre-wrap;line-height:1.5">${escapeHtml(input.text)}</pre>`,
+    html:
+      input.html ??
+      `<pre style="font-family:ui-sans-serif,system-ui,sans-serif;white-space:pre-wrap;line-height:1.5">${escapeHtml(input.text)}</pre>`,
   })
 
   if (error) {

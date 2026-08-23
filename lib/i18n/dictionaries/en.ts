@@ -41,7 +41,7 @@ export const en: Dictionary = {
     howItWorks: 'How it works',
     threeSteps: 'Three simple steps to get your website…',
     beginIntrospect: 'Begin Introspect',
-    getFreePreview: 'Get Free Preview',
+    getFreePreview: 'Get Started',
     seeMore: 'See more',
     steps: {
       introspect: {
@@ -49,9 +49,9 @@ export const en: Dictionary = {
         detail: 'Answer a few questions about your project.',
       },
       livePreview: {
-        label: 'Free preview',
+        label: 'Demo Site',
         detail: 'You get a trial site to try out...',
-        building: 'Applicreations gets to work on your preview site.',
+        building: 'Then, we get to work on building your preview.',
         phoneSuffix: 'Even on your phone.',
       },
       workingWebsite: {
@@ -328,7 +328,7 @@ export const en: Dictionary = {
     scheduleGoLiveWithHandoff:
       'Remaining 50% of package ({packageHalf}) + build & hand off ({handoff})',
     continueToIntrospect: 'Continue to Introspect',
-    emailThisSelection: 'Email this selection',
+    emailThisSelection: 'Email my selection',
     yourEmailSrOnly: 'Your email',
     emailPlaceholder: 'you@example.com',
     emailInvalid: 'Please enter a valid email.',
@@ -1348,8 +1348,10 @@ export const en: Dictionary = {
         'Here’s a copy of what you sent. We’ll review it and reply within about 48 hours.',
       clientEmailSignoff: '— Applicreations',
       clientEmailLinkLabel: 'Back to Applicreations',
-      emailQuestions: 'Questions? Reply to this email or write hello@applicreations.com.',
+      emailQuestions: 'Questions? Reply to this email or write solutions@applicreations.com.',
       ownerEmailSubject: 'Contact form: {name}',
+      ownerEmailTitle: 'New contact form message',
+      ownerEmailIntro: 'Someone submitted the contact form on Applicreations.',
     },
     introspect: {
       invalidBody: 'Invalid request body.',
@@ -1365,15 +1367,20 @@ export const en: Dictionary = {
       clientEmailPricingLabel: 'Your pricing selection',
       clientEmailSignoff: '— Applicreations',
       clientEmailLinkLabel: 'Continue on Applicreations',
-      emailQuestions: 'Questions? Reply to this email or write hello@applicreations.com.',
+      emailQuestions: 'Questions? Reply to this email or write solutions@applicreations.com.',
       ownerEmailSubject: 'Introspect: {business} — {plan}',
+      ownerEmailTitle: 'New Introspect submission',
+      ownerEmailIntro: 'A new questionnaire came in for {business}.',
     },
     pricingSelection: {
       invalidBody: 'Invalid request body.',
       emailInvalid: 'Please enter a valid email.',
       selectionRequired: 'Please select a package or support plan first.',
       success: 'Sent! Check your inbox for your selection summary.',
-      emailQuestions: 'Questions? Reply to this email or write hello@applicreations.com.',
+      emailQuestions: 'Questions? Reply to this email or write solutions@applicreations.com.',
+      ownerEmailSubject: 'Pricing selection emailed to {email}',
+      ownerEmailTitle: 'Pricing selection sent',
+      ownerEmailIntro: 'A visitor emailed this selection to {email}.',
     },
   },
 }

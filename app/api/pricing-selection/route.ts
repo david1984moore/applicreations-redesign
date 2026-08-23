@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
+import { getNotifyTo } from '@/lib/brand-contact'
 import { sendEmail } from '@/lib/email'
 import { brandedEmailHtml } from '@/lib/email-templates'
+import { en } from '@/lib/i18n/dictionaries/en'
 import {
   formatSelectionForEmail,
   getPlans,
@@ -108,6 +110,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: result.message }, { status })
   }
 
+  const ownerCopy = en.api.pricingSelection
+  const ownerResult = await sendEmail({
+    to: getNotifyTo(),
+    subject: ownerCopy.ownerEmailSubject.replace('{email}', email),
+    text: [
+      ownerCopy.ownerEmailTitle,
+      '',
+      `Sent to: ${email}`,
+      `Locale: ${locale}`,
+      '',
+      selection.body,
+    ].join('\n'),
+    replyTo: email,
+    html: brandedEmailHtml({
+      brandName: en.brand.name,
+      tagline: en.landing.tagline,
+      title: ownerCopy.ownerEmailTitle,
+      intro: ownerCopy.ownerEmailIntro.replace('{email}', email),
+      rows: selection.rows,
+      bullets: selection.bullets,
+      notes: selection.notes,
+      footer: 'Reply to this email to reach the visitor.',
+    }),
+  })
+
+  if (!ownerResult.ok) {
+    console.error('[pricing-selection] owner notify failed', {
+      code: ownerResult.code,
+      message: ownerResult.message,
+    })
+  }
+
   console.info('[pricing-selection]', {
     email,
     planId,
@@ -115,6 +149,7 @@ export async function POST(request: Request) {
     buildHandoff,
     locale,
     id: result.id,
+    ownerEmailId: ownerResult.ok ? ownerResult.id : null,
     receivedAt: new Date().toISOString(),
   })
 

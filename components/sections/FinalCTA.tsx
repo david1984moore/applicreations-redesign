@@ -37,7 +37,7 @@ export default function FinalCTA() {
             className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center"
           >
             <Button
-              href="mailto:hello@applicreations.com"
+              href="mailto:solutions@applicreations.com"
               variant="secondary"
               size="lg"
               className="w-full sm:w-auto"

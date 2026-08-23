@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
+import { getNotifyTo } from '@/lib/brand-contact'
 import { sendEmail } from '@/lib/email'
 import { brandedEmailHtml } from '@/lib/email-templates'
 import { getSiteUrl } from '@/lib/site'
 import { isLocale, type Locale } from '@/lib/i18n/config'
 import { getDictionary } from '@/lib/i18n/get-dictionary'
+import { en } from '@/lib/i18n/dictionaries/en'
 
 type ContactBody = {
   name?: unknown
@@ -35,6 +37,7 @@ export async function POST(request: Request) {
   const dict = getDictionary(locale)
   const messages = dict.api.contact
   const labels = dict.contact
+  const ownerCopy = en.api.contact
 
   const name = isNonEmptyString(body.name) ? body.name.trim() : ''
   const email = isNonEmptyString(body.email) ? body.email.trim() : ''
@@ -70,6 +73,14 @@ export async function POST(request: Request) {
     { label: labels.messageLabel, value: message },
   ]
 
+  const ownerRows = [
+    { label: 'Name', value: name },
+    { label: 'Email', value: email },
+    { label: 'Phone', value: phone },
+    { label: 'Message', value: message },
+    { label: 'Locale', value: locale },
+  ]
+
   const clientText = [
     messages.clientEmailTitle,
     '',
@@ -82,22 +93,58 @@ export async function POST(request: Request) {
     messages.emailQuestions,
   ].join('\n')
 
-  const clientResult = await sendEmail({
-    to: email,
-    subject: messages.clientEmailSubject,
-    text: clientText,
-    html: brandedEmailHtml({
-      brandName: dict.brand.name,
-      tagline: dict.landing.tagline,
-      title: messages.clientEmailTitle,
-      intro: messages.clientEmailIntro,
-      rows,
-      signoff: messages.clientEmailSignoff,
-      linkHref: getSiteUrl(),
-      linkLabel: messages.clientEmailLinkLabel,
-      footer: messages.emailQuestions,
+  const ownerSubject = ownerCopy.ownerEmailSubject.replace('{name}', name)
+  const ownerText = [
+    ownerCopy.ownerEmailTitle,
+    '',
+    ...ownerRows.map((row) => `${row.label}: ${row.value}`),
+    '',
+    `Received: ${new Date().toISOString()}`,
+  ].join('\n')
+
+  const notifyTo = getNotifyTo()
+
+  const [clientResult, ownerResult] = await Promise.all([
+    sendEmail({
+      to: email,
+      subject: messages.clientEmailSubject,
+      text: clientText,
+      html: brandedEmailHtml({
+        brandName: dict.brand.name,
+        tagline: dict.landing.tagline,
+        title: messages.clientEmailTitle,
+        intro: messages.clientEmailIntro,
+        rows,
+        signoff: messages.clientEmailSignoff,
+        linkHref: getSiteUrl(),
+        linkLabel: messages.clientEmailLinkLabel,
+        footer: messages.emailQuestions,
+      }),
     }),
-  })
+    sendEmail({
+      to: notifyTo,
+      subject: ownerSubject,
+      text: ownerText,
+      replyTo: email,
+      html: brandedEmailHtml({
+        brandName: en.brand.name,
+        tagline: en.landing.tagline,
+        title: ownerCopy.ownerEmailTitle,
+        intro: ownerCopy.ownerEmailIntro,
+        rows: ownerRows,
+        footer: 'Reply to this email to respond to the sender.',
+      }),
+    }),
+  ])
+
+  if (!ownerResult.ok) {
+    console.error('[contact] owner notify failed', {
+      code: ownerResult.code,
+      message: ownerResult.message,
+    })
+    const status = ownerResult.code === 'missing_config' ? 503 : 502
+    return NextResponse.json({ message: ownerResult.message }, { status })
+  }
 
   if (!clientResult.ok) {
     console.error('[contact] client email failed', {
@@ -108,40 +155,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: clientResult.message }, { status })
   }
 
-  const notifyTo = process.env.EMAIL_NOTIFY_TO?.trim()
-  if (notifyTo) {
-    const ownerSubject = messages.ownerEmailSubject.replace('{name}', name)
-    const ownerText = [
-      `Name: ${name}`,
-      `Email: ${email}`,
-      `Phone: ${phone}`,
-      '',
-      'Message:',
-      message,
-      '',
-      `Locale: ${locale}`,
-      `Received: ${new Date().toISOString()}`,
-    ].join('\n')
-
-    const ownerResult = await sendEmail({
-      to: notifyTo,
-      subject: ownerSubject,
-      text: ownerText,
-      replyTo: email,
-    })
-
-    if (!ownerResult.ok) {
-      console.error('[contact] owner notify failed', {
-        code: ownerResult.code,
-        message: ownerResult.message,
-      })
-    } else {
-      console.info('[contact] owner notify sent', { id: ownerResult.id })
-    }
-  } else {
-    console.warn('[contact] EMAIL_NOTIFY_TO is not set — skipping owner notification')
-  }
-
   console.info('[contact]', {
     name,
     email,
@@ -149,6 +162,7 @@ export async function POST(request: Request) {
     message,
     locale,
     clientEmailId: clientResult.id,
+    ownerEmailId: ownerResult.id,
     receivedAt: new Date().toISOString(),
   })
 

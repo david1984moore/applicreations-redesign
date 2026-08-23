@@ -3,6 +3,7 @@ import { en } from '@/lib/i18n/dictionaries/en'
 import { withLocale } from '@/lib/i18n/paths'
 import type { Locale } from '@/lib/i18n/config'
 import { defaultLocale } from '@/lib/i18n/config'
+import { getSiteUrl } from '@/lib/site'
 
 export type PlanId = 'starter' | 'basic' | 'pro' | 'business'
 
@@ -467,7 +468,7 @@ export function formatSelectionForEmail(
     p.selectionEmailEstimateNote,
     '',
     p.selectionEmailSignoff,
-    'https://applicreations.com/pricing',
+    `${getSiteUrl()}${withLocale('/pricing', locale)}`,
   ]
 
   const extras = buildHandoff
@@ -502,7 +503,7 @@ export function formatSelectionForEmail(
       p.selectionEmailEstimateNote,
     ],
     signoff: p.selectionEmailSignoff,
-    linkHref: 'https://applicreations.com/pricing',
+    linkHref: `${getSiteUrl()}${withLocale('/pricing', locale)}`,
     linkLabel: p.selectionEmailLinkLabel,
   }
 }

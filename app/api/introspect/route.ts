@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
+import { getNotifyTo } from '@/lib/brand-contact'
 import { sendEmail } from '@/lib/email'
 import { brandedEmailHtml } from '@/lib/email-templates'
+import { en } from '@/lib/i18n/dictionaries/en'
 import {
   aboutBusinessError,
   businessNameError,
@@ -165,31 +167,66 @@ export async function POST(request: Request) {
   }
 
   const recommendation = recommendPlan(answers, dict)
-  const ownerSummary = formatAnswersForEmail(answers, recommendation, dict)
-  const clientEmail = formatClientIntrospectEmail(answers, recommendation, dict)
+  const ownerSummary = formatAnswersForEmail(answers, recommendation, en)
+  const clientEmail = formatClientIntrospectEmail(
+    answers,
+    recommendation,
+    dict,
+    locale
+  )
   const clientAddress = answers.email.trim()
   const planName =
-    getPlans(dict).find((p) => p.id === recommendation.planId)?.name ??
+    getPlans(en).find((p) => p.id === recommendation.planId)?.name ??
     recommendation.planId.toUpperCase()
   const businessName = answers.businessName.trim() || answers.fullName.trim()
+  const ownerCopy = en.api.introspect
+  const notifyTo = getNotifyTo()
+  const ownerSubject = ownerCopy.ownerEmailSubject
+    .replace('{business}', businessName)
+    .replace('{plan}', planName)
 
-  const clientResult = await sendEmail({
-    to: clientAddress,
-    subject: clientEmail.subject,
-    text: clientEmail.text,
-    html: brandedEmailHtml({
-      brandName: dict.brand.name,
-      tagline: dict.landing.tagline,
-      title: clientEmail.title,
-      intro: clientEmail.intro,
-      rows: clientEmail.rows,
-      notes: clientEmail.notes,
-      signoff: clientEmail.signoff,
-      linkHref: clientEmail.linkHref,
-      linkLabel: clientEmail.linkLabel,
-      footer: clientEmail.footer,
+  const [clientResult, ownerResult] = await Promise.all([
+    sendEmail({
+      to: clientAddress,
+      subject: clientEmail.subject,
+      text: clientEmail.text,
+      html: brandedEmailHtml({
+        brandName: dict.brand.name,
+        tagline: dict.landing.tagline,
+        title: clientEmail.title,
+        intro: clientEmail.intro,
+        rows: clientEmail.rows,
+        notes: clientEmail.notes,
+        signoff: clientEmail.signoff,
+        linkHref: clientEmail.linkHref,
+        linkLabel: clientEmail.linkLabel,
+        footer: clientEmail.footer,
+      }),
     }),
-  })
+    sendEmail({
+      to: notifyTo,
+      subject: ownerSubject,
+      text: ownerSummary,
+      replyTo: clientAddress,
+      html: brandedEmailHtml({
+        brandName: en.brand.name,
+        tagline: en.landing.tagline,
+        title: ownerCopy.ownerEmailTitle,
+        intro: ownerCopy.ownerEmailIntro.replace('{business}', businessName),
+        preformatted: ownerSummary,
+        footer: 'Reply to this email to respond to the sender.',
+      }),
+    }),
+  ])
+
+  if (!ownerResult.ok) {
+    console.error('[introspect] owner notify failed', {
+      code: ownerResult.code,
+      message: ownerResult.message,
+    })
+    const status = ownerResult.code === 'missing_config' ? 503 : 502
+    return NextResponse.json({ message: ownerResult.message }, { status })
+  }
 
   if (!clientResult.ok) {
     console.error('[introspect] client email failed', {
@@ -200,33 +237,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: clientResult.message }, { status })
   }
 
-  const notifyTo = process.env.EMAIL_NOTIFY_TO?.trim()
-  if (notifyTo) {
-    const ownerSubject = messages.ownerEmailSubject
-      .replace('{business}', businessName)
-      .replace('{plan}', planName)
-
-    const ownerResult = await sendEmail({
-      to: notifyTo,
-      subject: ownerSubject,
-      text: ownerSummary,
-      replyTo: clientAddress,
-    })
-
-    if (!ownerResult.ok) {
-      console.error('[introspect] owner notify failed', {
-        code: ownerResult.code,
-        message: ownerResult.message,
-      })
-    } else {
-      console.info('[introspect] owner notify sent', { id: ownerResult.id })
-    }
-  } else {
-    console.warn(
-      '[introspect] EMAIL_NOTIFY_TO is not set — skipping owner notification'
-    )
-  }
-
   console.info('[introspect]', {
     name: answers.fullName.trim(),
     email: clientAddress,
@@ -235,6 +245,7 @@ export async function POST(request: Request) {
     uploads,
     locale,
     clientEmailId: clientResult.id,
+    ownerEmailId: ownerResult.id,
     receivedAt: new Date().toISOString(),
   })
 

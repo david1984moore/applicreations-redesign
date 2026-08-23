@@ -8,6 +8,9 @@ import {
 import type { Dictionary } from '@/lib/i18n/dictionaries/types'
 import { en } from '@/lib/i18n/dictionaries/en'
 import { interpolate } from '@/lib/i18n/interpolate'
+import { defaultLocale, type Locale } from '@/lib/i18n/config'
+import { withLocale } from '@/lib/i18n/paths'
+import { getSiteUrl } from '@/lib/site'
 
 export type SiteDepth = 'basics' | 'a-few-pages' | 'fuller-site'
 
@@ -504,7 +507,8 @@ export function formatAnswersForEmail(
 export function formatClientIntrospectEmail(
   answers: IntrospectAnswers,
   recommendation: { planId: PlanId; reason: string },
-  dict: Dictionary = en
+  dict: Dictionary = en,
+  locale: Locale = defaultLocale
 ): {
   subject: string
   text: string
@@ -570,7 +574,7 @@ export function formatClientIntrospectEmail(
     `${L.why}: ${recommendation.reason}`,
     '',
     api.clientEmailSignoff,
-    'https://applicreations.com/introspect',
+    `${getSiteUrl()}${withLocale('/introspect', locale)}`,
   ].join('\n')
 
   return {
@@ -581,7 +585,7 @@ export function formatClientIntrospectEmail(
     rows,
     notes: [`${L.why}: ${recommendation.reason}`],
     signoff: api.clientEmailSignoff,
-    linkHref: 'https://applicreations.com/introspect',
+    linkHref: `${getSiteUrl()}${withLocale('/introspect', locale)}`,
     linkLabel: api.clientEmailLinkLabel,
     footer: api.emailQuestions,
   }
