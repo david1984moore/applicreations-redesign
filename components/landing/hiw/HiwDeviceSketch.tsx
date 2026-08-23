@@ -21,45 +21,67 @@ const FLICK_EASE = [0.18, 0.86, 0.22, 1] as const
 const PAN_EASE = [0.42, 0.02, 0.22, 1] as const
 const CRAWL_EASE = [0.45, 0, 0.4, 1] as const
 const LAPTOP_OUT_EASE = [0.58, 0, 0.42, 0.28] as const
-const PHONE_IN_EASE = [0.42, 0.0, 0.22, 1] as const
+const PHONE_IN_EASE = [0.22, 1, 0.36, 1] as const
 const SCENE_FADE = 1.05
 const SCROLL_S = 2.6
 const LIVE_SCROLL_S = 2.8
-const LAPTOP_OUT_S = 2.6
-export const PHONE_IN_S = 2.85
-/** Preview caption is gone this long before “Even on your phone.” */
-export const PHONE_CAPTION_LEAD_S = 0.32
+const LAPTOP_OUT_S = 1.15
+export const PHONE_IN_S = 1.2
+/** Preview line fades out this long before the laptop starts leaving. */
+export const PREVIEW_CAPTION_LEAD_S = 0.32
+/** Preview line fade — done before the phone starts in. */
+export const PREVIEW_CAPTION_OUT_S = 0.52
+/** Gap after the preview line is gone, then the phone starts. */
+const PHONE_AFTER_CAPTION_S = 0.04
 /** Caption starts this long before the handset has fully settled. */
-export const PHONE_CAPTION_EARLY_S = 0.2
+export const PHONE_CAPTION_EARLY_S = 0.16
 const GROW_S = 2.15
 const HOUSE_FADE_S = 2.15
-const WIRE_FADE_S = 0.9
-const WIRE_DRAW_S = 1.65
-const WIRE_OUT_S = 0.22
+/** Whole cord fades in as one piece — no draw-on. */
+const WIRE_FADE_S = 1.15
+/** Partial retract + fade as the house sequence leaves. */
+const WIRE_OUT_S = 1.8
+/** Leave the loop and port on screen — fade finishes the exit. */
+const WIRE_RETRACT_TO = 0.5
+const WIRE_OUT_FADE_S = 1.25
+const WIRE_OUT_FADE_DELAY_S = 0.16
+const WIRE_HOLD_S = WIRE_OUT_S + WIRE_OUT_FADE_DELAY_S + 0.1
 const LAND = [0.16, 1, 0.3, 1] as const
 /** Slow start so the laptop eases into the grow instead of jumping. */
 const GROW_EASE = [0.42, 0.0, 0.22, 1] as const
-/** Cord draws out of the port without the expo snap of EASE. */
-const WIRE_DRAW_EASE = [0.42, 0.0, 0.2, 1] as const
-/** Cord leaves almost immediately, still a short fade rather than a cut. */
-const WIRE_OUT_EASE = [0.3, 0, 0.55, 1] as const
-const PREVIEW_AT = 0.125
-const SWING_KNEEL_AT = 0.035
-const FOUNDATION_AT = 0.09
-/** After the laptop is in the DOM so the cord can draw instead of popping in. */
-const WIRE_AT = 0.14
-const STAND_AT = 0.16
-const LADDER_AT = 0.275
-const CLIMB_AT = 0.285
-const DETAIL_AT = 0.43
+const WIRE_FADE_EASE = [0.4, 0, 0.2, 1] as const
+const WIRE_RETRACT_EASE = [0.32, 0.0, 0.18, 1] as const
+const WIRE_OUT_FADE_EASE = [0.28, 0.1, 0.36, 1] as const
+const PREVIEW_AT = 0.098
+const SWING_KNEEL_AT = 0
+const FOUNDATION_AT = 0.07
+/** Laptop is in the DOM; cord fades in as a complete line. */
+const WIRE_AT = 0.11
+/** Retract starts while the house is still planted, just before grow. */
+const WIRE_OUT_AT = 0.336
+const STAND_AT = 0.125
+const LADDER_AT = 0.215
+const CLIMB_AT = 0.222
+const DETAIL_AT = 0.335
 /** Hammer rests so the last strike finishes before the grow/fade. */
-const SWING_REST_AT = 0.436
-const GROW_AT = 0.45
-const GROWN_AT = 0.475
+const SWING_REST_AT = 0.34
+const GROW_AT = 0.351
+const GROWN_AT = 0.376
 /** Grown site keeps browsing until the phone crossfade. */
-const LAPTOP_FADE_AT = 0.748
-/** Phone eases in over the laptop fade, not after it. */
-const PHONE_IN_AT = 0.756
+const LAPTOP_FADE_AT = 0.545
+/** Settled phone + readable line, then the stage glows out. */
+const PHONE_HOLD_MS = 2300
+
+export function hiwPhoneInMs(duration: number) {
+  const laptopFadeMs = duration * LAPTOP_FADE_AT
+  const captionClearMs = laptopFadeMs - PREVIEW_CAPTION_LEAD_S * 1000
+  return captionClearMs + (PREVIEW_CAPTION_OUT_S + PHONE_AFTER_CAPTION_S) * 1000
+}
+
+export function hiwStep2PlayMs(sketchMs: number) {
+  return Math.round(hiwPhoneInMs(sketchMs) + PHONE_HOLD_MS)
+}
+
 type ScrollEase = readonly [number, number, number, number]
 const LIVE_SCENES: ExampleSceneId[] = ['home', 'about', 'gallery', 'services']
 const LIVE_PHONE_SCENES: ExampleSceneId[] = ['home', 'about', 'gallery', 'products', 'contact']
@@ -850,8 +872,9 @@ function LaptopChrome({
             initial={false}
             animate={{ opacity: cablePort ? 1 : 0 }}
             transition={{
-              duration: cablePort ? WIRE_FADE_S : WIRE_OUT_S,
-              ease: cablePort ? EASE : WIRE_OUT_EASE,
+              duration: cablePort ? WIRE_FADE_S : WIRE_OUT_FADE_S,
+              ease: cablePort ? WIRE_FADE_EASE : WIRE_OUT_FADE_EASE,
+              delay: cablePort ? 0 : WIRE_OUT_FADE_DELAY_S,
             }}
           >
             <rect
@@ -1158,10 +1181,11 @@ function PreviewWire({
   const [d, setD] = useState('')
   const [stroke, setStroke] = useState(8)
   const [size, setSize] = useState({ w: 100, h: 100 })
+  const endsRef = useRef<{ x1: number; y1: number; x2: number; y2: number } | null>(null)
 
   useLayoutEffect(() => {
     const host = hostRef.current
-    if (!host) return
+    if (!host || !visible) return
 
     const update = () => {
       const from = fromRef.current
@@ -1175,6 +1199,12 @@ function PreviewWire({
       const y1 = a.top + a.height / 2 - box.top
       const x2 = b.left + b.width * 0.42 - box.left
       const y2 = b.top + b.height / 2 - box.top
+      const prev = endsRef.current
+      const jumped = !prev
+        || Math.hypot(x1 - prev.x1, y1 - prev.y1) > 2
+        || Math.hypot(x2 - prev.x2, y2 - prev.y2) > 2
+      if (!jumped) return
+      endsRef.current = { x1, y1, x2, y2 }
       const nextStroke = Math.max(7, Math.min(9.5, b.height * 0.7))
       const geom = wirePath(x1, y1, x2, y2)
       setSize({ w: box.width, h: box.height })
@@ -1184,7 +1214,6 @@ function PreviewWire({
 
     update()
     const delays = [32, 80, 160, 320, 640, 1000, 1600].map((ms) => window.setTimeout(update, ms))
-    const poll = window.setInterval(update, 200)
     const ro = new ResizeObserver(update)
     ro.observe(host)
     const from = fromRef.current
@@ -1194,24 +1223,17 @@ function PreviewWire({
     window.addEventListener('resize', update)
     return () => {
       for (const id of delays) window.clearTimeout(id)
-      window.clearInterval(poll)
       ro.disconnect()
       window.removeEventListener('resize', update)
     }
   }, [visible, fromRef, toRef])
 
-  const keepWire = useKeepMounted(visible && Boolean(d), WIRE_OUT_S * 1000)
+  const keepWire = useKeepMounted(visible && Boolean(d), WIRE_HOLD_S * 1000)
 
   return (
-    <motion.div
+    <div
       ref={hostRef}
       className="pointer-events-none absolute inset-0 z-[2] overflow-visible"
-      initial={false}
-      animate={{ opacity: visible ? 1 : 0 }}
-      transition={{
-        duration: visible ? 0.12 : WIRE_OUT_S,
-        ease: visible ? EASE : WIRE_OUT_EASE,
-      }}
       aria-hidden
     >
       <svg
@@ -1221,19 +1243,35 @@ function PreviewWire({
       >
         {d && keepWire ? (
           <motion.path
+            ref={(node) => {
+              if (node) node.setAttribute('pathLength', '1')
+            }}
             d={d}
             fill="none"
             stroke="oklch(22% 0.015 50)"
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeLinejoin="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: WIRE_DRAW_S, ease: WIRE_DRAW_EASE }}
+            initial={{ opacity: 0, strokeDasharray: '1 1' }}
+            animate={{
+              opacity: visible ? 1 : 0,
+              strokeDasharray: visible ? '1 1' : `${WIRE_RETRACT_TO} 1`,
+            }}
+            transition={{
+              strokeDasharray: {
+                duration: visible ? 0 : WIRE_OUT_S,
+                ease: WIRE_RETRACT_EASE,
+              },
+              opacity: {
+                duration: visible ? WIRE_FADE_S : WIRE_OUT_FADE_S,
+                ease: visible ? WIRE_FADE_EASE : WIRE_OUT_FADE_EASE,
+                delay: visible ? 0 : WIRE_OUT_FADE_DELAY_S,
+              },
+            }}
           />
         ) : null}
       </svg>
-    </motion.div>
+    </div>
   )
 }
 
@@ -1249,7 +1287,7 @@ export function HiwLivePreviewSketch({
   const [phase, setPhase] = useState<WorkerPhase>('kneel')
   const [showFoundation, setShowFoundation] = useState(false)
   const [showWire, setShowWire] = useState(false)
-  const [swinging, setSwinging] = useState(false)
+  const [swinging, setSwinging] = useState(true)
   const [previewLevel, setPreviewLevel] = useState(0)
   const [houseGone, setHouseGone] = useState(false)
   const [grown, setGrown] = useState(false)
@@ -1282,13 +1320,16 @@ export function HiwLivePreviewSketch({
     const galleryNav = navCursor(laptopNavCount, 2)
     const aboutNav = navCursor(laptopNavCount, 1)
     const phoneAbout = LIVE_PHONE_SCENES.indexOf('about')
-    const phoneGallery = LIVE_PHONE_SCENES.indexOf('gallery')
     const phoneProducts = LIVE_PHONE_SCENES.indexOf('products')
+    const laptopFadeMs = duration * LAPTOP_FADE_AT
+    const captionClearMs = laptopFadeMs - PREVIEW_CAPTION_LEAD_S * 1000
+    const phoneInMs = hiwPhoneInMs(duration)
 
     const timers = [
       window.setTimeout(() => setSwinging(true), duration * SWING_KNEEL_AT),
       window.setTimeout(() => setShowFoundation(true), duration * FOUNDATION_AT),
       window.setTimeout(() => setShowWire(true), duration * WIRE_AT),
+      window.setTimeout(() => setShowWire(false), duration * WIRE_OUT_AT),
       window.setTimeout(() => setPreviewLevel(1), duration * PREVIEW_AT),
       window.setTimeout(() => setSwinging(false), duration * (STAND_AT - 0.012)),
       window.setTimeout(() => {
@@ -1296,7 +1337,7 @@ export function HiwLivePreviewSketch({
         setShot('walls')
         setSwinging(true)
       }, duration * STAND_AT),
-      window.setTimeout(() => setPreviewLevel(2), duration * 0.24),
+      window.setTimeout(() => setPreviewLevel(2), duration * 0.187),
       window.setTimeout(() => setSwinging(false), duration * LADDER_AT),
       window.setTimeout(() => {
         setShot('roof')
@@ -1322,70 +1363,68 @@ export function HiwLivePreviewSketch({
       }, duration * GROWN_AT),
       window.setTimeout(() => {
         setCursor({ x: HIT.homeTea.x, y: HIT.homeTea.y, click: true, intent: 'act' })
-      }, duration * 0.498),
+      }, duration * 0.390),
       window.setTimeout(() => {
         setCursor({ x: HIT.homeTea.x, y: HIT.homeTea.y, click: false, intent: 'act' })
-      }, duration * 0.504),
+      }, duration * 0.394),
       window.setTimeout(() => {
         setCard(pickCard('home', 0))
-      }, duration * 0.506),
+      }, duration * 0.395),
       window.setTimeout(() => {
         setCard(null)
         setCursor({ x: galleryNav.x, y: galleryNav.y, click: false, intent: 'act' })
-      }, duration * 0.538),
+      }, duration * 0.415),
       window.setTimeout(() => {
         setCursor({ x: galleryNav.x, y: galleryNav.y, click: true, intent: 'act' })
-      }, duration * 0.568),
+      }, duration * 0.434),
       window.setTimeout(() => {
         setCursor({ x: galleryNav.x, y: galleryNav.y, click: false, intent: 'act' })
         setScene('gallery')
         setNavIndex(2)
         setScroll(0)
-        setScrollDuration(0.9)
+        setScrollDuration(0.7)
         setScrollEase(SCROLL_EASE)
-      }, duration * 0.574),
+      }, duration * 0.437),
       window.setTimeout(() => {
-        setScrollDuration(2.1)
+        setScrollDuration(1.35)
         setScrollEase(PAN_EASE)
         setScroll(GALLERY_STOOL_SCROLL * 0.42)
-      }, duration * 0.598),
+      }, duration * 0.452),
       window.setTimeout(() => {
-        setScrollDuration(1.7)
+        setScrollDuration(1.1)
         setScrollEase(PAN_EASE)
         setScroll(GALLERY_STOOL_SCROLL)
         setCursor({ x: HIT.galleryStool.x, y: HIT.galleryStool.y, click: false, intent: 'act' })
-      }, duration * 0.628),
+      }, duration * 0.471),
       window.setTimeout(() => {
         setCursor({ x: HIT.galleryStool.x, y: HIT.galleryStool.y, click: true, intent: 'act' })
-      }, duration * 0.658),
+      }, duration * 0.489),
       window.setTimeout(() => {
         setCursor({ x: HIT.galleryStool.x, y: HIT.galleryStool.y, click: false, intent: 'act' })
         setCard(pickCard('gallery', 0))
-      }, duration * 0.664),
+      }, duration * 0.493),
       window.setTimeout(() => {
         setCard(null)
         setCursor({ x: aboutNav.x, y: aboutNav.y, click: false, intent: 'act' })
-      }, duration * 0.702),
+      }, duration * 0.516),
       window.setTimeout(() => {
         setCursor({ x: aboutNav.x, y: aboutNav.y, click: true, intent: 'act' })
-      }, duration * 0.732),
+      }, duration * 0.535),
       window.setTimeout(() => {
         setCursor({ x: aboutNav.x, y: aboutNav.y, click: false, intent: 'act' })
         setScene('about')
         setNavIndex(1)
         setScroll(0)
-        setScrollDuration(0.85)
+        setScrollDuration(0.55)
         setScrollEase(SCROLL_EASE)
-      }, duration * 0.738),
+      }, duration * 0.539),
       window.setTimeout(() => {
-        setScrollDuration(1.8)
-        setScrollEase(CRAWL_EASE)
-        setScroll(-22)
-      }, duration * 0.758),
+        onBeatRef.current?.('clear')
+      }, captionClearMs),
       window.setTimeout(() => {
         setLaptopGone(true)
         setCursor(null)
-      }, duration * LAPTOP_FADE_AT),
+      }, laptopFadeMs),
       window.setTimeout(() => {
         setDevice('phone')
         setPhoneCard(null)
@@ -1394,47 +1433,23 @@ export function HiwLivePreviewSketch({
         setPhoneScroll(0)
         setPhoneScrollDuration(0)
         setPhoneScrollEase(SCROLL_EASE)
-        onBeatRef.current?.('clear')
-      }, duration * PHONE_IN_AT),
+      }, phoneInMs),
       window.setTimeout(
         () => onBeatRef.current?.('phone'),
-        duration * PHONE_IN_AT + (PHONE_IN_S - PHONE_CAPTION_EARLY_S) * 1000
+        phoneInMs + (PHONE_IN_S - PHONE_CAPTION_EARLY_S) * 1000
       ),
       window.setTimeout(() => {
         setPhoneScene('products')
         setPhoneNav(phoneProducts)
         setPhoneScroll(0)
+        setPhoneScrollDuration(0.35)
+        setPhoneScrollEase(SCROLL_EASE)
+      }, phoneInMs + 720),
+      window.setTimeout(() => {
         setPhoneScrollDuration(0.55)
-        setPhoneScrollEase(SCROLL_EASE)
-      }, duration * 0.778),
-      window.setTimeout(() => {
-        setPhoneScene('gallery')
-        setPhoneNav(phoneGallery)
-        setPhoneScroll(0)
-        setPhoneScrollDuration(0.7)
-        setPhoneScrollEase(SCROLL_EASE)
-      }, duration * 0.808),
-      window.setTimeout(() => {
-        setPhoneScrollDuration(1.85)
         setPhoneScrollEase(PAN_EASE)
-        setPhoneScroll(-32)
-      }, duration * 0.828),
-      window.setTimeout(() => {
-        setPhoneScrollDuration(0.95)
-        setPhoneScrollEase(FLICK_EASE)
-        setPhoneScroll(-14)
-      }, duration * 0.862),
-      window.setTimeout(() => {
-        setPhoneScrollDuration(2.15)
-        setPhoneScrollEase(CRAWL_EASE)
-        setPhoneScroll(-46)
-      }, duration * 0.888),
-      window.setTimeout(() => {
-        setPhoneCard(pickCard('gallery', 0))
-      }, duration * 0.956),
-      window.setTimeout(() => {
-        setPhoneCard(null)
-      }, duration * 0.988),
+        setPhoneScroll(-28)
+      }, phoneInMs + 1180),
     ]
 
     return () => {
@@ -1449,7 +1464,7 @@ export function HiwLivePreviewSketch({
   const houseOn = !houseGone && !laptopGone && !showPhone
   const keepLaptop = useKeepMounted(laptopOn, LAPTOP_OUT_S * 1000)
   const keepHouse = useKeepMounted(houseOn, HOUSE_FADE_S * 1000)
-  const wireOn = showWire && houseOn
+  const wireOn = showWire && !laptopGone && !showPhone
   const growTransition = {
     duration: grown ? GROW_S : 0.55,
     ease: grown ? GROW_EASE : EASE,
@@ -1522,7 +1537,7 @@ export function HiwLivePreviewSketch({
           initial={{ opacity: 0 }}
           animate={{ opacity: houseOn ? 1 : 0 }}
           transition={{
-            duration: houseOn ? 0.5 : HOUSE_FADE_S,
+            duration: houseOn ? 0.28 : HOUSE_FADE_S,
             ease: houseOn ? EASE : GROW_EASE,
           }}
         >
@@ -1530,7 +1545,7 @@ export function HiwLivePreviewSketch({
             shot={shot}
             phase={phase}
             showFoundation={showFoundation}
-            swinging={playing && swinging}
+            swinging={swinging}
             jackRef={jackRef}
           />
         </motion.div>

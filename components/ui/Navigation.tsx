@@ -3,9 +3,97 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 import { BrandNavLinks } from '@/components/ui/BrandNavLinks'
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import { stripLocale } from '@/lib/i18n/paths'
+import { cn } from '@/lib/utils'
+
+const SCROLL_IDLE_MS = 1100
+const AT_TOP_PX = 8
+
+function pageScrollY() {
+  return window.scrollY || document.documentElement.scrollTop || 0
+}
+
+function isAtPageTop() {
+  return pageScrollY() <= AT_TOP_PX
+}
+
+function useSubpageNavVisibility(enabled: boolean, resetKey: string) {
+  const [visible, setVisible] = useState(true)
+  const heldRef = useRef(false)
+  const atTopRef = useRef(true)
+  const timerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+
+  useEffect(() => {
+    atTopRef.current = isAtPageTop()
+    setVisible(true)
+    if (timerRef.current != null) {
+      window.clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }, [resetKey])
+
+  useEffect(() => {
+    if (!enabled) return
+
+    const clearTimer = () => {
+      if (timerRef.current != null) {
+        window.clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+    }
+
+    const scheduleHide = () => {
+      clearTimer()
+      if (heldRef.current || atTopRef.current) return
+      timerRef.current = window.setTimeout(() => {
+        timerRef.current = null
+        if (!heldRef.current && !atTopRef.current) setVisible(false)
+      }, SCROLL_IDLE_MS)
+    }
+
+    const onScrollActivity = () => {
+      atTopRef.current = isAtPageTop()
+      setVisible(true)
+      if (atTopRef.current) {
+        clearTimer()
+        return
+      }
+      scheduleHide()
+    }
+
+    atTopRef.current = isAtPageTop()
+    document.addEventListener('scroll', onScrollActivity, { capture: true, passive: true })
+
+    return () => {
+      document.removeEventListener('scroll', onScrollActivity, true)
+      clearTimer()
+    }
+  }, [enabled, resetKey])
+
+  const hold = () => {
+    heldRef.current = true
+    setVisible(true)
+    if (timerRef.current != null) {
+      window.clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  const release = () => {
+    heldRef.current = false
+    if (atTopRef.current) return
+    if (timerRef.current != null) window.clearTimeout(timerRef.current)
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null
+      if (!heldRef.current && !atTopRef.current) setVisible(false)
+    }, SCROLL_IDLE_MS)
+  }
+
+  return { visible, hold, release }
+}
 
 /**
  * Keep in sync with spacer + page scroll offsets.
@@ -23,13 +111,30 @@ export function Navigation() {
   const pathname = usePathname()
   const { dict, href } = useLocale()
   const onHome = stripLocale(pathname || '/') === '/'
+  const { visible, hold, release } = useSubpageNavVisibility(!onHome, pathname || '/')
 
   // Landing uses its own brand chrome — no global nav
   if (onHome) return null
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-paper/85 backdrop-blur-md">
+      <header
+        onMouseEnter={hold}
+        onMouseLeave={release}
+        onFocus={hold}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            release()
+          }
+        }}
+        className={cn(
+          'fixed top-0 left-0 right-0 z-50 bg-paper/85 backdrop-blur-md',
+          'transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+          visible
+            ? 'translate-y-0 opacity-100'
+            : '-translate-y-full opacity-0 pointer-events-none'
+        )}
+      >
         <nav className="max-w-[90rem] mx-auto px-2 sm:px-6 lg:px-8">
           <div className={`flex w-full min-w-0 items-start justify-between gap-x-1 pt-3 sm:items-center sm:pt-0 ${SITE_NAV_HEIGHT_CLASS}`}>
             <Link

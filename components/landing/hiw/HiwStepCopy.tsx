@@ -1,12 +1,10 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import { C } from '@/components/pricing/ExampleScreenRotator'
-import {
-  PHONE_CAPTION_LEAD_S,
-  PHONE_IN_S,
-} from '@/components/landing/hiw/HiwDeviceSketch'
+import { PREVIEW_CAPTION_OUT_S } from '@/components/landing/hiw/HiwDeviceSketch'
 import { cn } from '@/lib/utils'
 
 const ENTER_EASE = [0.22, 1, 0.36, 1] as const
@@ -39,24 +37,28 @@ const LEAVE_TRANSITION = {
   y: { duration: 0.95, ease: FLOAT_EASE },
 } as const
 
-/** Matches the phone rising in; finishes before “Even on your phone.” */
+/** Preview line fades out before the laptop leaves and before the phone arrives. */
 const PREVIEW_LEAVE = {
-  opacity: { duration: PHONE_IN_S - PHONE_CAPTION_LEAD_S, ease: EXIT_EASE },
-  scale: { duration: PHONE_IN_S - PHONE_CAPTION_LEAD_S, ease: EXIT_EASE },
-  x: { duration: PHONE_IN_S - PHONE_CAPTION_LEAD_S, ease: FLOAT_EASE },
-  y: { duration: PHONE_IN_S - PHONE_CAPTION_LEAD_S, ease: FLOAT_EASE },
+  opacity: { duration: PREVIEW_CAPTION_OUT_S, ease: EXIT_EASE },
+  scale: { duration: PREVIEW_CAPTION_OUT_S, ease: EXIT_EASE },
+  x: { duration: PREVIEW_CAPTION_OUT_S, ease: FLOAT_EASE },
+  y: { duration: PREVIEW_CAPTION_OUT_S, ease: FLOAT_EASE },
 } as const
 
-/** Slow downward commit — still moving when the screens join. */
-const DRIFT_EASE = [0.22, 0, 0.4, 1] as const
+/** Descent that holds pace and slowly picks up — never eases to a stop. */
+const DRIFT_EASE = [0.28, 0.06, 0.82, 0.52] as const
 /** Accelerate into the drop, then vanish. */
 const SINK_EASE = [0.52, 0.02, 0.88, 0.08] as const
 const SINK_FADE_EASE = [0.62, 0, 0.22, 1] as const
+/** Shared screens + go-live fade — keep them locked, clip out quickly. */
+export const SCREENS_SINK_FADE_S = 0.3
+/** Fixed travel time so earlier fades do not speed up the drop. */
+const SCREENS_DROP_S = 2.38
 
 function sinkLeaveTransition(duration: number) {
   return {
     opacity: {
-      duration: Math.min(0.34, duration * 0.48),
+      duration: SCREENS_SINK_FADE_S,
       ease: SINK_FADE_EASE,
       delay: 0.02,
     },
@@ -66,16 +68,20 @@ function sinkLeaveTransition(duration: number) {
   }
 }
 
-function screensDriftTransition(duration: number) {
+function screensDropTransition(duration: number, fadeDelay: number) {
   return {
-    opacity: { duration: 0 },
+    opacity: {
+      duration: SCREENS_SINK_FADE_S,
+      ease: SINK_FADE_EASE,
+      delay: fadeDelay,
+    },
     scale: { duration, ease: DRIFT_EASE },
     x: { duration, ease: DRIFT_EASE },
     y: { duration, ease: DRIFT_EASE },
   }
 }
 
-const SCREENS_LEAVE = sinkLeaveTransition(0.72)
+const SCREENS_LEAVE = sinkLeaveTransition(0.46)
 
 type HiwStepCopyProps = {
   n: string
@@ -105,8 +111,21 @@ export type HiwCaptionPlacement =
   | 'preview'
   | 'phone'
   | 'review'
+  | 'revise'
+  | 'justRight'
   | 'house'
   | 'screens'
+
+export type HiwCaptionContent = {
+  text: string
+  placement: HiwCaptionPlacement
+  prefix?: string
+  prefixDelayMs?: number
+  suffix?: string
+  suffixDelayMs?: number
+  ellipsis?: boolean
+  ellipsisDelayMs?: number
+}
 
 type CaptionPose = { opacity: number; y?: number; x?: number; scale: number }
 
@@ -157,7 +176,7 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   },
   preview: {
     seat: 'stage',
-    slot: 'absolute left-[4%] top-[calc(min(84cqw,36rem)*176/252+1.35rem)] w-[min(11.25rem,42%)] origin-left text-left sm:left-[5%]',
+    slot: 'absolute left-[4%] top-[calc(min(84cqw,36rem)*176/252+1.35rem)] w-[min(14.5rem,48%)] origin-left text-left sm:left-[5%]',
     initial: { opacity: 0, x: -6, y: 5, scale: 0.99 },
     animate: { opacity: 1, x: 16, y: -6, scale: 1 },
     exit: { opacity: 0, x: 28, y: -10, scale: 1.01 },
@@ -168,7 +187,7 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   phone: {
     seat: 'stage',
     slot:
-      'absolute top-[30%] left-[calc(50%+5.55rem)] right-[0.9rem] origin-left text-left sm:top-[28%] sm:left-[calc(50%+6.4rem)] sm:right-[1.05rem] lg:top-[26%] lg:left-[calc(50%+6.95rem)] lg:right-[1.2rem]',
+      'absolute top-[30%] left-[calc(50%+7.7rem)] w-max max-w-[8.75rem] origin-left text-left sm:top-[28%] sm:left-[calc(50%+8.7rem)] lg:top-[26%] lg:left-[calc(50%+9.5rem)]',
     initial: { opacity: 0, y: 28, scale: 0.96 },
     animate: { opacity: 1, y: -22, scale: 1 },
     exit: { opacity: 0, y: -36, scale: 1.02 },
@@ -178,6 +197,24 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   review: {
     seat: 'stage',
     slot: 'absolute left-0 right-0 top-[7.35rem] mx-auto w-[14rem] origin-bottom text-center sm:top-[7.85rem] sm:w-[15rem]',
+    initial: { opacity: 0, y: 12, scale: 0.98 },
+    animate: { opacity: 1, y: -14, scale: 1 },
+    exit: { opacity: 0, y: -24, scale: 1.02 },
+    leave: { opacity: 0, y: -24, scale: 1.02 },
+    transition: floatTransition(7.2),
+  },
+  revise: {
+    seat: 'stage',
+    slot: 'absolute left-0 right-0 top-[7.35rem] mx-auto w-[14rem] origin-bottom text-center sm:top-[7.85rem] sm:w-[15rem]',
+    initial: { opacity: 0, y: 12, scale: 0.98 },
+    animate: { opacity: 1, y: -14, scale: 1 },
+    exit: { opacity: 0, y: -24, scale: 1.02 },
+    leave: { opacity: 0, y: -24, scale: 1.02 },
+    transition: floatTransition(7.2),
+  },
+  justRight: {
+    seat: 'stage',
+    slot: 'absolute left-0 right-0 top-[7.35rem] mx-auto w-[20rem] origin-bottom whitespace-nowrap text-center sm:top-[7.85rem] sm:w-[22rem]',
     initial: { opacity: 0, y: 12, scale: 0.98 },
     animate: { opacity: 1, y: -14, scale: 1 },
     exit: { opacity: 0, y: -24, scale: 1.02 },
@@ -195,10 +232,11 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   },
   screens: {
     seat: 'stage',
-    slot: 'absolute left-0 right-0 top-[2.15rem] mx-auto w-[min(92%,20.5rem)] origin-bottom text-center sm:top-[2.3rem] lg:top-[2.45rem]',
+    slot: 'absolute left-0 right-0 top-[1.7rem] mx-auto w-[min(92%,20.5rem)] origin-bottom text-center sm:top-[1.85rem] lg:top-[2rem]',
     initial: { opacity: 0, y: 8, scale: 0.99 },
     animate: { opacity: 1, y: -6, scale: 1 },
-    preSink: { opacity: 1, y: 56, scale: 1 },
+    /** Same destination as leave — one continuous drop, never a rest pose. */
+    preSink: { opacity: 1, y: 280, scale: 0.82 },
     exit: { opacity: 0, y: 280, scale: 0.82 },
     leave: { opacity: 0, y: 280, scale: 0.82 },
     transition: floatTransition(1.8, ENTER_EASE),
@@ -206,9 +244,42 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   },
 }
 
+const PREFIX_IN = { duration: 0.48, ease: ENTER_EASE } as const
+const ELLIPSIS_DOT_MS = 220
+
+function RevealSpan({
+  children,
+  delayMs,
+  leaving,
+}: {
+  children: ReactNode
+  delayMs: number
+  leaving: boolean
+}) {
+  return (
+    <motion.span
+      className="inline"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: leaving ? 0 : 1 }}
+      transition={{
+        ...PREFIX_IN,
+        delay: leaving ? 0 : delayMs / 1000,
+      }}
+    >
+      {children}
+    </motion.span>
+  )
+}
+
 type HiwCaptionProps = {
   text: string
   placement: HiwCaptionPlacement
+  prefix?: string
+  prefixDelayMs?: number
+  suffix?: string
+  suffixDelayMs?: number
+  ellipsis?: boolean
+  ellipsisDelayMs?: number
   leaving?: boolean
   preSink?: boolean
   leaveMs?: number
@@ -218,6 +289,12 @@ type HiwCaptionProps = {
 export function HiwCaption({
   text,
   placement,
+  prefix,
+  prefixDelayMs = 820,
+  suffix,
+  suffixDelayMs = 1680,
+  ellipsis = false,
+  ellipsisDelayMs = 880,
   leaving = false,
   preSink = false,
   leaveMs,
@@ -228,8 +305,10 @@ export function HiwCaption({
   const leaveTransition = leaveMs
     ? sinkLeaveTransition(leaveMs / 1000)
     : (style.exitTransition ?? LEAVE_TRANSITION)
-  const drifting = Boolean(preSink && style.preSink && !leaving)
-  const driftMs = Math.max(0.8, ((preSinkMs ?? 2100) - 80) / 1000)
+  const screensDrop = Boolean(style.preSink && (preSink || leaving))
+  const fadeDelayS = Math.max(0, (preSinkMs ?? 2100) / 1000)
+  const dropTransition = screensDropTransition(SCREENS_DROP_S, fadeDelayS)
+  const dropPose = style.leave
 
   return (
     <motion.div
@@ -240,18 +319,16 @@ export function HiwCaption({
         (placement === 'house' || placement === 'preview') && 'hiw-blurb-over',
       )}
       initial={style.initial}
-      animate={
-        leaving ? style.leave : drifting ? (style.preSink ?? style.animate) : style.animate
-      }
+      animate={screensDrop ? dropPose : leaving ? style.leave : style.animate}
       exit={{
         ...style.exit,
-        transition: leaveTransition,
+        transition: screensDrop ? dropTransition : leaveTransition,
       }}
       transition={
-        leaving
-          ? leaveTransition
-          : drifting
-            ? screensDriftTransition(driftMs)
+        screensDrop
+          ? dropTransition
+          : leaving
+            ? leaveTransition
             : style.transition
       }
       transformTemplate={keepLayer}
@@ -273,7 +350,30 @@ export function HiwCaption({
           fontFamily: 'ui-sans-serif, system-ui, sans-serif',
         }}
       >
+        {prefix ? (
+          <RevealSpan delayMs={prefixDelayMs} leaving={leaving}>
+            {prefix}
+            {'\u00a0'}
+          </RevealSpan>
+        ) : null}
         {text}
+        {ellipsis
+          ? ['.', '.', '.'].map((dot, index) => (
+              <RevealSpan
+                key={`dot-${index}`}
+                delayMs={ellipsisDelayMs + index * ELLIPSIS_DOT_MS}
+                leaving={leaving}
+              >
+                {dot}
+              </RevealSpan>
+            ))
+          : null}
+        {suffix ? (
+          <RevealSpan delayMs={suffixDelayMs} leaving={leaving}>
+            {'\u00a0'}
+            {suffix}
+          </RevealSpan>
+        ) : null}
       </p>
     </motion.div>
   )

@@ -59,12 +59,14 @@ const ASPHALT = 'oklch(58% 0.02 260)'
 const ASPHALT_L = 'oklch(68% 0.02 260)'
 const CAR = 'oklch(42% 0.08 255)'
 
-export type ReviewBeat = 'review' | 'house' | 'screens'
+export type ReviewBeat = 'review' | 'clear' | 'revise' | 'house' | 'screens'
 type PointAt = 'window' | 'door' | 'roof'
 
 type HiwStep3CinemaProps = {
   playing: boolean
   reviewMs: number
+  captionGapMs: number
+  reviseMs: number
   houseMs: number
   screensMs: number
   onBeat?: (beat: ReviewBeat) => void
@@ -73,6 +75,8 @@ type HiwStep3CinemaProps = {
 export function HiwStep3Cinema({
   playing,
   reviewMs,
+  captionGapMs,
+  reviseMs,
   houseMs,
   screensMs,
   onBeat,
@@ -82,10 +86,10 @@ export function HiwStep3Cinema({
   const onBeatRef = useRef(onBeat)
   onBeatRef.current = onBeat
 
-  const reviewOn = beat === 'review'
+  const tableOn = beat === 'review' || beat === 'clear' || beat === 'revise'
   const houseOn = beat === 'house'
   const screensOn = beat === 'screens'
-  const showReview = useKeepMounted(reviewOn, CROSS.duration * 1000)
+  const showReview = useKeepMounted(tableOn, CROSS.duration * 1000)
   const showHouse = useKeepMounted(houseOn, CROSS.duration * 1000)
   const showScreens = useKeepMounted(screensOn, SCREENS_CROSS.duration * 1000)
 
@@ -96,21 +100,35 @@ export function HiwStep3Cinema({
     setScreensReady(false)
     onBeatRef.current?.('review')
 
+    const reviseAt = reviewMs + captionGapMs
+    const houseAt = reviseAt + reviseMs + captionGapMs
     const timers = [
+      window.setTimeout(() => {
+        setBeat('clear')
+        onBeatRef.current?.('clear')
+      }, reviewMs),
+      window.setTimeout(() => {
+        setBeat('revise')
+        onBeatRef.current?.('revise')
+      }, reviseAt),
+      window.setTimeout(() => {
+        setBeat('clear')
+        onBeatRef.current?.('clear')
+      }, reviseAt + reviseMs),
       window.setTimeout(() => {
         setBeat('house')
         onBeatRef.current?.('house')
-      }, reviewMs),
+      }, houseAt),
       window.setTimeout(() => {
         setBeat('screens')
         setScreensReady(true)
         onBeatRef.current?.('screens')
-      }, reviewMs + houseMs),
+      }, houseAt + houseMs),
     ]
     return () => {
       for (const id of timers) window.clearTimeout(id)
     }
-  }, [playing, reviewMs, houseMs])
+  }, [playing, reviewMs, captionGapMs, reviseMs, houseMs])
 
   return (
     <div className="relative isolate w-full min-h-[17rem] sm:min-h-[18.5rem]">
@@ -118,11 +136,11 @@ export function HiwStep3Cinema({
         <motion.div
           className="absolute inset-0 flex items-end justify-center"
           initial={false}
-          animate={{ opacity: reviewOn ? 1 : 0 }}
+          animate={{ opacity: tableOn ? 1 : 0 }}
           transition={CROSS}
           aria-hidden
         >
-          <TableReview playing={playing && reviewOn} />
+          <TableReview playing={playing && tableOn} />
         </motion.div>
       ) : null}
 

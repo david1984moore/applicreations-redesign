@@ -177,6 +177,7 @@ export type Dictionary = {
     threeSteps: string
     beginIntrospect: string
     getFreePreview: string
+    seeMore: string
     steps: {
       introspect: { label: string; detail: string }
       livePreview: { label: string; detail: string; building: string; phoneSuffix: string }
@@ -185,6 +186,8 @@ export type Dictionary = {
         detail: string
         review: string
         revise: string
+        justRight: string
+        justRightAnd: string
         suffix: string
       }
     }
@@ -260,11 +263,77 @@ export type Dictionary = {
     websitePlansHeading: string
     oneTime: string
     whatsIncluded: string
+    howYouWork: string
+    afterLaunch: string
+    visitorsCan: string
+    baselineNote: string
+    mostPopular: string
+    seeFullComparison: string
+    hideComparison: string
+    comparison: {
+      heading: string
+      featureCol: string
+      includedInEvery: string
+      footer: string
+      includedAria: string
+      notIncludedAria: string
+      hintAria: string
+      sections: {
+        build: string
+        visibility: string
+        strategy: string
+        customTools: string
+      }
+      rows: {
+        pages: string
+        revisionRounds: string
+        extraRevision: string
+        walkthrough: string
+        brandedMarketing: string
+        localSeo: string
+        visitorCounts: string
+        adminPage: string
+        extraFunctionality: string
+        siteSearch: string
+        priorityBuild: string
+      }
+      hints: {
+        localSeo: string
+        visitorCounts: string
+        adminPage: string
+        siteSearch: string
+        brandedMarketing: string
+        extraFunctionality: string
+        priorityBuild: string
+        extraRevision: string
+      }
+      values: {
+        pagesStarter: string
+        pagesBasic: string
+        pagesBusiness: string
+        pagesPro: string
+        revisionsStarter: string
+        revisionsBasic: string
+        revisionsBusiness: string
+        revisionsPro: string
+        brandedMarketingBusiness: string
+        brandedMarketingPro: string
+        extraRevisionIncluded: string
+      }
+    }
     /** Footnote in expanded “what’s included” for website package prices */
     startingPriceNote: string
     highlightsAria: string
     exampleTotal: string
     hostingSupportHeading: string
+    hostingSupportLead: string
+    hostingWhoFor: string
+    mixMatchHeading: string
+    mixMatchLead: string
+    mixMatchWebsiteHeading: string
+    mixMatchHostingHeading: string
+    mixMatchEmptyPackage: string
+    mixMatchEmptyHosting: string
     /** “When we host… on” + linked “Render” */
     hostingIntroBeforeRender: string
     hostingIntroRender: string
@@ -443,6 +512,13 @@ export type Dictionary = {
           segments?: { lead?: string; items: string[] }[]
         }[]
         features: string[]
+        included: {
+          icon: string
+          term: string
+          description: string
+          example?: string
+          emphasis?: boolean
+        }[]
         cta: string
       }
     >
@@ -460,6 +536,15 @@ export type Dictionary = {
           segments?: { lead?: string; items: string[] }[]
         }[]
         features: string[]
+        checklist: string[]
+        included: {
+          icon: string
+          term: string
+          description: string
+          example?: string
+          emphasis?: boolean
+        }[]
+        includedLead?: string
         cta: string
       }
     >

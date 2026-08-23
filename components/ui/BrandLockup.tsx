@@ -13,20 +13,20 @@ import { motion } from 'framer-motion'
  * single source of truth — do not restyle the mark inline elsewhere.
  */
 export const BRAND_LOCKUP = {
-  /** Wordmark type. Mobile is sized to keep “Applicreations” on one line. */
+  /** Wordmark type. Mobile scales toward full viewport width; sm+ sizes unchanged. */
   nameClass:
-    'font-display w-fit max-w-full whitespace-nowrap text-[1.85rem] sm:text-5xl lg:text-[3.25rem] xl:text-6xl text-gray-900 leading-[1.05] tracking-tight',
+    'font-display w-fit max-w-full whitespace-nowrap text-[length:clamp(2.2rem,calc((100vw-3.5rem)/7.2),2.85rem)] sm:text-5xl lg:text-[3.25rem] xl:text-6xl text-gray-900 leading-[1.05] tracking-tight',
   /** Clearance above the letters so the lifted mark does not clip. */
-  headingClearanceClass: 'pt-7 sm:pt-8 lg:pt-9',
+  headingClearanceClass: 'pt-9 sm:pt-8 lg:pt-9',
   /**
    * Anchor: `relative` on "li" + `inset-x-0` + `justify-center` centers the mark
    * on those two letters. Lift: `-translate-y-[80%]` of mark height.
    */
   markAnchorClass:
     'pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center overflow-visible -translate-y-[80%]',
-  /** Mark box: 2.75rem / 3rem / 3.5rem. Intrinsic asset 56×56. */
+  /** Mark box: fluid on mobile / 3rem sm / 3.5rem lg. Intrinsic asset 56×56. */
   markSizeClass:
-    'block h-11 w-11 shrink-0 origin-center sm:h-12 sm:w-12 lg:h-14 lg:w-14',
+    'block h-[clamp(3.25rem,calc((100vw-3.5rem)/4.85),4.2rem)] w-[clamp(3.25rem,calc((100vw-3.5rem)/4.85),4.2rem)] shrink-0 origin-center sm:h-12 sm:w-12 lg:h-14 lg:w-14',
   markImageClass: '!h-full !w-full object-contain',
   markSrc: '/logo-mark.png',
   markPx: 56,

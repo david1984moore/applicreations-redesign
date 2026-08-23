@@ -1,0 +1,16 @@
+---
+description: Frozen How it works live-preview cord — never restyle or reshape it
+alwaysApply: true
+---
+
+# Locked live-preview cord (Aug 18 2026, final)
+
+The laptop-to-foundation cord is **user-approved and frozen**. Quote: “absolutely perfect… lock in this chord shape. Do not edit further.”
+
+Do not edit any of the following in `components/landing/hiw/HiwDeviceSketch.tsx` (or the jack rect in `HiwConstructionSketch.tsx`):
+
+- `wirePath`, `keyedPath`, `pt`, `fmt`
+- `PreviewWire` (path `d`, stroke width/color, linecap/linejoin, SVG sizing)
+- Port/jack attachment math (`x1`/`y1`/`x2`/`y2`, `portRef`, `jackRef`, cable port rect)
+
+Do not improve, simplify, restyle, retune, or “fix” the loop, drop, sag, thickness, or endpoints. Leave the cord exactly as it is.

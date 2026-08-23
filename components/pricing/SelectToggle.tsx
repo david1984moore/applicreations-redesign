@@ -11,6 +11,8 @@ interface SelectToggleProps {
   className?: string
   /** When set, button width matches "Choose {widthLabel}" (locale-aware). */
   widthLabel?: string
+  /** `solid` is the package-card choose control; `outline` is the quieter hosting row. */
+  variant?: 'outline' | 'solid'
 }
 
 export function SelectToggle({
@@ -19,6 +21,7 @@ export function SelectToggle({
   onToggle,
   className,
   widthLabel,
+  variant = 'outline',
 }: SelectToggleProps) {
   const { dict, t } = useLocale()
   const chooseLabel = t(dict.pricingPage.choose, { name: label })
@@ -33,12 +36,24 @@ export function SelectToggle({
       aria-pressed={selected}
       aria-label={selected ? t(dict.pricingPage.chosenAria, { name: label }) : chooseLabel}
       className={cn(
-        'inline-flex w-full sm:w-auto items-center justify-center rounded-lg border px-3.5 py-2 text-sm font-semibold cursor-pointer',
+        'inline-flex w-full sm:w-auto items-center justify-center text-sm font-bold tracking-tight cursor-pointer',
         'transition-colors duration-200',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(52%_0.14_295/0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-paper',
-        selected
-          ? 'border-[oklch(48%_0.14_295)] bg-[oklch(48%_0.14_295)] text-white shadow-sm hover:border-[oklch(42%_0.13_295)] hover:bg-[oklch(42%_0.13_295)]'
-          : 'border-[oklch(52%_0.14_295)] bg-white text-[oklch(36%_0.12_295)] hover:bg-[oklch(93%_0.06_295)]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-paper',
+        variant === 'solid'
+          ? cn(
+              'rounded-2xl px-3 py-1.5 shadow-[0_1px_2px_oklch(28%_0.02_50/0.06)]',
+              'focus-visible:ring-primary/30',
+              selected
+                ? 'bg-gray-900 text-white ring-1 ring-gray-900 hover:bg-gray-800'
+                : 'bg-white text-gray-900 ring-1 ring-gray-900/20 hover:bg-[oklch(96%_0.02_80)] hover:ring-gray-900/35'
+            )
+          : cn(
+              'rounded-2xl px-3.5 py-2',
+              'focus-visible:ring-primary/30',
+              selected
+                ? 'bg-gray-900 text-white ring-1 ring-gray-900 hover:bg-gray-800'
+                : 'bg-white text-gray-900 ring-1 ring-gray-900/20 hover:bg-[oklch(96%_0.02_80)] hover:ring-gray-900/35'
+            ),
         className
       )}
     >

@@ -16,21 +16,30 @@ import { useLocale } from '@/components/i18n/LocaleProvider'
 import {
   HiwCaption,
   HiwStepCopy,
-  type HiwCaptionPlacement,
+  SCREENS_SINK_FADE_S,
+  type HiwCaptionContent,
 } from '@/components/landing/hiw/HiwStepCopy'
 import { HiwFormSketch, hiwFormGlowAtMs } from '@/components/landing/hiw/HiwFormSketch'
-import { HiwLivePreviewSketch, type PreviewBeat } from '@/components/landing/hiw/HiwDeviceSketch'
+import {
+  HiwLivePreviewSketch,
+  hiwStep2PlayMs,
+  type PreviewBeat,
+} from '@/components/landing/hiw/HiwDeviceSketch'
 import {
   HiwStep3Cinema,
   type ReviewBeat,
 } from '@/components/landing/hiw/HiwReviewSketch'
-import { measureWashEdgePx } from '@/components/landing/hiw/HiwPageWash'
+import { washEdgeXAtY } from '@/components/landing/hiw/HiwPageWash'
 import { SpectrumFlipCta } from '@/components/ui/SpectrumFlipCta'
 import type { Dictionary } from '@/lib/i18n/dictionaries/types'
 import { cn } from '@/lib/utils'
 
-/** Keep the grown CTA fully on the purple, not kissing the edge. */
-const CTA_WASH_INSET_PX = 24
+/** Grown CTA stays on the purple with air on both sides of the wash band. */
+const CTA_WASH_INSET_PX = 20
+const CTA_RIGHT_AIR_PX = 36
+const CTA_WASH_MIN_PX = 10
+/** Spanish label is longer — keep the grown button inside the wash. */
+const ES_CTA_GROW_SCALE = 1.18
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const SMOOTH_EASE = [0.4, 0, 0.2, 1] as const
@@ -80,10 +89,14 @@ const DESKTOP_MS = {
   captionLead: 480,
   /** Point 2 fades in over this window while point 1 is still leaving. */
   step2Enter: 1040,
+  /** Crew slides in this long after point 2 starts moving. */
+  step2ArtDelay: 180,
+  /** Building line starts near the end of the point-2 heading fade. */
+  step2CaptionLead: 660,
   /** Glow starts as the last character is typed in the last field. */
   step1Play: hiwFormGlowAtMs(),
-  /** Hold the glowing form + caption a beat longer before the handoff. */
-  step1Glow: 3200,
+  /** Short beat on the glowing form + caption, then hand off. */
+  step1Glow: 1100,
   /** Form leaves first — opacity drops faster than the slide so copy never lands on it. */
   step1ArtOut: 1080,
   step1ArtFade: 720,
@@ -93,18 +106,30 @@ const DESKTOP_MS = {
   /** Centered copy sits alone after the form is gone. */
   step1CopyHold: 700,
   step1CopyFade: 960,
-  step2Play: 30000,
-  step3Review: 5400,
+  /** House + laptop stay on this clock. Stage leaves sooner than this. */
+  step2Sketch: 30000,
+  /** Do not sit on the handset after the line lands. */
+  step2Glow: 800,
+  step3Review: 3800,
+  /** Longer than the caption leave so the next line starts on a blank beat. */
+  step3CaptionGap: 920,
+  step3Revise: 2700,
+  /** Both characters at the house — “to get it just right …”, then “and”. */
   step3House: 7200,
-  step3Screens: 11500,
+  /** “and” lands this long before the screens cut. */
+  step3AndLead: 1800,
+  /** Screens + go-live line — hold just long enough to read, then drop. */
+  step3Screens: 5500,
   glow: 2200,
+  /** Short rest after the live screens — fade while the line still has air. */
+  step3Glow: 80,
   exit: 1100,
   /** Last step plunges with the caption so the finale can take the stage. */
-  step3Exit: 720,
+  step3Exit: 460,
   /** Headline zooms in from the viewer, then sits. */
   finaleIn: 1100,
   finaleHeadlineHold: 800,
-  finalePointsIn: 560,
+  finalePointsIn: 720,
   finalePointsStagger: 220,
   finalePointsHold: 1200,
   finaleTextOut: 400,
@@ -178,7 +203,10 @@ type CinemaPhase =
 
 type HowItWorksStageProps = {
   started: boolean
+  /** No motion — reduced motion or a locale swap. */
   instant: boolean
+  /** In-site return: skip the cinema, rest the CTA, replay the recap slide-in. */
+  replayFinale?: boolean
   onCtaAppear?: () => void
 }
 
@@ -207,6 +235,8 @@ function scaleTimings(scale: number) {
     headingFade: Math.round(DESKTOP_MS.headingFade * scale),
     captionLead: Math.round(DESKTOP_MS.captionLead * scale),
     step2Enter: Math.round(DESKTOP_MS.step2Enter * scale),
+    step2ArtDelay: Math.round(DESKTOP_MS.step2ArtDelay * scale),
+    step2CaptionLead: Math.round(DESKTOP_MS.step2CaptionLead * scale),
     // Typing uses unscaled CHAR_MS, so glow must stay on that clock.
     step1Play: DESKTOP_MS.step1Play,
     step1Glow: Math.round(DESKTOP_MS.step1Glow * scale),
@@ -221,15 +251,23 @@ function scaleTimings(scale: number) {
       Math.round(DESKTOP_MS.step1CopySettle * scale) +
       Math.round(DESKTOP_MS.step1CopyHold * scale) +
       Math.round(DESKTOP_MS.step1CopyFade * scale),
-    step2Play: Math.round(DESKTOP_MS.step2Play * scale),
+    step2Sketch: Math.round(DESKTOP_MS.step2Sketch * scale),
+    step2Play: hiwStep2PlayMs(Math.round(DESKTOP_MS.step2Sketch * scale)),
+    step2Glow: Math.round(DESKTOP_MS.step2Glow * scale),
     step3Review: Math.round(DESKTOP_MS.step3Review * scale),
+    step3CaptionGap: Math.round(DESKTOP_MS.step3CaptionGap * scale),
+    step3Revise: Math.round(DESKTOP_MS.step3Revise * scale),
     step3House: Math.round(DESKTOP_MS.step3House * scale),
+    step3AndLead: Math.round(DESKTOP_MS.step3AndLead * scale),
     step3Screens: Math.round(DESKTOP_MS.step3Screens * scale),
     step3Play:
       Math.round(DESKTOP_MS.step3Review * scale) +
+      Math.round(DESKTOP_MS.step3CaptionGap * scale) * 2 +
+      Math.round(DESKTOP_MS.step3Revise * scale) +
       Math.round(DESKTOP_MS.step3House * scale) +
       Math.round(DESKTOP_MS.step3Screens * scale),
     glow: Math.round(DESKTOP_MS.glow * scale),
+    step3Glow: Math.round(DESKTOP_MS.step3Glow * scale),
     exit: Math.round(DESKTOP_MS.exit * scale),
     step3Exit: Math.round(DESKTOP_MS.step3Exit * scale),
     finaleIn: Math.round(DESKTOP_MS.finaleIn * scale),
@@ -251,8 +289,9 @@ function captionForStep(
   step: 1 | 2 | 3,
   previewBeat: PreviewBeat,
   reviewBeat: ReviewBeat,
-  dict: Dictionary
-): { text: string; placement: HiwCaptionPlacement } | null {
+  dict: Dictionary,
+  timings: IntroTimings
+): HiwCaptionContent | null {
   if (step === 1) {
     return {
       text: dict.landing.steps.introspect.detail,
@@ -276,8 +315,23 @@ function captionForStep(
   if (reviewBeat === 'review') {
     return { text: copy.review, placement: 'review' }
   }
+  if (reviewBeat === 'clear') {
+    return null
+  }
+  if (reviewBeat === 'revise') {
+    return { text: copy.revise, placement: 'revise' }
+  }
   if (reviewBeat === 'house') {
-    return { text: copy.revise, placement: 'house' }
+    const ellipsisDelayMs = 880
+    const lastDotMs = ellipsisDelayMs + 2 * 220
+    return {
+      text: copy.justRight,
+      placement: 'house',
+      suffix: copy.justRightAnd,
+      suffixDelayMs: Math.max(lastDotMs + 360, timings.step3House - timings.step3AndLead),
+      ellipsis: true,
+      ellipsisDelayMs,
+    }
   }
   return { text: copy.suffix, placement: 'screens' }
 }
@@ -354,24 +408,37 @@ function FinaleRecap({
   timings: IntroTimings
   instant: boolean
 }) {
+  const listRef = useRef<HTMLUListElement>(null)
+  const [fromX, setFromX] = useState<number | null>(null)
   const pointsIn = timings.finalePointsIn / 1000
   const pointsStagger = timings.finalePointsStagger / 1000
+  const ready = instant || fromX != null
+
+  useLayoutEffect(() => {
+    if (instant) return
+    const el = listRef.current
+    if (!el) return
+    const box = el.getBoundingClientRect()
+    // Start just past the viewport’s right edge so the travel reads as
+    // coming from the right side of the screen.
+    setFromX(Math.max(Math.round(window.innerWidth - box.left + 48), 160))
+  }, [instant])
 
   return (
-    <ul className="flex flex-col items-start gap-4 sm:gap-4 lg:gap-5">
+    <ul ref={listRef} className="flex flex-col items-start gap-4 sm:gap-4 lg:gap-5">
       {recap.map((step, index) => (
         <motion.li
-          key={step.label}
+          key={`${step.label}-${ready ? 'in' : 'm'}`}
           className={cn(
             'flex items-center gap-3 antialiased [backface-visibility:hidden]',
             index === 1 && 'lg:ml-[1.15rem]',
             index === 2 && 'lg:ml-[2.3rem]'
           )}
-          initial={instant ? false : { opacity: 0, x: -12, y: 8 }}
-          animate={{ opacity: 1, x: 0, y: 0 }}
+          initial={instant || fromX == null ? false : { opacity: 0, x: fromX }}
+          animate={{ opacity: ready ? 1 : 0, x: 0 }}
           transition={{
             duration: pointsIn,
-            delay: instant ? 0 : index * pointsStagger,
+            delay: instant || fromX == null ? 0 : index * pointsStagger,
             ease: SMOOTH_EASE,
           }}
           transformTemplate={keepLayer}
@@ -421,6 +488,8 @@ function FinaleCinema({
   ctaHref,
   timings,
   instant,
+  replayFinale,
+  fitCtaToWash = false,
 }: {
   beat: FinaleBeat
   threeSteps: string
@@ -429,14 +498,24 @@ function FinaleCinema({
   ctaHref: string
   timings: IntroTimings
   instant: boolean
+  replayFinale: boolean
+  /** Spanish label is longer — grow only as far as the purple wash allows. */
+  fitCtaToWash?: boolean
 }) {
   const showHeadline = beat !== 'cta'
   const showPoints = beat === 'points' || beat === 'cta'
   const showCta = beat === 'cta'
+  const skipCtaMotion = instant || replayFinale
   const ctaSlotRef = useRef<HTMLDivElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
+  const offsetXRef = useRef(0)
   const [offsetY, setOffsetY] = useState(0)
   const [offsetX, setOffsetX] = useState(0)
+  const [ctaScale, setCtaScale] = useState(() =>
+    fitCtaToWash
+      ? Math.min(timings.ctaGrowScale, ES_CTA_GROW_SCALE)
+      : timings.ctaGrowScale
+  )
 
   useLayoutEffect(() => {
     const slot = ctaSlotRef.current
@@ -445,8 +524,10 @@ function FinaleCinema({
 
     const align = () => {
       if (!window.matchMedia('(min-width: 1024px)').matches) {
+        offsetXRef.current = 0
         setOffsetY(0)
         setOffsetX(0)
+        setCtaScale(timings.ctaGrowScale)
         return
       }
       const priceBox = pricing.getBoundingClientRect()
@@ -460,19 +541,34 @@ function FinaleCinema({
       }
 
       const cta = ctaRef.current
-      const wash = measureWashEdgePx()
-      if (!cta || !wash) return
-      const width = cta.offsetWidth
+      if (!cta) return
       const box = cta.getBoundingClientRect()
-      const center = box.left + box.width / 2
-      const grownLeft = center - (width * timings.ctaGrowScale) / 2
-      const grownWidth = width * timings.ctaGrowScale
-      const minLeft = wash.gutter + CTA_WASH_INSET_PX
-      const maxLeft = window.innerWidth - grownWidth - 24
-      const targetLeft = Math.min(Math.max(grownLeft, minLeft), maxLeft)
-      const deltaX = targetLeft - grownLeft
-      if (Math.abs(deltaX) >= 0.5) {
-        setOffsetX((x) => x + deltaX)
+      const edgeX = washEdgeXAtY(box.top + box.height / 2)
+      if (edgeX == null) return
+
+      // Grown size from layout width, not the already-scaled box — so a
+      // return visit (scale already 1.5) matches first play.
+      const scale = fitCtaToWash
+        ? Math.min(timings.ctaGrowScale, ES_CTA_GROW_SCALE)
+        : timings.ctaGrowScale
+      setCtaScale((prev) => (Math.abs(prev - scale) >= 0.01 ? scale : prev))
+
+      const grownWidth = cta.offsetWidth * scale
+      const layoutCenter = box.left + box.width / 2 - offsetXRef.current
+      const naturalLeft = layoutCenter - grownWidth / 2
+      const preferredLeft = edgeX + CTA_WASH_INSET_PX
+      const rightLimit = window.innerWidth - grownWidth - CTA_RIGHT_AIR_PX
+      const floorLeft = edgeX + CTA_WASH_MIN_PX
+      let targetLeft = Math.max(naturalLeft, preferredLeft)
+      if (targetLeft > rightLimit) {
+        targetLeft = fitCtaToWash
+          ? rightLimit
+          : Math.max(floorLeft, rightLimit)
+      }
+      const nextX = Math.max(0, targetLeft - naturalLeft)
+      if (Math.abs(nextX - offsetXRef.current) >= 0.5) {
+        offsetXRef.current = nextX
+        setOffsetX(nextX)
       }
     }
 
@@ -485,7 +581,7 @@ function FinaleCinema({
       observer.disconnect()
       window.removeEventListener('resize', align)
     }
-  }, [beat, timings.ctaGrowScale])
+  }, [beat, timings.ctaGrowScale, fitCtaToWash])
 
   return (
     <div
@@ -547,18 +643,20 @@ function FinaleCinema({
                 <motion.div
                   key="finale-cta"
                   ref={ctaRef}
-                  className="absolute left-4 right-4 z-10 mx-auto origin-center max-w-sm lg:left-auto lg:right-auto lg:mx-0 lg:max-w-none"
+                  className="relative z-10 mx-auto w-full origin-center max-w-sm lg:w-auto lg:max-w-none"
                   initial={
-                    instant ? false : { opacity: 0, scaleX: 1, scaleY: 1, x: 0 }
+                    skipCtaMotion
+                      ? false
+                      : { opacity: 0, scaleX: 1, scaleY: 1, x: 0 }
                   }
                   animate={{
                     opacity: 1,
-                    scaleX: timings.ctaGrowScale,
-                    scaleY: timings.ctaGrowScale,
+                    scaleX: ctaScale,
+                    scaleY: ctaScale,
                     x: offsetX,
                   }}
                   transition={
-                    instant
+                    skipCtaMotion
                       ? { duration: 0 }
                       : {
                           x: { duration: 0 },
@@ -584,7 +682,10 @@ function FinaleCinema({
                 >
                   <SpectrumFlipCta
                     href={ctaHref}
-                    className="w-full whitespace-nowrap max-lg:px-6 max-lg:text-2xl lg:w-auto lg:shadow-[0_14px_28px_-8px_oklch(32%_0.08_310/0.5),0_6px_12px_-4px_rgba(28,12,48,0.28)]"
+                    className={cn(
+                      'w-full whitespace-nowrap max-lg:px-6 max-lg:text-2xl lg:w-auto lg:shadow-[0_14px_28px_-8px_oklch(32%_0.08_310/0.5),0_6px_12px_-4px_rgba(28,12,48,0.28)]',
+                      fitCtaToWash && 'lg:px-5 lg:text-sm'
+                    )}
                   >
                     {ctaLabel}
                   </SpectrumFlipCta>
@@ -830,19 +931,22 @@ function HiwStepView({
       enterMs={enterMs}
       splitMs={timings.split}
       exitMs={step === 1 ? timings.step1Exit : step === 3 ? timings.step3Exit : timings.exit}
-      glowMs={step === 1 ? timings.step1Glow : timings.glow}
+      glowMs={step === 1 ? timings.step1Glow : step === 2 ? timings.step2Glow : timings.step3Glow}
       pulseGlow={step === 1}
       artMs={step === 1 ? timings.step1Art : timings.split}
       headingHoldMs={timings.headingHold}
       headingFadeMs={timings.headingFade}
-      captionLeadMs={timings.captionLead}
+      captionLeadMs={step === 2 ? timings.step2CaptionLead : timings.captionLead}
+      artDuringEnter={step === 2}
+      artDelayMs={step === 2 ? timings.step2ArtDelay : 0}
+      headingRestMs={step === 2 ? timings.headingHold : undefined}
       sinkExit={step === 3}
       preSinkAfterMs={
-        step === 3 ? Math.round(timings.step3Screens * 0.72) : undefined
+        step === 3 ? Math.round(timings.step3Screens * 0.84) : undefined
       }
       preSinkDurationMs={
         step === 3
-          ? Math.round(timings.step3Screens * 0.28) + timings.glow
+          ? Math.round(timings.step3Screens * 0.16) + timings.step3Glow
           : undefined
       }
       staggeredExit={
@@ -858,7 +962,7 @@ function HiwStepView({
           : undefined
       }
       copy={<HiwStepCopy n={copy.n} label={copy.label} Icon={copy.Icon} />}
-      caption={captionForStep(step, previewBeat, reviewBeat, dict)}
+      caption={captionForStep(step, previewBeat, reviewBeat, dict, timings)}
       illustration={
         step === 1 ? (
           <HiwFormSketch
@@ -868,13 +972,15 @@ function HiwStepView({
         ) : step === 2 ? (
           <HiwLivePreviewSketch
             playing={pose === 'play' || pose === 'glow' || pose === 'exit'}
-            duration={timings.step2Play}
+            duration={timings.step2Sketch}
             onBeat={onPreviewBeat}
           />
         ) : (
           <HiwStep3Cinema
             playing={pose === 'play' || pose === 'glow' || pose === 'exit'}
             reviewMs={timings.step3Review}
+            captionGapMs={timings.step3CaptionGap}
+            reviseMs={timings.step3Revise}
             houseMs={timings.step3House}
             screensMs={timings.step3Screens}
             onBeat={onReviewBeat}
@@ -888,11 +994,14 @@ function HiwStepView({
 export function HowItWorksStage({
   started,
   instant,
+  replayFinale = false,
   onCtaAppear,
 }: HowItWorksStageProps) {
-  const { dict, href } = useLocale()
+  const { dict, href, locale } = useLocale()
   const [phase, setPhase] = useState<CinemaPhase>(() =>
-    instant ? { name: 'finale', beat: 'cta' } : { name: 'idle' }
+    instant || replayFinale
+      ? { name: 'finale', beat: 'cta' }
+      : { name: 'idle' }
   )
   const [timings, setTimings] = useState(() => scaleTimings(1))
   const [previewBeat, setPreviewBeat] = useState<PreviewBeat>('build')
@@ -923,7 +1032,7 @@ export function HowItWorksStage({
   }, [phase, onCtaAppear])
 
   useEffect(() => {
-    if (instant) {
+    if (instant || replayFinale) {
       setPhase({ name: 'finale', beat: 'cta' })
       return
     }
@@ -971,7 +1080,7 @@ export function HowItWorksStage({
     )
     at(t.split, () => setPhase({ name: 'step', step: 2, pose: 'play' }))
     at(t.step2Play, () => setPhase({ name: 'step', step: 2, pose: 'glow' }))
-    at(t.glow, () => setPhase({ name: 'step', step: 2, pose: 'exit' }))
+    at(t.step2Glow, () => setPhase({ name: 'step', step: 2, pose: 'exit' }))
     at(t.exit, () => {
       setReviewBeat('review')
       setPhase({ name: 'step', step: 3, pose: 'enter' })
@@ -979,7 +1088,7 @@ export function HowItWorksStage({
     at(t.enter, () => setPhase({ name: 'step', step: 3, pose: 'split' }))
     at(t.split, () => setPhase({ name: 'step', step: 3, pose: 'play' }))
     at(t.step3Play, () => setPhase({ name: 'step', step: 3, pose: 'glow' }))
-    at(t.glow, () => setPhase({ name: 'step', step: 3, pose: 'exit' }))
+    at(t.step3Glow, () => setPhase({ name: 'step', step: 3, pose: 'exit' }))
     at(t.step3Exit, () => setPhase({ name: 'finale', beat: 'headline' }))
     at(t.finaleIn + t.finaleHeadlineHold, () =>
       setPhase({ name: 'finale', beat: 'points' })
@@ -992,11 +1101,11 @@ export function HowItWorksStage({
     return () => {
       for (const id of timers) window.clearTimeout(id)
     }
-  }, [started, instant])
+  }, [started, instant, replayFinale])
 
   const stepCaption =
     phase.name === 'step'
-      ? captionForStep(phase.step, previewBeat, reviewBeat, dict)
+      ? captionForStep(phase.step, previewBeat, reviewBeat, dict, timings)
       : null
 
   const stepPoses: Partial<Record<StepNum, StepPose>> =
@@ -1014,7 +1123,9 @@ export function HowItWorksStage({
     phase.name === 'intro'
       ? `${dict.landing.howItWorks}. ${dict.landing.threeSteps}`
       : phase.name === 'step' && stepCaption
-        ? `${processSteps[phase.step - 1]!.label}. ${stepCaption.text}`
+        ? `${processSteps[phase.step - 1]!.label}. ${
+            [stepCaption.text, stepCaption.suffix].filter(Boolean).join(' ')
+          }`
         : phase.name === 'finale' && phase.beat === 'cta'
           ? `${processSteps.map((step) => step.label).join('. ')}. ${
               dict.landing.getFreePreview
@@ -1094,6 +1205,8 @@ export function HowItWorksStage({
             ctaHref={href('/introspect')}
             timings={timings}
             instant={instant}
+            replayFinale={replayFinale}
+            fitCtaToWash={locale === 'es'}
           />
         ) : null}
       </AnimatePresence>
@@ -1112,6 +1225,9 @@ function StepScene({
   headingHoldMs,
   headingFadeMs,
   captionLeadMs,
+  artDuringEnter = false,
+  artDelayMs = 0,
+  headingRestMs,
   sinkExit,
   preSinkAfterMs,
   preSinkDurationMs,
@@ -1130,6 +1246,10 @@ function StepScene({
   headingHoldMs: number
   headingFadeMs: number
   captionLeadMs: number
+  artDuringEnter?: boolean
+  artDelayMs?: number
+  /** After enter, wait this long before fading the heading. Defaults to split + hold. */
+  headingRestMs?: number
   sinkExit?: boolean
   preSinkAfterMs?: number
   preSinkDurationMs?: number
@@ -1142,10 +1262,9 @@ function StepScene({
     artFadeMs: number
   }
   copy: ReactNode
-  caption: { text: string; placement: HiwCaptionPlacement } | null
+  caption: HiwCaptionContent | null
   illustration: ReactNode
 }) {
-  const showArt = pose !== 'enter'
   const glowing = pose === 'glow' || pose === 'exit'
   const leaving = pose === 'exit'
   const arriving = pose === 'enter'
@@ -1155,6 +1274,22 @@ function StepScene({
   const [headingOff, setHeadingOff] = useState(false)
   const [captionOn, setCaptionOn] = useState(false)
   const [captionPreSink, setCaptionPreSink] = useState(false)
+  const [earlyArtOn, setEarlyArtOn] = useState(false)
+  const showArt = pose !== 'enter' || earlyArtOn
+
+  useEffect(() => {
+    if (!artDuringEnter) {
+      setEarlyArtOn(false)
+      return
+    }
+    if (pose === 'exit') return
+    if (pose !== 'enter') {
+      setEarlyArtOn(true)
+      return
+    }
+    const id = window.setTimeout(() => setEarlyArtOn(true), artDelayMs)
+    return () => window.clearTimeout(id)
+  }, [artDuringEnter, pose, artDelayMs])
 
   useEffect(() => {
     if (arriving) {
@@ -1163,7 +1298,7 @@ function StepScene({
       return
     }
     if (leaving) return
-    const restAt = splitMs + headingHoldMs
+    const restAt = headingRestMs ?? splitMs + headingHoldMs
     const headingTimer = window.setTimeout(() => setHeadingOff(true), restAt)
     const captionTimer = window.setTimeout(
       () => setCaptionOn(true),
@@ -1173,7 +1308,7 @@ function StepScene({
       window.clearTimeout(headingTimer)
       window.clearTimeout(captionTimer)
     }
-  }, [arriving, leaving, splitMs, headingHoldMs, captionLeadMs])
+  }, [arriving, leaving, splitMs, headingHoldMs, headingRestMs, captionLeadMs])
 
   useEffect(() => {
     if (!sinkExit || !captionOn || caption?.placement !== 'screens') {
@@ -1201,7 +1336,7 @@ function StepScene({
       ? (staggeredExit?.artOutMs ?? artMs) / 1000
       : artMs / 1000
   const artFadeDuration = sinking
-    ? Math.min(0.34, (sinkMs * 0.48) / 1000)
+    ? SCREENS_SINK_FADE_S
     : leaving
       ? (staggeredExit?.artFadeMs ?? staggeredExit?.artOutMs ?? artMs) / 1000
       : artMs / 1000
@@ -1244,9 +1379,15 @@ function StepScene({
               key={stageCaption.placement}
               text={stageCaption.text}
               placement={stageCaption.placement}
+              prefix={stageCaption.prefix}
+              prefixDelayMs={stageCaption.prefixDelayMs}
+              suffix={stageCaption.suffix}
+              suffixDelayMs={stageCaption.suffixDelayMs}
+              ellipsis={stageCaption.ellipsis}
+              ellipsisDelayMs={stageCaption.ellipsisDelayMs}
               leaving={leaving || sinking}
               preSink={captionPreSink}
-              leaveMs={sinking ? sinkMs : undefined}
+              leaveMs={sinkExit ? sinkMs : undefined}
               preSinkMs={preSinkDurationMs ?? glowMs}
             />
           ) : null}

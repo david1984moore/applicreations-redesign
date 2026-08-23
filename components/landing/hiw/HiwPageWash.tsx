@@ -42,6 +42,39 @@ export function measureWashEdgePx(): { top: number; gutter: number } | null {
   return { top: topBase + shift, gutter: gutterRaw + shift }
 }
 
+/** Wash cubic X (px) at a viewport Y — the edge the CTA must stay to the right of. */
+export function washEdgeXAtY(yPx: number): number | null {
+  const edge = measureWashEdgePx()
+  if (!edge || !window.innerWidth || !window.innerHeight) return null
+
+  const topPct = (edge.top / window.innerWidth) * 100
+  const gutterPct = (edge.gutter / window.innerWidth) * 100
+  const yPct = (yPx / window.innerHeight) * 100
+
+  const yAt = (t: number) => {
+    const u = 1 - t
+    return u * u * u * -1.2 + 3 * u * u * t * 10 + 3 * u * t * t * 24 + t * t * t * 101.2
+  }
+  const xAt = (t: number) => {
+    const u = 1 - t
+    return (
+      u * u * u * topPct +
+      3 * u * u * t * topPct +
+      3 * u * t * t * gutterPct +
+      t * t * t * gutterPct
+    )
+  }
+
+  let lo = 0
+  let hi = 1
+  for (let i = 0; i < 20; i++) {
+    const mid = (lo + hi) / 2
+    if (yAt(mid) < yPct) lo = mid
+    else hi = mid
+  }
+  return (xAt((lo + hi) / 2) / 100) * window.innerWidth
+}
+
 type HiwPageWashProps = {
   visible: boolean
   instant: boolean

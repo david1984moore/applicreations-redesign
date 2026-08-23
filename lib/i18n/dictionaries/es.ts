@@ -42,6 +42,7 @@ export const es: Dictionary = {
     threeSteps: 'Tres pasos simples para tener tu sitio web…',
     beginIntrospect: 'Comenzar la Introspección',
     getFreePreview: 'Obtener vista previa gratis',
+    seeMore: 'Ver más',
     steps: {
       introspect: {
         label: 'Introspección',
@@ -49,16 +50,18 @@ export const es: Dictionary = {
       },
       livePreview: {
         label: 'Vista previa gratis',
-        detail: 'Un sitio web gratis que puedes navegar y probar tú mismo.',
-        building: 'Applicreations se pone a trabajar en tu vista previa.',
+        detail: 'Tienes un sitio de prueba para probar...',
+        building: 'Applicreations se pone a trabajar en tu sitio de vista previa.',
         phoneSuffix: 'Incluso en tu teléfono.',
       },
       workingWebsite: {
         label: 'Sitio web funcionando',
         detail: 'Lo revisamos contigo, hacemos revisiones. La construcción está terminada y el sitio web real está entregado.',
-        review: 'Lo revisamos contigo.',
-        revise: 'Luego hacemos revisiones.',
-        suffix: 'La construcción está terminada y el sitio web real está entregado.',
+        review: 'Lo revisamos',
+        revise: 'Hacemos revisiones',
+        justRight: 'para que quede perfecto',
+        justRightAnd: 'y',
+        suffix: 'Tu sitio web se publica.',
       },
     },
   },
@@ -133,12 +136,90 @@ export const es: Dictionary = {
     websitePlansHeading: 'Sitio web',
     oneTime: 'pago único',
     whatsIncluded: 'Qué incluye',
+    howYouWork: 'Cómo trabajarás con nosotros',
+    afterLaunch: 'Después del lanzamiento',
+    visitorsCan: 'Los visitantes pueden {list}',
+    baselineNote:
+      'Cada sitio de Applicreations se construye para ser **rápido**, **se ve bien en el teléfono**, y está pensado para que lo encuentren la **IA**, **Google** y **todos los buscadores importantes**.',
+    mostPopular: 'El más popular',
+    seeFullComparison: 'Ver la comparación completa',
+    hideComparison: 'Ocultar comparación',
+    comparison: {
+      heading: 'Compara los paquetes',
+      featureCol: 'Qué incluye',
+      includedInEvery:
+        'Cada paquete incluye diseño original, listo para teléfono, velocidad y seguridad, SEO en la página, tu contenido y datos de contacto.',
+      footer:
+        'Cada paquete incluye todo lo del anterior, más lo marcado en su columna. Las rondas de revisión extra cuestan $75, excepto en Pro donde van incluidas.',
+      includedAria: 'Incluido',
+      notIncludedAria: 'No incluido',
+      hintAria: 'Más sobre {label}',
+      sections: {
+        build: 'Construcción',
+        visibility: 'Visibilidad',
+        strategy: 'Pulido',
+        customTools: 'Funciones extra',
+      },
+      rows: {
+        pages: 'Páginas',
+        revisionRounds: 'Revisiones',
+        extraRevision: 'Revisión extra',
+        walkthrough: 'Recorrido',
+        brandedMarketing: 'Marketing de marca',
+        localSeo: 'Visibilidad en búsqueda',
+        visitorCounts: 'Conteo de visitas',
+        adminPage: 'Página de administración',
+        extraFunctionality: 'Funciones extra',
+        siteSearch: 'Búsqueda en el sitio',
+        priorityBuild: 'Construcción prioritaria',
+      },
+      hints: {
+        localSeo:
+          'Una comprobación de que tu negocio/proyecto aparece bien en los resultados de búsqueda local y en Google Maps.',
+        visitorCounts:
+          'Un conteo simple de cuántas personas visitan — sin reportes, gráficos ni un panel mensual.',
+        adminPage:
+          'Un panel privado para manejar tu contenido sin tocar código.',
+        siteSearch:
+          'Una barra de búsqueda para que los visitantes encuentren lo que necesitan en un sitio más grande.',
+        brandedMarketing:
+          'Business es un kit inicial — logo, colores y cómo se ve el sitio cuando alguien comparte el enlace. Pro es el tratamiento completo: hacemos el logo, marcamos los enlaces y unificamos Facebook, redes, Google e impresos.',
+        extraFunctionality:
+          'Calendarios de reservas, calculadoras de cotización, accesos de miembros u otras herramientas integradas que tu sitio necesita.',
+        priorityBuild: 'Tu proyecto empieza al frente de la fila.',
+        extraRevision:
+          'Una ronda más de cambios después de las rondas incluidas en el paquete.',
+      },
+      values: {
+        pagesStarter: '1',
+        pagesBasic: '1–2',
+        pagesBusiness: '3–5',
+        pagesPro: 'Más grande',
+        revisionsStarter: '1',
+        revisionsBasic: '1',
+        revisionsBusiness: '2',
+        revisionsPro: '3',
+        brandedMarketingBusiness: 'Limitado',
+        brandedMarketingPro: 'Completo',
+        extraRevisionIncluded: 'Incluido',
+      },
+    },
     startingPriceNote:
       'Este precio es un punto de partida. Después de que tu sitio web esté construido y en línea, cualquier trabajo, función o servicio adicional que solicites será estimado por Applicreations antes de comenzar ese trabajo.',
     highlightsAria: 'Puntos destacados de {name}',
     exampleTotal:
       'Ejemplo: Basic ({basicPrice}) + Basic ({supportPrice}) — elige ambos para ver un total simple.',
     hostingSupportHeading: 'Hosting y Soporte',
+    hostingSupportLead:
+      'Cuidado mensual que mantiene tu sitio en línea — elige la rapidez de respuesta que te convenga.',
+    hostingWhoFor: 'Para quién es',
+    mixMatchHeading: 'Combina y estima',
+    mixMatchLead:
+      'Elige un paquete de sitio web y un plan de hosting para ver el total.',
+    mixMatchWebsiteHeading: 'Elige un paquete de sitio web',
+    mixMatchHostingHeading: 'Elige hosting y soporte',
+    mixMatchEmptyPackage: 'Tu paquete de sitio web',
+    mixMatchEmptyHosting: 'Tu plan de hosting',
     hostingIntroBeforeRender: 'Cuando nosotros alojamos tu sitio, funciona en',
     hostingIntroRender: 'Render',
     goingLiveHeading: 'Para publicar tu sitio',
@@ -211,12 +292,12 @@ export const es: Dictionary = {
     packageSuffix: 'Paquete {name}',
     oneTimeSuffix: '{price} pago único',
     emptySelection:
-      'Elige un paquete de sitio web y un plan de hosting. Tus selecciones aparecerán aquí.',
+      'Elige un paquete y un plan de hosting. Aparecerán aquí con el total.',
     estimatedTotal: 'Total estimado',
     totalWithMonthly: '{oneTime} + {monthly}/mes',
     zeroDueToday: 'Hoy pagas $0.',
     previewTerms:
-      'Recibes una vista previa gratis en menos de 72 horas y luego tienes tres días para probarla y decidir. Si te detienes después de la vista previa, no debes nada.',
+      'Vista previa gratis en 72 horas y tres días para probarla. Si te detienes después, no debes nada.',
     continueAfterPreviewBefore: '¿Quieres continuar después de los tres días? Entonces',
     fiftyPercentOneTime: 'el 50% del pago único',
     fiftyPercentOneTimeWithAmount: 'el 50% del pago único ({amount})',
@@ -627,13 +708,56 @@ export const es: Dictionary = {
               'Funciona con cualquier paquete de sitio web',
             ],
           },
+          {
+            id: 'looks-like',
+            label: 'No incluido',
+            items: [
+              'Not included: Cobertura nocturna — ayuda después de las 4 p.m. EST o los fines de semana',
+              'Not included: Fila prioritaria — las solicitudes esperan en la fila regular',
+            ],
+          },
+          {
+            id: 'help-after',
+            label: 'Para quién es',
+            items: [
+              'Dueños que no quieren encargarse de la parte técnica. Funciona con cualquier paquete de sitio web.',
+            ],
+          },
         ],
         features: [
           'Ayuda en horario laboral normal',
           'Arreglos cuando algo se descompone',
           'Actualizaciones pequeñas',
-          'Ayuda por correo',
-          'Funciona con cualquier paquete',
+        ],
+        included: [
+          {
+            icon: 'live-hosting',
+            term: 'Mantener el sitio en línea',
+            description:
+              'Alojamos el sitio y lo mantenemos funcionando después de que queda en línea',
+          },
+          {
+            icon: 'hours-help',
+            term: 'Ayuda en horario laboral',
+            description:
+              'Respondemos en horario laboral (lunes a viernes, 8 a.m.–4 p.m. EST)',
+          },
+          {
+            icon: 'small-updates',
+            term: 'Actualizaciones pequeñas',
+            description: 'Horarios, fotos, textos o una página que deja de funcionar',
+          },
+          {
+            icon: 'email-phone',
+            term: 'Correo y teléfono',
+            description: 'Escríbenos o llámanos en horario laboral',
+          },
+          {
+            icon: 'cancel-anytime',
+            term: 'Cancela cuando quieras',
+            description:
+              'Al cancelar, tú eres responsable de publicar tu sitio en internet',
+          },
         ],
         cta: 'Preguntar por Basic',
       },
@@ -680,17 +804,49 @@ export const es: Dictionary = {
               'Funciona con cualquier paquete de sitio web',
             ],
           },
+          {
+            id: 'looks-like',
+            label: 'No incluido',
+            items: [
+              'Not included: Cobertura nocturna — ayuda después de las 4 p.m. EST o los fines de semana',
+            ],
+          },
+          {
+            id: 'help-after',
+            label: 'Para quién es',
+            items: [
+              'Dueños que quieren ayuda más rápida sin cobertura nocturna. Funciona con cualquier paquete de sitio web.',
+            ],
+          },
         ],
         features: [
-          'Todo lo de Basic',
           'Prioridad en horario laboral',
           'Respuestas más rápidas',
-          'Ayuda extra cuando se necesita',
+          'Actualizaciones pequeñas y medianas',
+        ],
+        included: [
+          {
+            icon: 'priority-hours',
+            term: 'Prioridad en horario laboral',
+            description:
+              'Tus solicitudes van primero durante el día laboral para que los problemas pequeños no se queden esperando',
+          },
+          {
+            icon: 'medium-updates',
+            term: 'Actualizaciones pequeñas y medianas',
+            description:
+              'Horarios, fotos, textos o una sección nueva cuando necesitas un poco más que un ajuste',
+          },
+          {
+            icon: 'faster-replies',
+            term: 'Respuestas más rápidas',
+            description: 'Respondemos primero cuando algo sale mal',
+          },
         ],
         cta: 'Preguntar por Business',
       },
       ultimate: {
-        name: 'Ultimate',
+        name: 'Pro',
         summary:
           'Ayuda a cualquier hora del día o de la noche cuando un sitio caído significa ventas perdidas.',
         whyItHelps:
@@ -732,27 +888,59 @@ export const es: Dictionary = {
               'Cualquiera que pierde dinero cuando el sitio web está caído',
             ],
           },
+          {
+            id: 'looks-like',
+            label: 'No incluido',
+            items: [],
+          },
+          {
+            id: 'help-after',
+            label: 'Para quién es',
+            items: [
+              'Negocios con mucho movimiento que toman pedidos en línea — cualquiera que pierde dinero cuando el sitio web está caído.',
+            ],
+          },
         ],
         features: [
-          'Todo lo de Business',
           'Ayuda de día o de noche',
           'Primero en la fila para arreglos',
           'Respuestas más rápidas',
         ],
-        cta: 'Preguntar por Ultimate',
+        included: [
+          {
+            icon: 'anytime-help',
+            term: 'Ayuda a cualquier hora',
+            description:
+              'Hay alguien disponible las 24 horas si el sitio se cae de madrugada',
+          },
+          {
+            icon: 'first-in-line',
+            term: 'Primero en la fila',
+            description:
+              'Tu sitio recibe atención prioritaria cuando algo sale mal',
+          },
+          {
+            icon: 'overnight-fixes',
+            term: 'Cobertura si el sitio cae',
+            description: 'Sitio caído o problemas graves, de día o de noche',
+          },
+        ],
+        cta: 'Preguntar por Pro',
       },
     },
     website: {
       starter: {
         name: 'Starter',
-        shortSummary: 'Un sitio sencillo de una página',
+        shortSummary: 'Una página. Todo lo que necesitas para que te encuentren y te contacten.',
         summary:
-          'Un sitio de una página, sin extras — pensado para portafolios de artistas, un proyecto paralelo o un evento comunitario. No está hecho para citas, pedidos ni para manejar un negocio completo en línea.',
+          'Una página. Todo lo que necesitas para que te encuentren y te contacten.',
         details: [
           {
             id: 'how-big',
             label: 'Qué tan grande es el sitio',
-            items: ['Una página — todo lo que los visitantes necesitan en un solo lugar'],
+            items: [
+              'Una página — todo el sitio vive en una sola página que se recorre, sin menú para hacer clic',
+            ],
           },
           {
             id: 'looks-like',
@@ -761,23 +949,14 @@ export const es: Dictionary = {
             segments: [
               {
                 items: [
-                  'Únicamente diseñado para ti, no una plantilla de rellenar espacios',
-                  'Diseño responsivo — funciona en teléfono, tablet y laptop',
-                  'Carga rápida y seguro (HTTPS incluido)',
-                  'SEO básico en la página para que Google te encuentre',
-                  'Not included: plugins, herramientas de citas o pedidos',
-                  'Not included: ayuda de marketing con tu marca',
-                ],
-              },
-              {
-                lead: 'Ejemplos comunes:',
-                items: [
-                  'Sección acerca de',
-                  'Portafolio',
-                  'Galería',
-                  'Servicios',
-                  'Productos ofrecidos',
-                  'Formulario de contacto',
+                  'Diseño original — la construcción se deriva de tus preferencias de diseño, no de una plantilla de Squarespace, Wix u otros creadores genéricos de sitios',
+                  'Responsivo — se ve bien en teléfono, tablet y escritorio',
+                  'Velocidad y seguridad — carga rápido y protegido contra amenazas comunes',
+                  'SEO en la página — estructurado para que Google encuentre y entienda tu negocio/proyecto',
+                  'Contenido tal cual — construyo con las palabras y fotos que me das; señalaré cualquier cosa que parezca un error, pero no reescribiré tu voz',
+                  'Contacto y credibilidad — horario, ubicación, datos de contacto, y testimonios o trabajos anteriores si los tienes, incluidos desde el inicio',
+                  'Not included: Plugins — herramientas extra más allá de un sitio web estándar, como reservas en línea (Calendly) o pagos (PayPal)',
+                  'Not included: Marketing de marca limitado — un logo, colores y look inicial en el sitio',
                 ],
               },
             ],
@@ -785,46 +964,85 @@ export const es: Dictionary = {
           {
             id: 'customers-use',
             label: 'Cómo lo usan tus clientes',
-            lead: 'Ejemplos comunes:',
-            items: [
-              'Explorar',
-              'Galería',
-              'Encontrarte en redes sociales',
-              'Contactarte',
-            ],
+            items: ['Que te encuentren y te contacten'],
           },
           {
             id: 'you-manage',
             label: 'Cómo lo administras',
             items: [
-              'Te mostramos el sitio terminado para que te sientas cómodo con él antes de dar el proyecto por terminado',
-              '1 ronda de revisiones antes del lanzamiento',
+              '1 ronda de revisión — una ronda de cambios después de tu primera mirada',
             ],
           },
           {
             id: 'help-after',
             label: 'Ayuda después de publicarlo',
             items: [
-              'Not included: este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $19 al mes para poner tu sitio en línea, mantenerlo seguro y recibir arreglos cuando algo se rompa',
+              'Solo la construcción — agrega un [plan de hosting](#hosting-support) desde $19 al mes.',
             ],
           },
         ],
-        features: [
-          '1 página',
-          'Presencia en línea sin extras',
-          'Portafolio, galería o info de evento',
+        features: ['1 página', 'Diseño original', 'SEO en la página'],
+        checklist: ['1 página'],
+        included: [
+          {
+            icon: 'one-page',
+            term: 'Una página',
+            description:
+              'Todo el sitio vive en una sola página que se recorre, sin menú para hacer clic',
+          },
+          {
+            icon: 'original-design',
+            term: 'Diseño original',
+            description:
+              'La construcción se deriva de tus preferencias de diseño, no de una plantilla de Squarespace, Wix u otros creadores genéricos de sitios.',
+          },
+          {
+            icon: 'responsive',
+            term: 'Responsivo',
+            description: 'Se ve bien en teléfono, tablet y escritorio',
+          },
+          {
+            icon: 'speed-security',
+            term: 'Velocidad y seguridad',
+            description: 'Carga rápido y protegido contra amenazas comunes',
+          },
+          {
+            icon: 'on-page-seo',
+            term: 'SEO en la página',
+            description:
+              'Estructurado para que Google encuentre y entienda tu negocio/proyecto'
+          },
+          {
+            icon: 'content-as-provided',
+            term: 'Contenido tal cual',
+            description:
+              'Construyo con las palabras y fotos que me das; señalaré cualquier cosa que parezca un error, pero no reescribiré tu voz',
+          },
+          {
+            icon: 'contact-credibility',
+            term: 'Contacto y credibilidad',
+            description:
+              'Horario, ubicación, datos de contacto, y testimonios o trabajos anteriores si los tienes, incluidos desde el inicio',
+          },
+          {
+            icon: 'revision-1',
+            term: '1 ronda de revisión',
+            description: 'Una ronda de cambios después de tu primera mirada',
+          },
         ],
         cta: 'Más',
       },
       basic: {
         name: 'Basic',
-        shortSummary: '1–2 páginas',
-        summary: 'Un sitio web claro de una o dos páginas, construido alrededor de tu negocio.',
+        shortSummary: 'Todo lo de Starter, más una segunda página y un conteo simple de visitas.',
+        summary: 'Todo lo de Starter, más una segunda página y un conteo simple de visitas.',
         details: [
           {
             id: 'how-big',
             label: 'Qué tan grande es el sitio',
-            items: ['1–2 páginas, organizadas alrededor de cómo los clientes realmente te encuentran'],
+            items: [
+              '1–2 páginas — separa tu historia de tu oferta en vez de un solo scroll largo',
+            ],
           },
           {
             id: 'looks-like',
@@ -832,23 +1050,9 @@ export const es: Dictionary = {
             items: [],
             segments: [
               {
-                lead: 'Todo lo de Starter, más:',
-                items: [],
-              },
-              {
                 items: [
-                  'Mapa de Google Maps si tienes un local físico',
-                  'Varias formas de contactarte — formulario, clic para llamar, enlace de email',
-                  'Analítica básica para que veas cuántas personas visitan',
-                  'Not included: plugins, herramientas de citas o pedidos',
-                ],
-              },
-              {
-                lead: 'Ejemplos comunes:',
-                items: [
-                  'Inicio + Nosotros',
-                  'Inicio + Servicios',
-                  'Inicio + Menú',
+                  'Not included: Plugins — herramientas extra más allá de un sitio web estándar, como reservas en línea (Calendly) o pagos (PayPal)',
+                  'Not included: Marketing de marca limitado — un logo, colores y look inicial en el sitio',
                 ],
               },
             ],
@@ -856,48 +1060,61 @@ export const es: Dictionary = {
           {
             id: 'customers-use',
             label: 'Cómo lo usan tus clientes',
-            lead: 'Ejemplos comunes:',
-            items: [
-              'Explorar',
-              'Encontrar tu horario/ubicación',
-              'Llamarte o escribirte directo',
-              'Leer lo que ofreces',
-            ],
+            items: ['Leer tu historia y tu oferta en páginas separadas'],
           },
           {
             id: 'you-manage',
             label: 'Cómo lo administras',
             items: [
-              'El mismo recorrido que Starter',
-              '2 rondas de revisiones antes del lanzamiento',
+              '1 ronda de revisión — una ronda de cambios después de tu primera mirada',
             ],
           },
           {
             id: 'help-after',
             label: 'Ayuda después de publicarlo',
             items: [
-              'Not included: este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $19 al mes',
+              'Solo la construcción — agrega un [plan de hosting](#hosting-support) desde $19 al mes.',
             ],
           },
         ],
-        features: [
-          '1–2 páginas',
-          'Construido para tu negocio',
-          'Opciones de contacto para tus clientes',
+        features: ['1–2 páginas', 'Conteo de visitas'],
+        checklist: ['1–2 páginas', 'Conteo de visitas'],
+        included: [
+          {
+            icon: 'speed-security',
+            term: 'Velocidad y seguridad',
+            description:
+              'Carga rápido, con HTTPS para que el Wi-Fi de un café no pueda espiar un formulario de contacto y el navegador muestre el candado, no “No seguro.”',
+          },
+          {
+            icon: 'pages-1-2',
+            term: '1–2 páginas',
+            description:
+              'Separa tu historia de tu oferta en vez de un solo scroll largo',
+          },
+          {
+            icon: 'visitor-counts',
+            term: 'Conteo de visitas',
+            description:
+              'Un conteo simple de cuántas personas visitan, para que veas si el sitio está funcionando',
+          },
         ],
         cta: 'Más',
       },
       // Former Pro tier — renamed Business
       business: {
         name: 'Business',
-        shortSummary: '3–5 páginas',
+        shortSummary:
+          'Todo lo de Basic, más las páginas extra y el pulido que un sitio más grande necesita.',
         summary:
-          'Un sitio web más completo — de 3 a 5 páginas — con espacio para inicios de sesión, pedidos en línea y una página que usas para hacer actualizaciones.',
+          'Todo lo de Basic, más las páginas extra y el pulido que un sitio más grande necesita.',
         details: [
           {
             id: 'how-big',
             label: 'Qué tan grande es el sitio',
-            items: ['3–5 páginas, construido para crecer con tu negocio'],
+            items: [
+              '3–5 páginas — espacio para un desglose de servicios, casos de estudio o una sección de recursos',
+            ],
           },
           {
             id: 'looks-like',
@@ -905,24 +1122,10 @@ export const es: Dictionary = {
             items: [],
             segments: [
               {
-                lead: 'Todo lo de Basic, más:',
-                items: [],
-              },
-              {
                 items: [
-                  'Página de administración — actualiza tu horario, fotos y servicios sin llamarnos',
-                  'SEO local en todas las páginas, no solo en la de inicio',
-                  'Not included: herramientas de citas, pedidos o membresías (ver Pro)',
-                ],
-              },
-              {
-                lead: 'Ejemplos comunes:',
-                items: [
-                  'Inicio',
-                  'Nosotros',
-                  'Servicios',
-                  'Galería',
-                  'Contacto',
+                  'Comprobación de visibilidad — que tu negocio/proyecto aparezca bien en los resultados de búsqueda local y en Google Maps',
+                  'Marketing de marca limitado — logo, colores, un look que combine en el sitio y cómo se ve cuando alguien comparte el enlace (kit inicial; el tratamiento completo en redes, impresos y enlaces está en Pro)',
+                  'Not included: Plugins — herramientas extra más allá de un sitio web estándar, como reservas en línea (Calendly) o pagos (PayPal)',
                 ],
               },
             ],
@@ -930,48 +1133,73 @@ export const es: Dictionary = {
           {
             id: 'customers-use',
             label: 'Cómo lo usan tus clientes',
-            lead: 'Ejemplos comunes:',
-            items: [
-              'Comparar servicios',
-              'Ver horario',
-              'Ver trabajos anteriores',
-              'Escribir con preguntas',
-            ],
+            items: ['Comparar servicios, ver pruebas y dar el siguiente paso'],
           },
           {
             id: 'you-manage',
             label: 'Cómo lo administras',
             items: [
-              'Te enseñamos la página de administración para que tú mismo hagas actualizaciones pequeñas de ahora en adelante',
-              '2–3 rondas de revisiones antes del lanzamiento',
+              '2 rondas de revisión — una ronda extra incluida sin costo',
             ],
           },
           {
             id: 'help-after',
             label: 'Ayuda después de publicarlo',
             items: [
-              'Not included: este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $19 al mes, o soporte Business a $39 al mes si quieres ayuda más allá de los arreglos',
+              'Solo la construcción — agrega un [plan de hosting](#hosting-support) desde $19 al mes, o soporte Business a $39 al mes.',
             ],
           },
         ],
-        features: [
-          '3–5 páginas',
-          'Inicios de sesión y pedidos en línea',
-          'Página de administración para actualizar',
+        features: ['3–5 páginas', 'Visibilidad en búsqueda'],
+        checklist: ['3–5 páginas', 'Visibilidad'],
+        included: [
+          {
+            icon: 'speed-security',
+            term: 'Velocidad y seguridad',
+            description:
+              'Carga rápido por HTTPS, para que alguien en el Wi-Fi de un café no pueda leer un formulario de contacto. Las conexiones cifradas se fuerzan, el navegador muestra el candado, y no queda basura de plugins de plantilla que alguien pueda explotar.',
+          },
+          {
+            icon: 'pages-3-5',
+            term: '3–5 páginas',
+            description:
+              'Espacio para un desglose de servicios, casos de estudio o una sección de recursos',
+          },
+          {
+            icon: 'search-visibility',
+            term: 'Comprobación de visibilidad',
+            description:
+              'Que tu negocio/proyecto aparezca bien en los resultados de búsqueda local y en Google Maps'
+          },
+          {
+            icon: 'branded-marketing',
+            term: 'Marketing de marca limitado',
+            example: 'Como un logo, colores, un look básico en Facebook y una vista previa al compartir',
+            description:
+              'Un kit inicial para el sitio — logo y colores para que las páginas se vean como un solo negocio/proyecto, más cómo se ve el sitio cuando alguien lo enlaza. El tratamiento completo en redes, impresos y enlaces está en Pro.'
+          },
+          {
+            icon: 'revision-2',
+            term: '2 rondas de revisión',
+            description: 'Una ronda extra incluida sin costo',
+          },
         ],
         cta: 'Más',
       },
       // Former Business tier — renamed Pro
       pro: {
         name: 'Pro',
-        shortSummary: 'Herramientas a la medida de cómo trabajas',
+        shortSummary:
+          'Todo lo de Business, más las funciones extra que un sitio más grande necesita para funcionar.',
         summary:
-          'Herramientas a la medida construidas alrededor de cómo trabaja realmente tu equipo — más que un sitio web normal.',
+          'Todo lo de Business, más las funciones extra que un sitio más grande necesita para funcionar.',
         details: [
           {
             id: 'how-big',
             label: 'Qué tan grande es el sitio',
-            items: ['Construido para tu proceso, no un número fijo de páginas'],
+            items: [
+              'Un sitio más grande — las funciones extra que un sitio más grande necesita para funcionar',
+            ],
           },
           {
             id: 'looks-like',
@@ -979,13 +1207,11 @@ export const es: Dictionary = {
             items: [],
             segments: [
               {
-                lead: 'Todo lo de Business, más herramientas a la medida de cómo trabajas realmente — por ejemplo: reservas de citas, control sencillo de inventario, pedidos en línea, o un área de inicio de sesión para miembros o clientes frecuentes',
-                items: [],
-              },
-              {
                 items: [
-                  'Una llamada de planificación al inicio para definir exactamente qué herramientas necesitas',
-                  'Revisiones razonables durante la construcción, no solo al final',
+                  'Página de administración — un panel privado para manejar tu contenido sin tocar código',
+                  'Funciones extra — calendarios de reservas, calculadoras de cotización, accesos de miembros u otras herramientas integradas que tu sitio necesita',
+                  'Búsqueda en el sitio — una barra de búsqueda para que los visitantes encuentren lo que necesitan en un sitio más grande',
+                  'Marketing de marca completo — hacemos tu logo, marcamos los enlaces y unificamos Facebook, redes, Google e impresos, incluido cómo se ve el sitio cuando alguien comparte el enlace'
                 ],
               },
             ],
@@ -993,34 +1219,96 @@ export const es: Dictionary = {
           {
             id: 'customers-use',
             label: 'Cómo lo usan tus clientes',
-            lead: 'Ejemplos comunes:',
-            items: [
-              'Agendar una cita',
-              'Hacer un pedido',
-              'Iniciar sesión para ver el estado',
-              'Administrar los datos de su cuenta',
-            ],
+            items: ['Usar las herramientas integradas que tu sitio necesita para funcionar'],
           },
           {
             id: 'you-manage',
             label: 'Cómo lo administras',
             items: [
-              'Te enseñamos cada herramienta a la medida, no solo el contenido de las páginas, para que sepas cómo usarla día a día',
+              'Recorrido — nos sentamos contigo en persona y te recorremos cada detalle del producto terminado hasta que te sientas cómodo usando tu herramienta a medida',
+              'Construcción prioritaria — tu proyecto empieza al frente de la fila',
+              '3 rondas de revisión',
             ],
           },
           {
             id: 'help-after',
             label: 'Ayuda después de publicarlo',
             items: [
-              'Not included: este paquete es solo la construcción. Agrega un [plan de hosting](#hosting-support) desde $19 al mes, o soporte Ultimate a $99 al mes para respuesta prioritaria si dependes de estas herramientas a diario',
+              'Solo la construcción — agrega un [plan de hosting](#hosting-support) desde $19 al mes, o soporte Pro a $99 al mes.',
             ],
           },
         ],
         features: [
-          'Herramientas a la medida',
-          'Construido para tu proceso',
-          'Crece con tu equipo',
-          'Ayuda incluida',
+          'Página de administración',
+          'Funciones extra',
+          'Búsqueda en el sitio',
+        ],
+        checklist: [
+          'Página de administración',
+          'Funciones extra',
+          'Búsqueda en el sitio',
+        ],
+        included: [
+          {
+            icon: 'speed-security',
+            term: 'Velocidad y seguridad',
+            description:
+              'Endurecimiento máximo desde la primera solicitud: TLS en todas partes, HTTPS forzado para que el candado no se caiga, secretos de producción fuera de la página, y una construcción a medida sin superficie de ataque de plantillas. Los visitantes reciben un sitio rápido y cerrado; la basura de los constructores genéricos no entra.',
+          },
+          {
+            icon: 'original-design',
+            term: 'Diseño original',
+            description:
+              'Cada aspecto de cada decisión de diseño está informado por tus preferencias. No se deja piedra sin remover.',
+          },
+          {
+            icon: 'branded-marketing',
+            term: 'Marketing de marca completo',
+            example: 'Como tu logo, enlaces de marca, un look que combine en todas las redes y una vista previa al compartir',
+            description:
+              'El tratamiento completo — hacemos tu logo, marcamos los enlaces y unificamos Facebook, redes, Google e impresos para que te reconozcan donde te encuentren, incluido cómo se ve el sitio cuando alguien comparte el enlace.',
+            emphasis: true,
+          },
+          {
+            icon: 'larger-site',
+            term: 'Sitio más grande',
+            description:
+              'Páginas extra y las funciones que un sitio más grande necesita para funcionar',
+          },
+          {
+            icon: 'admin-page',
+            term: 'Página de administración',
+            description:
+              'Un panel privado para manejar tu contenido sin tocar código',
+          },
+          {
+            icon: 'extra-functionality',
+            term: 'Funciones extra',
+            description:
+              'Calendarios de reservas, calculadoras de cotización, accesos de miembros u otras herramientas integradas que tu sitio necesita',
+          },
+          {
+            icon: 'site-search',
+            term: 'Búsqueda en el sitio',
+            description:
+              'Una barra de búsqueda para que los visitantes encuentren lo que necesitan en un sitio más grande',
+          },
+          {
+            icon: 'walkthrough',
+            term: 'Recorrido',
+            description:
+              'Nos sentamos contigo en persona y te recorremos cada detalle del producto terminado hasta que te sientas cómodo usando tu herramienta a medida.',
+          },
+          {
+            icon: 'priority-build',
+            term: 'Construcción prioritaria',
+            description: 'Tu proyecto empieza al frente de la fila',
+          },
+          {
+            icon: 'revision-3',
+            term: '3 rondas de revisión',
+            description: 'Tres rondas de cambios después de tu primera mirada',
+          },
         ],
         cta: 'Más',
       },

@@ -6,7 +6,7 @@
  * Brand lockup (butterfly over "li"): locked in BrandLockup.tsx — do not restyle.
  *
  * Composition:
- * - Left (~7/12): brand + icon nav, then the original wide 4-across pricing card
+ * - Left (~7/12): brand + icon nav, then 4-up vertical website pricing cards
  * - Right (~5/12): How it works cinematic stage (fills remaining height)
  *
  * Desktop spacing:
@@ -15,6 +15,7 @@
  *
  * How it works cinema:
  * - No card — stage sits on the tan page wash, fills right column height
+ * - Starts on first paint (no compact-hold / expand wait)
  * - Intro: staggered 3D fly-in (How it works → 3 → tagline), inner+outer glow pulse,
  *   3 grows then fades toward the viewer; tagline follows, surges past, then step 1
  *   → three sequential steps with cartoon sketches
@@ -22,6 +23,8 @@
  * - Finale CTA blooms a logo-violet wash on the right of a slight curve
  * - Skip cinema on locale swap / reduced motion / in-site return to home
  *   (a refresh starts a new JS lifetime, so the cinema plays again)
+ * - In-site return still replays the recap points (staggered slide-in) with
+ *   the Get Free Preview button already at its resting place
  */
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -29,40 +32,37 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import { HowItWorksStage } from '@/components/landing/hiw/HowItWorksStage'
 import { HiwPageWash } from '@/components/landing/hiw/HiwPageWash'
+import { LandingPricingRow } from '@/components/landing/LandingPricingRow'
+import { PlanChecklist } from '@/components/pricing/PlanChecklist'
+import { PlanTierCard, planSeeMoreClass } from '@/components/pricing/PlanTierCard'
 import { BrandLockup } from '@/components/ui/BrandLockup'
 import { BrandNavLinks } from '@/components/ui/BrandNavLinks'
 import { hasPlayedHiwCinema, markHiwCinemaPlayed } from '@/lib/hiw-cinema'
 import { isLocaleTransition } from '@/lib/i18n/locale-transition'
-import { getBasicSupport, getPlans } from '@/lib/pricing'
-import { cn } from '@/lib/utils'
+import { getPlans } from '@/lib/pricing'
 
 /**
- * How it works entrance (delays in ms/s as noted):
- * compact hold → expand stage on tan wash
+ * How it works entrance: stage is open on first paint so the cinema
+ * can start with the landing page, not after a compact-hold + expand.
  */
 const HIW_MOTION = {
-  cardDelay: 0.28,
-  cardDuration: 0.5,
-  /** How long the empty stage stays before expanding (ms) */
-  compactHoldMs: 500,
-  /** Expand duration (ms) — keep in sync with duration-[850ms] below */
-  expandMs: 850,
+  cardDelay: 0,
+  cardDuration: 0.18,
 } as const
 
 const easeOut = [0.22, 1, 0.36, 1] as const
 
 export function LandingBoard() {
-  const { dict, t, href, locale } = useLocale()
+  const { dict, locale } = useLocale()
   const plans = useMemo(() => getPlans(dict, locale), [dict, locale])
-  const basicSupport = useMemo(() => getBasicSupport(dict, locale), [dict, locale])
   // Locale swaps remount this board — skip fade/slide so the page doesn't flash
   const [skipIntro] = useState(() => isLocaleTransition())
   const [playedHiw] = useState(() => hasPlayedHiwCinema())
   const prefersReducedMotion = useReducedMotion()
-  const instantHiw = skipIntro || !!prefersReducedMotion || playedHiw
-  const [hiwExpanded, setHiwExpanded] = useState(instantHiw)
-  const [hiwReady, setHiwReady] = useState(instantHiw)
-  const [washVisible, setWashVisible] = useState(instantHiw)
+  const staticFinale = skipIntro || !!prefersReducedMotion
+  const replayFinale = playedHiw && !staticFinale
+  const skipCinema = staticFinale || playedHiw
+  const [washVisible, setWashVisible] = useState(skipCinema)
   const showFinaleWash = useCallback(() => setWashVisible(true), [])
 
   useEffect(() => {
@@ -72,25 +72,12 @@ export function LandingBoard() {
   }, [])
 
   useEffect(() => {
-    if (instantHiw) {
-      setHiwExpanded(true)
-      setHiwReady(true)
-      setWashVisible(true)
-      return
-    }
-    const id = window.setTimeout(() => setHiwExpanded(true), HIW_MOTION.compactHoldMs)
-    return () => window.clearTimeout(id)
-  }, [instantHiw])
-
-  useEffect(() => {
-    if (instantHiw || !hiwExpanded) return
-    const id = window.setTimeout(() => setHiwReady(true), HIW_MOTION.expandMs)
-    return () => window.clearTimeout(id)
-  }, [hiwExpanded, instantHiw])
+    if (skipCinema) setWashVisible(true)
+  }, [skipCinema])
 
   return (
     <section className="landing-board relative flex flex-col overflow-x-hidden lg:h-full lg:overflow-hidden">
-      <HiwPageWash visible={washVisible} instant={instantHiw} />
+      <HiwPageWash visible={washVisible} instant={skipCinema} />
       {/* Atmosphere */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_0%_0%,oklch(92%_0.03_230/0.35),transparent_55%)]" />
@@ -104,7 +91,7 @@ export function LandingBoard() {
       <div className="relative z-10 flex flex-1 flex-col max-w-[90rem] w-full mx-auto px-3 sm:px-6 lg:px-10 xl:px-12 pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)] min-h-0">
         <div className="flex w-full flex-col gap-4 lg:flex-1 lg:min-h-0 lg:grid lg:grid-cols-12 lg:gap-x-8 xl:gap-x-10 lg:gap-y-0">
           {/* Left column — brand, nav, and pricing share one full-width column edge */}
-          <div className="lg:col-span-7 flex w-full min-w-0 flex-col lg:pr-2 lg:self-start">
+          <div className="relative z-20 lg:col-span-7 flex w-full min-w-0 flex-col lg:pr-2 lg:h-full lg:min-h-0">
             <motion.div
               initial={skipIntro ? false : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -117,7 +104,7 @@ export function LandingBoard() {
                   {/* Approved butterfly-over-"li" lockup — geometry lives in BrandLockup.tsx and must not be tweaked here. */}
                   <BrandLockup name={dict.brand.name} skipIntro={skipIntro} />
 
-                  <p className="mt-2.5 whitespace-nowrap text-left text-[0.6rem] font-[700] italic uppercase leading-none tracking-[0.02em] text-primary-600 sm:text-base sm:tracking-[0.12em]">
+                  <p className="mt-2.5 whitespace-nowrap text-left text-[length:clamp(0.72rem,calc((100vw-3.5rem)/22),0.92rem)] font-[700] italic uppercase leading-none tracking-[0.02em] text-primary-600 sm:text-base sm:tracking-[0.12em]">
                     {dict.landing.tagline}
                   </p>
                 </div>
@@ -126,107 +113,63 @@ export function LandingBoard() {
 
             <nav
               aria-label="Primary"
-              className="mt-5 w-full shrink-0 py-2 sm:mt-6 lg:mt-5"
+              className="mt-4 w-full shrink-0 py-2 sm:mt-5 lg:mt-4"
             >
               <BrandNavLinks variant="landing" />
             </nav>
 
-            {/* Website pricing — original wide 4-across card, under brand + nav */}
+            {/* Website pricing — 4-up vertical cards; fills leftover column height */}
             <motion.div
               id="pricing"
               initial={skipIntro ? false : { opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.12 }}
-              className="relative mt-4 lg:mt-5 flex shrink-0 flex-col rounded-xl border border-gray-200/80 bg-white/80 backdrop-blur-sm px-3.5 py-3 sm:px-4 w-full"
+              className="relative z-20 mt-3 lg:mt-3 flex min-h-0 flex-1 flex-col w-full overflow-visible pt-2"
             >
-              <p className="text-sm font-bold tracking-[0.12em] uppercase text-primary-600 text-center mb-2">
-                {dict.landing.websitePricing}
-              </p>
+              <h2 className="sr-only">{dict.landing.websitePricing}</h2>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-5 pb-2 lg:gap-2 lg:pb-1.5">
-                {plans.map((plan) => {
-                  const isPopular = plan.id === 'basic'
-                  return (
-                    <Link
-                      key={plan.id}
-                      href={plan.ctaHref}
-                      className={cn(
-                        'relative flex flex-col items-center text-center rounded-lg px-3 py-2.5 cursor-pointer outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2',
-                        isPopular
-                          ? 'border border-primary-400/70 bg-[oklch(96%_0.025_230)] hover:border-primary-500/80 hover:bg-[oklch(95%_0.03_230)] shadow-[inset_0_0_0_1px_oklch(70%_0.06_230/0.12)]'
-                          : 'border border-gray-200 bg-paper/70 hover:border-gray-300 hover:bg-paper'
-                      )}
-                    >
-                      {isPopular ? (
-                        <span className="absolute left-1/2 top-full z-10 mt-px -translate-x-1/2 whitespace-nowrap text-[0.625rem] font-bold tracking-[0.14em] uppercase text-primary-600 leading-none">
-                          {dict.landing.popularPackage}
-                        </span>
-                      ) : null}
-                      <h3 className="font-display text-lg font-bold text-gray-900 leading-none tracking-tight">
-                        {plan.name}
-                      </h3>
-                      <p
-                        className={cn(
-                          'mt-1.5 font-display font-bold text-primary-600',
-                          plan.contactForPricing
-                            ? 'text-[0.95rem] leading-tight px-0.5'
-                            : 'text-2xl leading-none tabular-nums'
-                        )}
+              <LandingPricingRow>
+                {plans.map((plan) => (
+                  <PlanTierCard
+                    key={plan.id}
+                    plan={plan}
+                    popularLabel={dict.pricingPage.mostPopular}
+                    density="landing"
+                    action={
+                      <Link
+                        href={plan.ctaHref}
+                        className={planSeeMoreClass}
+                        aria-label={`${dict.landing.seeMore}, ${plan.name}`}
                       >
-                        {plan.priceLabel}
-                      </p>
-
-                      <p className="mt-1.5 text-[0.8125rem] text-gray-700 leading-snug flex-1">
-                        {plan.shortSummary}
-                      </p>
-
-                      <span className="mt-1.5 text-[0.9375rem] font-bold tracking-tight text-gray-900">
-                        {plan.cta} →
-                      </span>
-                    </Link>
-                  )
-                })}
-              </div>
-
-              <p className="mt-2 ml-auto w-fit text-sm text-right">
-                <Link
-                  href={href('/pricing#support')}
-                  className="cursor-pointer font-medium text-gray-900 hover:text-gray-700"
-                >
-                  {t(dict.landing.hostingFrom, { price: basicSupport.priceLabel })}
-                </Link>
-              </p>
+                        {dict.landing.seeMore}
+                      </Link>
+                    }
+                  >
+                    <PlanChecklist items={plan.checklist} />
+                  </PlanTierCard>
+                ))}
+              </LandingPricingRow>
             </motion.div>
           </div>
 
           {/* Right column — How it works cinematic stage */}
           <motion.div
             id="introspect"
-            initial={instantHiw ? false : { opacity: 0, y: 14 }}
+            initial={skipCinema ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: HIW_MOTION.cardDuration,
               delay: HIW_MOTION.cardDelay,
               ease: easeOut,
             }}
-            className={cn(
-              'lg:col-span-5 lg:flex lg:flex-col lg:min-h-0 lg:pl-16 xl:pl-20',
-              hiwExpanded
-                ? 'relative flex min-h-[20rem] flex-col overflow-visible lg:min-h-0 lg:flex-1'
-                : 'relative flex h-11 shrink-0 flex-col overflow-hidden'
-            )}
+            className="relative z-10 flex min-h-[20rem] flex-col overflow-visible lg:col-span-5 lg:flex lg:flex-1 lg:min-h-0 lg:flex-col lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
           >
-            <div
-              className={
-                hiwExpanded
-                  ? `flex min-h-[20rem] flex-1 flex-col lg:grid lg:h-full lg:min-h-0 lg:grid-rows-[1fr] ${instantHiw ? '' : 'transition-[grid-template-rows] duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)]'}`
-                  : 'grid min-h-[2.75rem] grid-rows-[0fr] pointer-events-none'
-              }
-            >
+            <div className="flex min-h-[20rem] flex-1 flex-col lg:grid lg:h-full lg:min-h-0 lg:grid-rows-[1fr]">
               <div className="min-h-0 overflow-visible lg:h-full">
                 <HowItWorksStage
-                  started={hiwReady}
-                  instant={instantHiw}
+                  started
+                  instant={staticFinale}
+                  replayFinale={replayFinale}
                   onCtaAppear={showFinaleWash}
                 />
               </div>

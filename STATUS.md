@@ -1,6 +1,6 @@
 # Project Status
 
-**Current Task:** Introspect questionnaire Pass 2 — nav hides current page; subpage spacing compacted (pricing/about/contact/introspect); continue Introspect polish
+**Current Task:** How it works cinema — step-3 table copy, then screens go-live line
 
 **⚠️ CRITICAL: NO DELAWARE REFERENCES** - Site must be generic/national, not location-specific. All copy must be truthful.
 

@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Activity,
   AlertTriangle,
-  ChevronDown,
   CreditCard,
   GitBranch,
   Globe2,
@@ -19,50 +18,44 @@ import {
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import { IconContact } from '@/components/ui/BrandNavLinks'
 import { BuildHandoffConfirmDialog } from '@/components/pricing/BuildHandoffConfirmDialog'
-import { DetailGroups } from '@/components/pricing/DetailGroups'
 import { LinkRenderText } from '@/components/pricing/LinkRenderText'
-import { PackagePriceLabel } from '@/components/pricing/PackagePriceLabel'
-import { PlanFeatureRotator } from '@/components/pricing/PlanFeatureRotator'
+import { MixMatchPicker } from '@/components/pricing/MixMatchPicker'
+import { PlanFeatureRevealProvider } from '@/components/pricing/PlanChecklist'
+import { PlanFullDetails } from '@/components/pricing/PlanFullDetails'
+import { PlanTierCard } from '@/components/pricing/PlanTierCard'
+import { PricingComparisonMatrix } from '@/components/pricing/PricingComparisonMatrix'
 import { SelectToggle } from '@/components/pricing/SelectToggle'
 import { SelectionSummary } from '@/components/pricing/SelectionSummary'
+import { SupportTierIcon } from '@/components/pricing/SupportTierIcon'
 import { SpectrumFlipCta } from '@/components/ui/SpectrumFlipCta'
 import {
   BUILD_HANDOFF_FEE,
   getPlans,
   getSupportPlans,
   type PlanId,
-  type PricingPlan,
   type SupportPlanId,
 } from '@/lib/pricing'
 import { cn } from '@/lib/utils'
 
-const PLAN_IDS = new Set<string>(['starter', 'basic', 'pro', 'business'])
-const SUPPORT_IDS = new Set<string>(['support', 'business-support', 'ultimate'])
-
 const introLinkClass =
   'font-medium text-primary-700 hover:text-primary-800 underline underline-offset-2'
 
-const whatsIncludedLinkClass =
-  'cursor-pointer inline-flex shrink-0 items-center gap-0.5 text-sm font-medium text-[oklch(52%_0.16_295)] hover:text-[oklch(45%_0.15_295)]'
-
-function WebsitePlanPrice({
-  plan,
-  oneTimeLabel,
-  className,
-}: {
-  plan: PricingPlan
-  oneTimeLabel: string
-  className?: string
-}) {
+function EmphasisText({ text }: { text: string }) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
   return (
-    <p className={className}>
-      {plan.priceLabel}
-      {!plan.contactForPricing ? (
-        <span className="ml-1.5 text-xs font-sans font-normal text-gray-500">
-          {oneTimeLabel}
-        </span>
-      ) : null}
-    </p>
+    <>
+      {parts.map((part, i) => {
+        const bold = part.match(/^\*\*([^*]+)\*\*$/)
+        if (bold?.[1]) {
+          return (
+            <strong key={i} className="font-semibold text-gray-800">
+              {bold[1]}
+            </strong>
+          )
+        }
+        return <span key={i}>{part}</span>
+      })}
+    </>
   )
 }
 
@@ -90,32 +83,14 @@ export default function PricingPageClient() {
   )
   const [selectedBuildHandoff, setSelectedBuildHandoff] = useState(false)
   const [buildHandoffConfirmOpen, setBuildHandoffConfirmOpen] = useState(false)
-  const [openPlanId, setOpenPlanId] = useState<PlanId | null>(null)
-  const [openSupportId, setOpenSupportId] = useState<SupportPlanId | null>(null)
   const [buildHandoffOpen, setBuildHandoffOpen] = useState(false)
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null
   const selectedSupport =
     supportPlans.find((p) => p.id === selectedSupportId) ?? null
-  const websiteChooseWidthLabel =
-    plans.find((p) => p.id === 'business')?.name ?? 'Business'
   const hasSelection = Boolean(
     selectedPlan || selectedSupport || selectedBuildHandoff
   )
-
-  useEffect(() => {
-    const applyHash = () => {
-      const hash = window.location.hash.replace(/^#/, '')
-      if (PLAN_IDS.has(hash)) {
-        setOpenPlanId(hash as PlanId)
-      } else if (SUPPORT_IDS.has(hash)) {
-        setOpenSupportId(hash as SupportPlanId)
-      }
-    }
-    applyHash()
-    window.addEventListener('hashchange', applyHash)
-    return () => window.removeEventListener('hashchange', applyHash)
-  }, [])
 
   const selectPlan = (id: PlanId) => {
     setSelectedPlanId((current) => (current === id ? null : id))
@@ -144,14 +119,6 @@ export default function PricingPageClient() {
     setSelectedBuildHandoff(false)
   }
 
-  const togglePlanOpen = (id: PlanId) => {
-    setOpenPlanId((current) => (current === id ? null : id))
-  }
-
-  const toggleSupportOpen = (id: SupportPlanId) => {
-    setOpenSupportId((current) => (current === id ? null : id))
-  }
-
   return (
     <main className={cn('bg-paper', hasSelection && 'pb-20 lg:pb-0')}>
       <div className="pointer-events-none fixed inset-0 -z-10" aria-hidden>
@@ -159,189 +126,83 @@ export default function PricingPageClient() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_90%_10%,oklch(93%_0.03_80/0.45),transparent_50%)]" />
       </div>
 
-      <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8 xl:gap-10">
-          {/* pb on the content column so the sticky rail’s stretch height includes page end padding */}
-          <div className="min-w-0 max-w-3xl lg:max-w-none pb-6">
-            <section className="pt-2 sm:pt-3 pb-3">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35 }}
-              >
-                <h1 className="font-display text-2xl sm:text-3xl text-gray-900 text-center">
-                  {p.title}
-                </h1>
-              </motion.div>
-            </section>
-
+      <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 pb-6">
             <section
-              className="pb-5 mx-auto max-w-5xl"
+              className="pt-1 sm:pt-1.5 pb-4 xl:flex xl:min-h-[calc(100svh-var(--spacing-12))] xl:flex-col"
               aria-labelledby="website-plans-heading"
             >
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.06 }}
-                className="mb-3"
+                transition={{ duration: 0.3 }}
+                className="mb-2 shrink-0"
               >
+                <h1 className="font-display text-sm text-gray-500 leading-none">
+                  {p.title}
+                </h1>
                 <h2
                   id="website-plans-heading"
-                  className="font-display text-xl sm:text-2xl text-gray-900"
+                  className="mt-1 font-display text-xl sm:text-2xl text-gray-900 leading-none"
                 >
                   {p.websitePlansHeading}
                 </h2>
+                <p className="mt-1.5 text-sm text-gray-600 leading-snug max-w-3xl">
+                  <EmphasisText text={p.baselineNote} />
+                </p>
               </motion.div>
 
-              <div className="flex flex-col gap-2">
-                {plans.map((plan, index) => {
+              <PlanFeatureRevealProvider>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 xl:flex-1 xl:gap-3.5 items-stretch">
+                {plans.map((plan) => {
                   const isSelected = selectedPlanId === plan.id
-                  const isOpen = openPlanId === plan.id
                   return (
-                    <motion.article
+                    <PlanTierCard
                       key={plan.id}
-                      id={plan.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.04 + index * 0.04 }}
-                      className={cn(
-                        'scroll-mt-16 rounded-xl overflow-hidden transition-[border-color,background-color,box-shadow] duration-300',
-                        isSelected
-                          ? 'border-2 border-[oklch(52%_0.14_295)] bg-[oklch(96%_0.04_295)] shadow-[0_0_0_1px_oklch(52%_0.14_295/0.12)]'
-                          : 'border border-gray-200 bg-white/85'
-                      )}
+                      plan={plan}
+                      popularLabel={p.mostPopular}
+                      selected={isSelected}
+                      className="scroll-mt-16"
+                      action={
+                        <SelectToggle
+                          selected={isSelected}
+                          label={plan.name}
+                          onToggle={() => selectPlan(plan.id)}
+                          variant="solid"
+                          className="w-full sm:w-full"
+                        />
+                      }
                     >
-                      <div className="px-3 py-2 sm:px-4">
-                        {/* Mobile: stacked so Choose never overlaps price; desktop grid unchanged */}
-                        <div className="flex flex-col gap-1.5 lg:hidden">
-                          <div className="flex items-baseline justify-between gap-3">
-                            <h2 className="font-display text-2xl text-gray-900 leading-none min-w-0">
-                              {plan.name}
-                            </h2>
-                            <WebsitePlanPrice
-                              plan={plan}
-                              oneTimeLabel={p.oneTime}
-                              className={cn(
-                                'font-display text-xl text-primary-700 leading-none shrink-0',
-                                plan.contactForPricing
-                                  ? 'whitespace-normal text-right max-w-[9.5rem]'
-                                  : 'whitespace-nowrap'
-                              )}
-                            />
-                          </div>
-                          <PlanFeatureRotator
-                            messages={plan.features}
-                            ariaLabel={t(p.highlightsAria, { name: plan.name })}
-                            startDelay={index * 900}
-                            visible={!isOpen}
-                          />
-                          <div className="flex items-center justify-between gap-3">
-                            <button
-                              type="button"
-                              onClick={() => togglePlanOpen(plan.id)}
-                              aria-expanded={isOpen}
-                              aria-controls={`${plan.id}-details`}
-                              className={whatsIncludedLinkClass}
-                            >
-                              {p.whatsIncluded}
-                              <ChevronDown
-                                className={cn(
-                                  'h-3.5 w-3.5 transition-transform duration-200',
-                                  isOpen && 'rotate-180'
-                                )}
-                                aria-hidden
-                              />
-                            </button>
-                            <SelectToggle
-                              selected={isSelected}
-                              label={plan.name}
-                              onToggle={() => selectPlan(plan.id)}
-                              widthLabel={websiteChooseWidthLabel}
-                              className="w-auto px-2.5 py-1 text-sm leading-none"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-4">
-                          <div className="min-w-0 justify-self-start">
-                            <h2 className="font-display text-[1.75rem] text-gray-900 leading-none">
-                              {plan.name}
-                            </h2>
-                            <PlanFeatureRotator
-                              messages={plan.features}
-                              ariaLabel={t(p.highlightsAria, { name: plan.name })}
-                              startDelay={index * 900}
-                              visible={!isOpen}
-                              className="mt-1"
-                            />
-                          </div>
-                          <div className="flex flex-col items-center justify-self-center text-center px-2">
-                            <WebsitePlanPrice
-                              plan={plan}
-                              oneTimeLabel={p.oneTime}
-                              className={cn(
-                                'font-display text-2xl text-primary-700 leading-none',
-                                plan.contactForPricing ? 'whitespace-normal' : 'whitespace-nowrap'
-                              )}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => togglePlanOpen(plan.id)}
-                              aria-expanded={isOpen}
-                              aria-controls={`${plan.id}-details`}
-                              className={cn(whatsIncludedLinkClass, 'mt-1')}
-                            >
-                              {p.whatsIncluded}
-                              <ChevronDown
-                                className={cn(
-                                  'h-3.5 w-3.5 transition-transform duration-200',
-                                  isOpen && 'rotate-180'
-                                )}
-                                aria-hidden
-                              />
-                            </button>
-                          </div>
-                          <div className="flex items-start justify-end justify-self-end">
-                            <SelectToggle
-                              selected={isSelected}
-                              label={plan.name}
-                              onToggle={() => selectPlan(plan.id)}
-                              widthLabel={websiteChooseWidthLabel}
-                              className="w-auto px-2.5 py-1 text-sm leading-none"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <AnimatePresence initial={false}>
-                        {isOpen ? (
-                          <motion.div
-                            id={`${plan.id}-details`}
-                            key="details"
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                            className="overflow-hidden"
-                          >
-                            <div className="mx-3.5 sm:mx-4 mb-3.5 sm:mb-4 rounded-lg border border-primary-100/80 bg-white px-3.5 py-3 sm:px-4 sm:py-3.5">
-                              <DetailGroups groups={plan.details} planId={plan.id} />
-                              <p className="mt-3.5 border-t border-gray-100 pt-3 text-xs text-gray-500 leading-snug">
-                                <span
-                                  className="mr-1 font-semibold text-primary-700"
-                                  aria-hidden
-                                >
-                                  *
-                                </span>
-                                {p.startingPriceNote}
-                              </p>
-                            </div>
-                          </motion.div>
-                        ) : null}
-                      </AnimatePresence>
-                    </motion.article>
+                      <PlanFullDetails
+                        groups={plan.details}
+                        included={plan.included}
+                        planId={plan.id}
+                      />
+                    </PlanTierCard>
                   )
                 })}
+              </div>
+              </PlanFeatureRevealProvider>
+              <p className="mt-2 shrink-0 text-xs text-gray-500 leading-snug">
+                <span
+                  className="mr-1 font-semibold text-primary-700"
+                  aria-hidden
+                >
+                  *
+                </span>
+                {p.startingPriceNote}
+              </p>
+            </section>
+
+            <section
+              className="pb-5"
+              aria-label={p.comparison.heading}
+            >
+              <div id="comparison" className="scroll-mt-16">
+                <PricingComparisonMatrix
+                  plans={plans}
+                  defaultOpen
+                  selectedPlanId={selectedPlanId}
+                />
               </div>
               <p className="mt-2.5 text-xs text-gray-500 leading-snug">
                 {t(p.exampleTotal, {
@@ -353,7 +214,7 @@ export default function PricingPageClient() {
 
             <section
               id="hosting-support"
-              className="scroll-mt-16 border-t border-gray-200 py-5 mx-auto max-w-5xl"
+              className="scroll-mt-16 border-t border-gray-200 py-5"
               aria-labelledby="hosting-support-heading"
             >
               <motion.div
@@ -364,141 +225,115 @@ export default function PricingPageClient() {
               >
                 <h2
                   id="hosting-support-heading"
-                  className="font-display text-xl sm:text-2xl text-gray-900"
+                  className="font-display text-xl sm:text-2xl text-gray-900 leading-none"
                 >
                   {p.hostingSupportHeading}
                 </h2>
+                <p className="mt-1.5 text-sm text-gray-600 leading-snug max-w-3xl">
+                  {p.hostingSupportLead}
+                </p>
               </motion.div>
 
-              <div className="flex flex-col gap-2">
-                {supportPlans.map((plan, index) => {
-                  const isSelected = selectedSupportId === plan.id
-                  const isOpen = openSupportId === plan.id
-                  return (
-                    <motion.article
-                      key={plan.id}
-                      id={plan.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.14 + index * 0.04 }}
-                      className={cn(
-                        'scroll-mt-16 rounded-xl overflow-hidden transition-[border-color,background-color,box-shadow] duration-300',
-                        isSelected
-                          ? 'border-2 border-[oklch(52%_0.14_295)] bg-[oklch(96%_0.04_295)] shadow-[0_0_0_1px_oklch(52%_0.14_295/0.12)]'
-                          : 'border border-gray-200 bg-white/85'
-                      )}
-                    >
-                      <div className="px-3 py-2 sm:px-4">
-                        {/* Mobile: stacked so Choose never overlaps price; desktop grid unchanged */}
-                        <div className="flex flex-col gap-1.5 lg:hidden">
-                          <div className="flex items-baseline justify-between gap-3">
-                            <h3 className="font-display text-2xl text-gray-900 leading-none min-w-0">
-                              {plan.name}
-                            </h3>
-                            <p className="font-display text-xl text-primary-700 whitespace-nowrap leading-none shrink-0">
-                              <PackagePriceLabel label={plan.priceLabel} />
-                            </p>
-                          </div>
-                          <PlanFeatureRotator
-                            messages={plan.features}
-                            ariaLabel={t(p.highlightsAria, { name: plan.name })}
-                            startDelay={(plans.length + index) * 900}
-                            visible={!isOpen}
+              <PlanFeatureRevealProvider
+                defaultReveal={{
+                  planId: 'business-support',
+                  icon: 'priority-hours',
+                }}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 xl:gap-3.5 items-stretch">
+                  {supportPlans.map((plan) => {
+                    const isSelected = selectedSupportId === plan.id
+                    return (
+                      <PlanTierCard
+                        key={plan.id}
+                        plan={plan}
+                        popularLabel={p.mostPopular}
+                        selected={isSelected}
+                        className="scroll-mt-16"
+                        icon={<SupportTierIcon planId={plan.id} />}
+                        action={
+                          <SelectToggle
+                            selected={isSelected}
+                            label={plan.name}
+                            onToggle={() => selectSupport(plan.id)}
+                            variant="solid"
+                            className="w-full sm:w-full"
                           />
-                          <div className="flex items-center justify-between gap-3">
-                            <button
-                              type="button"
-                              onClick={() => toggleSupportOpen(plan.id)}
-                              aria-expanded={isOpen}
-                              aria-controls={`${plan.id}-details`}
-                              className={whatsIncludedLinkClass}
-                            >
-                              {p.whatsIncluded}
-                              <ChevronDown
-                                className={cn(
-                                  'h-3.5 w-3.5 transition-transform duration-200',
-                                  isOpen && 'rotate-180'
-                                )}
-                                aria-hidden
-                              />
-                            </button>
-                            <SelectToggle
-                              selected={isSelected}
-                              label={plan.name}
-                              onToggle={() => selectSupport(plan.id)}
-                              className="w-auto px-2.5 py-1 text-sm leading-none"
-                            />
-                          </div>
-                        </div>
+                        }
+                      >
+                        <PlanFullDetails
+                          groups={plan.details}
+                          included={plan.included}
+                          planId={plan.id}
+                          afterLabel={p.hostingWhoFor}
+                        />
+                      </PlanTierCard>
+                    )
+                  })}
+                </div>
+              </PlanFeatureRevealProvider>
+            </section>
 
-                        <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-4">
-                          <div className="min-w-0 justify-self-start">
-                            <h3 className="font-display text-[1.75rem] text-gray-900 leading-none">
-                              {plan.name}
-                            </h3>
-                            <PlanFeatureRotator
-                              messages={plan.features}
-                              ariaLabel={t(p.highlightsAria, { name: plan.name })}
-                              startDelay={(plans.length + index) * 900}
-                              visible={!isOpen}
-                              className="mt-1"
-                            />
-                          </div>
-                          <div className="flex flex-col items-center justify-self-center text-center px-2">
-                            <p className="font-display text-2xl text-primary-700 whitespace-nowrap leading-none">
-                              <PackagePriceLabel label={plan.priceLabel} />
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => toggleSupportOpen(plan.id)}
-                              aria-expanded={isOpen}
-                              aria-controls={`${plan.id}-details`}
-                              className={cn(whatsIncludedLinkClass, 'mt-1')}
-                            >
-                              {p.whatsIncluded}
-                              <ChevronDown
-                                className={cn(
-                                  'h-3.5 w-3.5 transition-transform duration-200',
-                                  isOpen && 'rotate-180'
-                                )}
-                                aria-hidden
-                              />
-                            </button>
-                          </div>
-                          <div className="flex items-start justify-end justify-self-end">
-                            <SelectToggle
-                              selected={isSelected}
-                              label={plan.name}
-                              onToggle={() => selectSupport(plan.id)}
-                              className="w-auto px-2.5 py-1 text-sm leading-none"
-                            />
-                          </div>
-                        </div>
-                      </div>
+            <section
+              id="mix-and-match"
+              className="scroll-mt-16 -mx-4 bg-[oklch(68%_0.24_232)] px-4 py-6 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+              aria-labelledby="mix-and-match-heading"
+            >
+              <div>
+                <h2
+                  id="mix-and-match-heading"
+                  className="font-display text-xl sm:text-2xl text-white leading-none"
+                >
+                  {p.mixMatchHeading}
+                </h2>
+                <p className="mt-2 text-sm text-white/90 leading-snug max-w-3xl">
+                  {p.mixMatchLead}
+                </p>
 
-                      <AnimatePresence initial={false}>
-                        {isOpen ? (
-                          <motion.div
-                            id={`${plan.id}-details`}
-                            key="support-details"
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                            className="overflow-hidden"
-                          >
-                            <div className="mx-3.5 sm:mx-4 mb-3.5 sm:mb-4 rounded-lg border border-primary-100/80 bg-white px-3.5 py-3 sm:px-4 sm:py-3.5 space-y-2.5">
-                              <p className="text-sm text-gray-700 leading-snug">
-                                {plan.whyItHelps}
-                              </p>
-                              <DetailGroups groups={plan.details} />
-                            </div>
-                          </motion.div>
-                        ) : null}
-                      </AnimatePresence>
-                    </motion.article>
-                  )
-                })}
+                <div
+                  className={cn(
+                    'mt-4 grid overflow-hidden rounded-2xl border border-white bg-white',
+                    'shadow-[0_10px_24px_rgba(8,40,80,0.18)]',
+                    'md:grid-cols-2 lg:h-[31rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(18rem,22rem)] lg:grid-rows-1'
+                  )}
+                >
+                  <MixMatchPicker
+                    step={1}
+                    className="border-b border-[oklch(86%_0.03_230)] md:border-r lg:border-b-0"
+                    heading={p.mixMatchWebsiteHeading}
+                    items={plans.map((plan) => ({
+                      id: plan.id,
+                      name: plan.name,
+                      priceLabel: plan.priceLabel,
+                      brief: plan.features,
+                      selected: selectedPlanId === plan.id,
+                    }))}
+                    onSelect={(id) => selectPlan(id as PlanId)}
+                  />
+                  <MixMatchPicker
+                    step={2}
+                    className="border-b border-[oklch(86%_0.03_230)] lg:border-b-0 lg:border-r"
+                    heading={p.mixMatchHostingHeading}
+                    items={supportPlans.map((plan) => ({
+                      id: plan.id,
+                      name: plan.name,
+                      priceLabel: plan.priceLabel,
+                      brief: plan.features,
+                      selected: selectedSupportId === plan.id,
+                    }))}
+                    onSelect={(id) => selectSupport(id as SupportPlanId)}
+                  />
+                  <div className="h-full min-h-0 md:col-span-2 lg:col-span-1">
+                    <SelectionSummary
+                      selectedPlan={selectedPlan}
+                      selectedSupport={selectedSupport}
+                      selectedBuildHandoff={selectedBuildHandoff}
+                      onClearPlan={() => setSelectedPlanId(null)}
+                      onClearSupport={() => setSelectedSupportId(null)}
+                      onClearBuildHandoff={() => setSelectedBuildHandoff(false)}
+                    />
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -806,17 +641,6 @@ export default function PricingPageClient() {
                 </div>
               </div>
             </section>
-          </div>
-
-          <SelectionSummary
-            selectedPlan={selectedPlan}
-            selectedSupport={selectedSupport}
-            selectedBuildHandoff={selectedBuildHandoff}
-            onClearPlan={() => setSelectedPlanId(null)}
-            onClearSupport={() => setSelectedSupportId(null)}
-            onClearBuildHandoff={() => setSelectedBuildHandoff(false)}
-          />
-        </div>
       </div>
     </main>
   )

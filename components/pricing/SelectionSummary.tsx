@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import { Button } from '@/components/ui/Button'
 import { SpectrumFlipCta } from '@/components/ui/SpectrumFlipCta'
-import { LinkRenderText } from '@/components/pricing/LinkRenderText'
 import {
   BUILD_HANDOFF_FEE,
   buildIntrospectHandoffHref,
@@ -46,7 +45,6 @@ export function SelectionSummary({
     'idle'
   )
   const [emailMessage, setEmailMessage] = useState('')
-  const [mobileExpanded, setMobileExpanded] = useState(false)
 
   const quoted = Boolean(selectedPlan?.contactForPricing)
   const packagePrice = quoted ? 0 : (selectedPlan?.price ?? 0)
@@ -137,26 +135,42 @@ export function SelectionSummary({
       ? selectedSupport.name
       : p.noMonthlySupport
 
-  const card = (
-    <div className="rounded-xl border border-[oklch(52%_0.14_295/0.25)] bg-white/95 shadow-sm backdrop-blur-sm p-3.5 sm:p-4">
-      <p className="text-xs font-semibold tracking-wide uppercase text-[oklch(48%_0.14_295)] mb-2.5">
-        {p.yourSelection}
-      </p>
+  const slotClass =
+    'flex min-h-[2.75rem] items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-sm'
 
-      {hasSelection ? (
-        <ul className="space-y-2 mb-3">
+  const card = (
+    <div className="flex h-full min-h-0 flex-col overflow-hidden p-3 sm:p-3.5">
+      <h3 className="flex shrink-0 items-center gap-2 font-display text-lg leading-none tracking-tight text-gray-900">
+        <span
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[oklch(90%_0.05_230)] font-display text-sm font-bold text-[oklch(38%_0.10_230)]"
+          aria-hidden
+        >
+          3
+        </span>
+        {p.yourSelection}
+      </h3>
+
+      <ul className="mt-2.5 shrink-0 space-y-1.5">
+        <li
+          className={cn(
+            slotClass,
+            selectedPlan
+              ? 'bg-white'
+              : 'border border-dashed border-[oklch(70%_0.05_230/0.55)] text-gray-500'
+          )}
+        >
           {selectedPlan ? (
-            <li className="flex items-start justify-between gap-2 text-sm">
-              <div className="min-w-0">
-                <p className="font-medium text-gray-900">
+            <>
+              <span className="min-w-0">
+                <span className="block font-medium text-gray-900">
                   {t(p.packageSuffix, { name: selectedPlan.name })}
-                </p>
-                <p className="text-xs text-gray-500">
+                </span>
+                <span className="block text-xs text-gray-500">
                   {selectedPlan.contactForPricing
                     ? selectedPlan.priceLabel
                     : t(p.oneTimeSuffix, { price: selectedPlan.priceLabel })}
-                </p>
-              </div>
+                </span>
+              </span>
               <button
                 type="button"
                 onClick={onClearPlan}
@@ -164,14 +178,29 @@ export function SelectionSummary({
               >
                 {dict.common.remove}
               </button>
-            </li>
-          ) : null}
+            </>
+          ) : (
+            <span>{p.mixMatchEmptyPackage}</span>
+          )}
+        </li>
+        <li
+          className={cn(
+            slotClass,
+            selectedSupport || selectedBuildHandoff
+              ? 'bg-white'
+              : 'border border-dashed border-[oklch(70%_0.05_230/0.55)] text-gray-500'
+          )}
+        >
           {selectedSupport ? (
-            <li className="flex items-start justify-between gap-2 text-sm">
-              <div className="min-w-0">
-                <p className="font-medium text-gray-900">{selectedSupport.name}</p>
-                <p className="text-xs text-gray-500">{selectedSupport.priceLabel}</p>
-              </div>
+            <>
+              <span className="min-w-0">
+                <span className="block font-medium text-gray-900">
+                  {selectedSupport.name}
+                </span>
+                <span className="block text-xs text-gray-500">
+                  {selectedSupport.priceLabel}
+                </span>
+              </span>
               <button
                 type="button"
                 onClick={onClearSupport}
@@ -179,142 +208,70 @@ export function SelectionSummary({
               >
                 {dict.common.remove}
               </button>
-            </li>
-          ) : null}
-          {selectedBuildHandoff ? (
-            <li className="space-y-1.5">
-              <div className="flex items-start justify-between gap-2 text-sm">
-                <div className="min-w-0">
-                  <p className="font-medium text-gray-900">{p.buildHandoffName}</p>
-                  <p className="text-xs text-gray-500">
-                    {t(p.oneTimeSuffix, {
-                      price: formatMoney(BUILD_HANDOFF_FEE, locale),
-                    })}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={onClearBuildHandoff}
-                  className="cursor-pointer shrink-0 text-xs font-medium text-gray-500 hover:text-gray-800"
-                >
-                  {dict.common.remove}
-                </button>
-              </div>
-              <div className="rounded-md border border-gray-200 bg-gray-50/80 px-2.5 py-2">
-                <p className="text-xs font-medium text-gray-800 leading-snug mb-1">
-                  <LinkRenderText text={p.buildHandoffResponsibilityHeading} />
-                </p>
-                <ul className="space-y-1">
-                  {p.goingLiveStep2CancelItems.map((item) => {
-                    const [plain, tech] = item.split(' — ')
-                    return (
-                      <li key={item} className="text-xs leading-snug text-gray-600">
-                        <span className="font-medium text-gray-800">
-                          <LinkRenderText text={plain ?? item} />
-                        </span>
-                        {tech ? (
-                          <span>
-                            {' — '}
-                            <LinkRenderText text={tech} />
-                          </span>
-                        ) : null}
-                      </li>
-                    )
+            </>
+          ) : selectedBuildHandoff ? (
+            <>
+              <span className="min-w-0">
+                <span className="block font-medium text-gray-900">
+                  {p.buildHandoffName}
+                </span>
+                <span className="block text-xs text-gray-500">
+                  {t(p.oneTimeSuffix, {
+                    price: formatMoney(BUILD_HANDOFF_FEE, locale),
                   })}
-                </ul>
-              </div>
-            </li>
-          ) : null}
-        </ul>
-      ) : (
-        <p className="text-sm text-gray-600 leading-snug mb-3">{p.emptySelection}</p>
-      )}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={onClearBuildHandoff}
+                className="cursor-pointer shrink-0 text-xs font-medium text-gray-500 hover:text-gray-800"
+              >
+                {dict.common.remove}
+              </button>
+            </>
+          ) : (
+            <span>{p.mixMatchEmptyHosting}</span>
+          )}
+        </li>
+      </ul>
 
-      <div className="border-t border-gray-200 pt-3 mb-3">
-        <p className="text-xs font-semibold tracking-wide uppercase text-gray-500 mb-1">
+      <p
+        className={cn(
+          'mt-2 min-h-[2rem] shrink-0 text-xs leading-snug text-gray-600',
+          hasSelection && 'invisible'
+        )}
+      >
+        {p.emptySelection}
+      </p>
+
+      <div className="mt-2 shrink-0 border-t border-gray-200 pt-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
           {p.estimatedTotal}
         </p>
-        <p className="font-display text-xl text-gray-900 mb-1.5">{totalLabel}</p>
-        <p className="text-xs text-gray-600 leading-snug mb-2">
+        <p className="mt-0.5 font-display text-xl leading-none text-gray-900">
+          {totalLabel}
+        </p>
+        <p className="mt-1.5 line-clamp-2 text-xs leading-snug text-gray-600">
           <span className="font-semibold text-gray-800">{p.zeroDueToday}</span>{' '}
           {p.previewTerms}
         </p>
-        <ol className="text-xs text-gray-600 leading-snug space-y-1.5 list-decimal list-outside pl-3.5">
-          <li>
-            {p.continueAfterPreviewBefore}{' '}
-            <span className="font-medium text-gray-800">
-              {deposit != null
-                ? t(p.fiftyPercentOneTimeWithAmount, {
-                    amount: formatMoney(deposit, locale),
-                  })
-                : p.fiftyPercentOneTime}
-            </span>{' '}
-            {p.continueAfterPreviewAfter}
+        <ul className="mt-2 space-y-1 text-xs leading-snug">
+          <li className="flex items-start justify-between gap-3">
+            <span className="font-medium text-gray-900">{p.scheduleProjectStart}</span>
+            <span className="shrink-0 font-medium text-gray-900">
+              {deposit != null ? formatMoney(deposit, locale) : '$0'}
+            </span>
           </li>
-          <li>
-            {p.buildRealSiteBefore}{' '}
-            <span className="font-medium text-gray-800">
-              {deposit != null
-                ? t(p.remainingFiftyWithAmount, {
-                    amount: formatMoney(deposit, locale),
-                  })
-                : p.remainingFifty}
-            </span>{' '}
-            {p.isDue}
-            {selectedSupport
-              ? t(p.alongWithFirstMonthly, { amount: formatMoney(monthly, locale) })
-              : null}
-            {selectedBuildHandoff
-              ? t(p.alongWithBuildHandoff, {
-                  amount: formatMoney(BUILD_HANDOFF_FEE, locale),
-                })
-              : null}
-            .
+          <li className="flex items-start justify-between gap-3">
+            <span className="font-medium text-gray-900">{p.scheduleGoLive}</span>
+            <span className="shrink-0 font-medium text-gray-900">
+              {goLiveDue != null ? formatMoney(goLiveDue, locale) : '$0'}
+            </span>
           </li>
-        </ol>
-
-        {deposit != null ? (
-          <div className="mt-3 rounded-lg border border-[oklch(52%_0.14_295/0.2)] bg-[oklch(97%_0.02_295)] px-3 py-2.5">
-            <p className="text-xs font-semibold tracking-wide uppercase text-[oklch(48%_0.14_295)] mb-2">
-              {p.paymentScheduleHeading}
-            </p>
-            <ul className="space-y-2.5">
-              <li className="text-xs leading-snug">
-                <div className="flex items-start justify-between gap-3">
-                  <span className="font-medium text-gray-900">{p.scheduleProjectStart}</span>
-                  <span className="shrink-0 font-medium text-gray-900">
-                    {formatMoney(deposit, locale)}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-gray-600">{p.scheduleProjectStartDetail}</p>
-              </li>
-              <li className="text-xs leading-snug">
-                <div className="flex items-start justify-between gap-3">
-                  <span className="font-medium text-gray-900">{p.scheduleGoLive}</span>
-                  <span className="shrink-0 font-medium text-gray-900">
-                    {formatMoney(goLiveDue ?? deposit, locale)}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-gray-600">
-                  {selectedSupport
-                    ? t(p.scheduleGoLiveWithSupport, {
-                        packageHalf: formatMoney(deposit, locale),
-                        monthly: formatMoney(monthly, locale),
-                      })
-                    : selectedBuildHandoff
-                      ? t(p.scheduleGoLiveWithHandoff, {
-                          packageHalf: formatMoney(deposit, locale),
-                          handoff: formatMoney(BUILD_HANDOFF_FEE, locale),
-                        })
-                      : p.scheduleGoLivePackageOnly}
-                </p>
-              </li>
-            </ul>
-          </div>
-        ) : null}
+        </ul>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="mt-auto flex shrink-0 flex-col gap-1.5 pt-2">
         <SpectrumFlipCta
           size="sm"
           className="w-full"
@@ -325,20 +282,18 @@ export function SelectionSummary({
         </SpectrumFlipCta>
 
         {!emailOpen ? (
-          <Button
+          <button
             type="button"
-            variant="outline"
-            size="sm"
-            className="w-full"
             disabled={!hasSelection}
             onClick={() => {
               setEmailOpen(true)
               setEmailStatus('idle')
               setEmailMessage('')
             }}
+            className="cursor-pointer w-full py-1 text-center text-sm font-medium text-gray-600 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-45"
           >
             {p.emailThisSelection}
-          </Button>
+          </button>
         ) : (
           <form onSubmit={sendEmailToClient} className="space-y-2">
             <label className="block">
@@ -410,53 +365,44 @@ export function SelectionSummary({
     </div>
   )
 
+  const scrollToPreview = () => {
+    document.getElementById('payment-preview')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
   return (
     <>
-      <aside
-        className="hidden lg:block w-72 xl:w-80 shrink-0 self-stretch"
+      <div
+        id="payment-preview"
+        className="scroll-mt-16 h-full min-h-0"
         aria-live="polite"
         aria-label={p.yourSelection}
       >
-        <div className="sticky top-[calc(var(--spacing-12)+0.75rem)] max-h-[calc(100svh-var(--spacing-12)-1.75rem-1.5rem)] overflow-y-auto overscroll-contain">
-          {card}
-        </div>
-      </aside>
+        {card}
+      </div>
 
       {hasSelection ? (
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-gray-200 bg-paper/95 backdrop-blur-md shadow-[0_-4px_24px_oklch(20%_0.02_60/0.08)]">
-          {!mobileExpanded ? (
-            <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0 text-sm text-gray-700">
-                <span className="font-medium text-gray-900">
-                  {selectedPlan ? selectedPlan.name : p.noPackage}
-                </span>
-                <span className="text-gray-400 mx-1.5">·</span>
-                <span>{careLabel}</span>
-                <span className="text-gray-400 mx-1.5">·</span>
-                <span className="font-display text-[oklch(48%_0.14_295)]">{totalLabel}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMobileExpanded(true)}
-                className="cursor-pointer shrink-0 text-sm font-medium text-[oklch(48%_0.14_295)] hover:text-[oklch(42%_0.13_295)]"
-              >
-                {p.review}
-              </button>
+          <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0 text-sm text-gray-700">
+              <span className="font-medium text-gray-900">
+                {selectedPlan ? selectedPlan.name : p.noPackage}
+              </span>
+              <span className="text-gray-400 mx-1.5">·</span>
+              <span>{careLabel}</span>
+              <span className="text-gray-400 mx-1.5">·</span>
+              <span className="font-display text-[oklch(48%_0.14_295)]">{totalLabel}</span>
             </div>
-          ) : (
-            <div className="px-4 py-3 max-h-[70svh] overflow-y-auto">
-              <div className="flex justify-end mb-2">
-                <button
-                  type="button"
-                  onClick={() => setMobileExpanded(false)}
-                  className="cursor-pointer text-xs font-medium text-gray-500 hover:text-gray-800"
-                >
-                  {dict.common.close}
-                </button>
-              </div>
-              {card}
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={scrollToPreview}
+              className="cursor-pointer shrink-0 text-sm font-medium text-[oklch(48%_0.14_295)] hover:text-[oklch(42%_0.13_295)]"
+            >
+              {p.review}
+            </button>
+          </div>
         </div>
       ) : null}
     </>

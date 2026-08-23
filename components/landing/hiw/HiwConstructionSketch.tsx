@@ -6,8 +6,9 @@ import { C } from '@/components/pricing/ExampleScreenRotator'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const SOFT = { duration: 0.78, ease: EASE }
-const POSE_OUT = { duration: 0.7, ease: EASE }
-const POSE_IN = { duration: 0.74, delay: 0.72, ease: EASE }
+const CROSS = [0.4, 0, 0.2, 1] as const
+const POSE_CROSS = { duration: 0.56, ease: CROSS }
+const BUILD = { duration: 0.6, ease: CROSS }
 
 const HAT = 'oklch(84% 0.17 92)'
 const HAT_BRIM = 'oklch(76% 0.15 88)'
@@ -110,8 +111,8 @@ function House({
       </motion.g>
       <motion.g
         initial={false}
-        animate={{ opacity: walls ? 1 : 0, y: walls ? 0 : 10 }}
-        transition={{ duration: 0.7, delay: walls ? 0.72 : 0, ease: EASE }}
+        animate={{ opacity: walls ? 1 : 0, y: walls ? 0 : 6 }}
+        transition={BUILD}
         transformTemplate={({ y }) => `translateY(${y}px)`}
       >
         <rect
@@ -141,8 +142,8 @@ function House({
 
       <motion.g
         initial={false}
-        animate={{ opacity: roof ? 1 : 0, y: roof ? 0 : -14 }}
-        transition={{ duration: 0.7, delay: roof ? 0.72 : 0, ease: EASE }}
+        animate={{ opacity: roof ? 1 : 0, y: roof ? 0 : -8 }}
+        transition={BUILD}
         transformTemplate={({ y }) => `translateY(${y}px)`}
       >
         <path d="M176 106 L217 70 L258 106 Z" fill={ROOF} />
@@ -243,7 +244,7 @@ function Ladder({ visible }: { visible: boolean }) {
     <motion.g
       initial={false}
       animate={{ opacity: visible ? 1 : 0 }}
-      transition={visible ? POSE_IN : POSE_OUT}
+      transition={POSE_CROSS}
     >
       <g transform="translate(261 102) rotate(-11)">
         <rect x="0" y="0" width="2.2" height="52" rx="1" fill={HANDLE} />
@@ -335,7 +336,24 @@ function ProfileTorso() {
   )
 }
 
-export function Worker({ phase, swinging }: { phase: WorkerPhase; swinging: boolean }) {
+export function Worker({
+  phase,
+  swinging,
+  staticPose = false,
+}: {
+  phase: WorkerPhase
+  swinging: boolean
+  /** Frozen walls pose — no hammer cycle. Used by landing package thumbnails. */
+  staticPose?: boolean
+}) {
+  if (staticPose) {
+    return (
+      <g transform="translate(278 168) scale(-1.34, 1.34)">
+        <PoseGround swinging={false} kneel={0} freeze />
+      </g>
+    )
+  }
+
   const kneeling = phase === 'kneel'
   const onWalls = phase === 'walls'
   const onLadder = phase === 'climb' || phase === 'roof'
@@ -345,7 +363,7 @@ export function Worker({ phase, swinging }: { phase: WorkerPhase; swinging: bool
       <motion.g
         initial={false}
         animate={{ opacity: kneeling ? 1 : 0 }}
-        transition={POSE_OUT}
+        transition={POSE_CROSS}
       >
         <g transform="translate(290 168) scale(-1.34, 1.34)">
           <PoseGround swinging={kneeling && swinging} kneel={1} />
@@ -354,7 +372,7 @@ export function Worker({ phase, swinging }: { phase: WorkerPhase; swinging: bool
       <motion.g
         initial={false}
         animate={{ opacity: onWalls ? 1 : 0 }}
-        transition={onWalls ? POSE_IN : POSE_OUT}
+        transition={POSE_CROSS}
       >
         <g transform="translate(278 168) scale(-1.34, 1.34)">
           <PoseGround swinging={onWalls && swinging} kneel={0} />
@@ -363,7 +381,7 @@ export function Worker({ phase, swinging }: { phase: WorkerPhase; swinging: bool
       <motion.g
         initial={false}
         animate={{ opacity: onLadder ? 1 : 0 }}
-        transition={onLadder ? POSE_IN : POSE_OUT}
+        transition={POSE_CROSS}
       >
         <g transform="translate(261 102) rotate(-11)">
           <g transform="translate(11.2 1) scale(-1 1)">
@@ -458,6 +476,7 @@ function IdleArm({
 
 function UpperBody({
   swinging,
+  freeze = false,
   strike,
   raised,
   elbowStrike,
@@ -469,6 +488,7 @@ function UpperBody({
   hang = 90,
 }: {
   swinging: boolean
+  freeze?: boolean
   strike: number
   raised: number
   elbowStrike: number
@@ -479,7 +499,7 @@ function UpperBody({
   swingX?: number
   hang?: number
 }) {
-  const cock = useHammerCock(swinging)
+  const cock = useHammerCock(swinging, freeze)
   const lean = lerp(leanStrike, leanRaised, cock)
 
   return (
@@ -505,7 +525,15 @@ function UpperBody({
   )
 }
 
-function PoseGround({ swinging, kneel }: { swinging: boolean; kneel: number }) {
+function PoseGround({
+  swinging,
+  kneel,
+  freeze = false,
+}: {
+  swinging: boolean
+  kneel: number
+  freeze?: boolean
+}) {
   const t = kneel
   const hipY = lerp(0, 12.6, t)
 
@@ -577,6 +605,7 @@ function PoseGround({ swinging, kneel }: { swinging: boolean; kneel: number }) {
       <g transform={`translate(0 ${hipY})`}>
         <UpperBody
           swinging={swinging}
+          freeze={freeze}
           strike={lerp(38, 44, t)}
           raised={lerp(-42, -16, t)}
           elbowStrike={lerp(-58, -20, t)}
@@ -623,11 +652,12 @@ function PoseRoof({ swinging }: { swinging: boolean }) {
   )
 }
 
-function useHammerCock(playing: boolean) {
+function useHammerCock(playing: boolean, freeze = false) {
   const [cock, setCock] = useState(0.16)
   const cockRef = useRef(0.16)
 
   useEffect(() => {
+    if (freeze) return
     const set = (value: number) => {
       cockRef.current = value
       setCock(value)
@@ -647,9 +677,9 @@ function useHammerCock(playing: boolean) {
       onUpdate: set,
     })
     return () => controls.stop()
-  }, [playing])
+  }, [playing, freeze])
 
-  return cock
+  return freeze ? 0.16 : cock
 }
 
 export function HiwBuildPage({ level }: { level: number }) {

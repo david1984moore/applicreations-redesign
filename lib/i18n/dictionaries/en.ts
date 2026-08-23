@@ -42,6 +42,7 @@ export const en: Dictionary = {
     threeSteps: 'Three simple steps to get your website…',
     beginIntrospect: 'Begin Introspect',
     getFreePreview: 'Get Free Preview',
+    seeMore: 'See more',
     steps: {
       introspect: {
         label: 'Introspect',
@@ -49,16 +50,18 @@ export const en: Dictionary = {
       },
       livePreview: {
         label: 'Free preview',
-        detail: 'A free website you can click through and try yourself.',
-        building: 'Applicreations gets to work on your preview.',
+        detail: 'You get a trial site to try out...',
+        building: 'Applicreations gets to work on your preview site.',
         phoneSuffix: 'Even on your phone.',
       },
       workingWebsite: {
         label: 'Working website',
         detail: 'We review with you, make revisions. The build is finished and the real website is delivered.',
-        review: 'We review with you.',
-        revise: 'Then we make revisions.',
-        suffix: 'The build is finished and the real website is delivered.',
+        review: 'We review',
+        revise: 'Make revisions',
+        justRight: 'to get it just right',
+        justRightAnd: 'and',
+        suffix: 'Your website goes live.',
       },
     },
   },
@@ -133,12 +136,90 @@ export const en: Dictionary = {
     websitePlansHeading: 'Website',
     oneTime: 'one-time',
     whatsIncluded: "What's included",
+    howYouWork: "How you'll work with us",
+    afterLaunch: 'After launch',
+    visitorsCan: 'Visitors can {list}',
+    baselineNote:
+      'Every Applicreations site is **built for speed**, **mobile-friendly**, and designed to be found by **AI**, **Google**, and **every major search engine**.',
+    mostPopular: 'Most popular',
+    seeFullComparison: 'See the full comparison',
+    hideComparison: 'Hide comparison',
+    comparison: {
+      heading: 'Compare packages',
+      featureCol: 'What you get',
+      includedInEvery:
+        'Every package includes original design, a phone-ready layout, speed & security, on-page SEO, your content, and contact info.',
+      footer:
+        'Each package includes everything in the one before it, plus what is marked in its column. Extra revision rounds are $75, except on Pro where they are included.',
+      includedAria: 'Included',
+      notIncludedAria: 'Not included',
+      hintAria: 'More about {label}',
+      sections: {
+        build: 'Build',
+        visibility: 'Visibility',
+        strategy: 'Polish',
+        customTools: 'Extra features',
+      },
+      rows: {
+        pages: 'Pages',
+        revisionRounds: 'Revisions',
+        extraRevision: 'Extra revision',
+        walkthrough: 'Walkthrough',
+        brandedMarketing: 'Branded marketing',
+        localSeo: 'Search visibility check',
+        visitorCounts: 'Visitor counts',
+        adminPage: 'Admin page',
+        extraFunctionality: 'Extra functionality',
+        siteSearch: 'Site search',
+        priorityBuild: 'Priority build',
+      },
+      hints: {
+        localSeo:
+          'A check that your business/project shows up correctly in local search results and Google Maps.',
+        visitorCounts:
+          'A simple count of how many people visit — not reports, charts, or a monthly dashboard.',
+        adminPage:
+          'A private dashboard to manage your own content without touching code.',
+        siteSearch:
+          'A search bar so visitors can find what they need on a larger site.',
+        brandedMarketing:
+          'Business is a starter kit — logo, colors, and how the site looks when someone shares the link. Pro is the full treatment: we make the logo, brand the links, and match Facebook, socials, Google, and print.',
+        extraFunctionality:
+          'Booking calendars, quote calculators, member logins, or other built-in tools your site needs.',
+        priorityBuild: 'Your project starts at the front of the queue.',
+        extraRevision:
+          'One more round of edits after the rounds included in the package.',
+      },
+      values: {
+        pagesStarter: '1',
+        pagesBasic: '1–2',
+        pagesBusiness: '3–5',
+        pagesPro: 'Larger',
+        revisionsStarter: '1',
+        revisionsBasic: '1',
+        revisionsBusiness: '2',
+        revisionsPro: '3',
+        brandedMarketingBusiness: 'Limited',
+        brandedMarketingPro: 'Full',
+        extraRevisionIncluded: 'Included',
+      },
+    },
     startingPriceNote:
       'This price is a starting point. After your website is built and live, any additional work, features, or services you request will be estimated by Applicreations before that work begins.',
     highlightsAria: '{name} highlights',
     exampleTotal:
       'Example: Basic ({basicPrice}) + Basic ({supportPrice}) — choose both to see a simple total.',
     hostingSupportHeading: 'Hosting & Support',
+    hostingSupportLead:
+      'Monthly care that keeps your site live — pick the reply speed that fits.',
+    hostingWhoFor: 'Who it’s for',
+    mixMatchHeading: 'Mix and match',
+    mixMatchLead:
+      'Click a website package and a hosting plan to see your total.',
+    mixMatchWebsiteHeading: 'Choose a website package',
+    mixMatchHostingHeading: 'Choose hosting & support',
+    mixMatchEmptyPackage: 'Your website package',
+    mixMatchEmptyHosting: 'Your hosting plan',
     hostingIntroBeforeRender: 'When we host your site, it runs on',
     hostingIntroRender: 'Render',
     goingLiveHeading: 'Going live',
@@ -210,12 +291,12 @@ export const en: Dictionary = {
     packageSuffix: '{name} package',
     oneTimeSuffix: '{price} one-time',
     emptySelection:
-      'Choose a website package and a hosting plan. Your selections will show up here.',
+      'Click a package and a hosting plan. They’ll show up here with your total.',
     estimatedTotal: 'Estimated total',
     totalWithMonthly: '{oneTime} + {monthly}/mo',
     zeroDueToday: '$0 due today.',
     previewTerms:
-      'You get a free preview within 72 hours, then three days to try it and decide. Stop after the preview and you owe nothing.',
+      'Free preview in 72 hours, then three days to try it. Stop after the preview and you owe nothing.',
     continueAfterPreviewBefore: 'Want to continue after the three days? Then',
     fiftyPercentOneTime: '50% of the one-time fee',
     fiftyPercentOneTimeWithAmount: '50% of the one-time fee ({amount})',
@@ -609,13 +690,56 @@ export const en: Dictionary = {
               'Works with any website package',
             ],
           },
+          {
+            id: 'looks-like',
+            label: 'Not included',
+            items: [
+              'Not included: Overnight coverage — help after 4 p.m. EST or on weekends',
+              'Not included: Priority queue — requests wait in the regular line',
+            ],
+          },
+          {
+            id: 'help-after',
+            label: 'Who it’s for',
+            items: [
+              'Owners who don’t want to handle the tech themselves. Works with any website package.',
+            ],
+          },
         ],
         features: [
           'Help during normal business hours',
           'Fixes when something breaks',
           'Small updates',
-          'Email help',
-          'Works with any package',
+        ],
+        included: [
+          {
+            icon: 'live-hosting',
+            term: 'Keep the site live',
+            description:
+              'We host the site and keep it working after it goes online',
+          },
+          {
+            icon: 'hours-help',
+            term: 'Business-hours help',
+            description:
+              'We reply during business hours (Monday–Friday, 8 a.m.–4 p.m. EST)',
+          },
+          {
+            icon: 'small-updates',
+            term: 'Small updates',
+            description: 'Hours, photos, wording, or a page that stops working',
+          },
+          {
+            icon: 'email-phone',
+            term: 'Email & phone',
+            description: 'Reach us by email or phone during business hours',
+          },
+          {
+            icon: 'cancel-anytime',
+            term: 'Cancel anytime',
+            description:
+              'When you cancel, you are responsible for deploying your site to the internet',
+          },
         ],
         cta: 'Ask about Basic',
       },
@@ -662,17 +786,49 @@ export const en: Dictionary = {
               'Works with any website package',
             ],
           },
+          {
+            id: 'looks-like',
+            label: 'Not included',
+            items: [
+              'Not included: Overnight coverage — help after 4 p.m. EST or on weekends',
+            ],
+          },
+          {
+            id: 'help-after',
+            label: 'Who it’s for',
+            items: [
+              'Owners who want quicker help without overnight coverage. Works with any website package.',
+            ],
+          },
         ],
         features: [
-          'Everything in Basic',
           'Priority during business hours',
           'Faster replies',
-          'Extra help when needed',
+          'Small and medium updates',
+        ],
+        included: [
+          {
+            icon: 'priority-hours',
+            term: 'Priority in business hours',
+            description:
+              'Your requests go first during the workday so small problems don’t sit',
+          },
+          {
+            icon: 'medium-updates',
+            term: 'Small and medium updates',
+            description:
+              'Hours, photos, wording, or a new section when you need a little more than a tweak',
+          },
+          {
+            icon: 'faster-replies',
+            term: 'Faster replies',
+            description: 'We reply first when something goes wrong',
+          },
         ],
         cta: 'Ask about Business',
       },
       ultimate: {
-        name: 'Ultimate',
+        name: 'Pro',
         summary: 'Help any time of day or night when a down website means lost sales.',
         whyItHelps:
           'If your site goes down overnight and you can’t wait until morning, someone is available around the clock.',
@@ -713,27 +869,59 @@ export const en: Dictionary = {
               'Anyone who loses money when the website is down',
             ],
           },
+          {
+            id: 'looks-like',
+            label: 'Not included',
+            items: [],
+          },
+          {
+            id: 'help-after',
+            label: 'Who it’s for',
+            items: [
+              'Busy shops that take orders online — anyone who loses money when the website is down.',
+            ],
+          },
         ],
         features: [
-          'Everything in Business',
           'Help day or night',
           'First in line for fixes',
           'Faster replies',
         ],
-        cta: 'Ask about Ultimate',
+        included: [
+          {
+            icon: 'anytime-help',
+            term: 'Help any hour',
+            description:
+              'Someone is available around the clock if the site goes down overnight',
+          },
+          {
+            icon: 'first-in-line',
+            term: 'First in line',
+            description:
+              'Your site gets first attention when something goes wrong',
+          },
+          {
+            icon: 'overnight-fixes',
+            term: 'Down-site coverage',
+            description: 'Website down or major problems, day or night',
+          },
+        ],
+        cta: 'Ask about Pro',
       },
     },
     website: {
       starter: {
         name: 'Starter',
-        shortSummary: 'A simple one-page site',
+        shortSummary: 'One page. Everything you need to get found and get contacted.',
         summary:
-          'A bare-bones one-page site — made for artist portfolios, a side hustle, or a community event. Not built for booking, ordering, or running a full business online.',
+          'One page. Everything you need to get found and get contacted.',
         details: [
           {
             id: 'how-big',
             label: 'How big is the site',
-            items: ['One page — everything visitors need in one place'],
+            items: [
+              'One page — your whole site lives on a single scrolling page, no menu to click through',
+            ],
           },
           {
             id: 'looks-like',
@@ -742,23 +930,14 @@ export const en: Dictionary = {
             segments: [
               {
                 items: [
-                  'Uniquely designed for you, not a fill-in-the-blank template',
-                  'Responsive design — works on phone, tablet, and laptop',
-                  'Fast loading and secure (HTTPS included)',
-                  'Basic on-page SEO so Google can find you',
-                  'Not included: plugins, booking or ordering tools',
-                  'Not included: custom branded marketing help',
-                ],
-              },
-              {
-                lead: 'Common examples:',
-                items: [
-                  'About section',
-                  'Portfolio',
-                  'Gallery',
-                  'Services',
-                  'Products offered',
-                  'Contact form',
+                  'Original design — the build is derived from your design preferences, not from a template like Squarespace, Wix, or other generic website builders',
+                  'Responsive — looks right on a phone, a tablet, and a desktop',
+                  'Speed & security — loads fast and protected against common threats',
+                  'On-page SEO — structured so Google can find and understand your business/project',
+                  'Content as provided — I build with the words and photos you give me; I’ll flag anything that reads like an error, but I won’t rewrite your voice',
+                  'Contact & credibility basics — hours, location, contact info, and any testimonials or past work you provide, built in from the start',
+                  'Not included: Plugins — extra tools beyond a standard website, like online booking (Calendly) or payments (PayPal)',
+                  'Not included: Limited branded marketing — a starter logo, colors, and matching look on the site'
                 ],
               },
             ],
@@ -766,46 +945,85 @@ export const en: Dictionary = {
           {
             id: 'customers-use',
             label: 'How customers use it',
-            lead: 'Common examples:',
-            items: [
-              'Browse',
-              'Gallery',
-              'Find you on social media',
-              'Contact you',
-            ],
+            items: ['Get found and get contacted'],
           },
           {
             id: 'you-manage',
             label: 'How you manage it',
             items: [
-              'We walk you through the finished site so you’re comfortable with it before we call the project done',
-              '1 round of revisions before launch',
+              '1 revision round — one round of edits after your first look',
             ],
           },
           {
             id: 'help-after',
             label: 'Help after it’s live',
             items: [
-              'Not included: this package is the build only. Add a [hosting plan](#hosting-support) from $19/month to get your site online, keep it secure, and get fixes when something breaks',
+              'Build only — add a [hosting plan](#hosting-support) from $19/month.',
             ],
           },
         ],
-        features: [
-          '1 page',
-          'Bare-bones online presence',
-          'Portfolio, gallery, or event info',
+        features: ['1 page', 'Original design', 'On-page SEO'],
+        checklist: ['1 page'],
+        included: [
+          {
+            icon: 'one-page',
+            term: 'One page',
+            description:
+              'Your whole site lives on a single scrolling page, no menu to click through',
+          },
+          {
+            icon: 'original-design',
+            term: 'Original design',
+            description:
+              'The build is derived from your design preferences, not from a template like Squarespace, Wix, or other generic website builders.',
+          },
+          {
+            icon: 'responsive',
+            term: 'Responsive',
+            description: 'Looks right on a phone, a tablet, and a desktop',
+          },
+          {
+            icon: 'speed-security',
+            term: 'Speed & security',
+            description: 'Loads fast and protected against common threats',
+          },
+          {
+            icon: 'on-page-seo',
+            term: 'On-page SEO',
+            description:
+              'Structured so Google can find and understand your business/project'
+          },
+          {
+            icon: 'content-as-provided',
+            term: 'Content as provided',
+            description:
+              'I build with the words and photos you give me; I’ll flag anything that reads like an error, but I won’t rewrite your voice',
+          },
+          {
+            icon: 'contact-credibility',
+            term: 'Contact & credibility basics',
+            description:
+              'Hours, location, contact info, and any testimonials or past work you provide, built in from the start',
+          },
+          {
+            icon: 'revision-1',
+            term: '1 revision round',
+            description: 'One round of edits after your first look',
+          },
         ],
         cta: 'More',
       },
       basic: {
         name: 'Basic',
-        shortSummary: '1–2 pages',
-        summary: 'A clear website of one or two pages built around your business.',
+        shortSummary: 'Everything in Starter, plus a second page and a simple visitor count.',
+        summary: 'Everything in Starter, plus a second page and a simple visitor count.',
         details: [
           {
             id: 'how-big',
             label: 'How big is the site',
-            items: ['1–2 pages, organized around how customers actually reach you'],
+            items: [
+              '1–2 pages — separate your story from your offer instead of one long scroll',
+            ],
           },
           {
             id: 'looks-like',
@@ -813,23 +1031,9 @@ export const en: Dictionary = {
             items: [],
             segments: [
               {
-                lead: 'Everything in Starter, plus:',
-                items: [],
-              },
-              {
                 items: [
-                  'Google Maps embed if you have a physical location',
-                  'Multiple ways to reach you — contact form, click-to-call, email link',
-                  'Basic analytics so you can see how many people are visiting',
-                  'Not included: plugins, booking or ordering tools',
-                ],
-              },
-              {
-                lead: 'Common examples:',
-                items: [
-                  'Home + About',
-                  'Home + Services',
-                  'Home + Menu',
+                  'Not included: Plugins — extra tools beyond a standard website, like online booking (Calendly) or payments (PayPal)',
+                  'Not included: Limited branded marketing — a starter logo, colors, and matching look on the site'
                 ],
               },
             ],
@@ -837,44 +1041,61 @@ export const en: Dictionary = {
           {
             id: 'customers-use',
             label: 'How customers use it',
-            lead: 'Common examples:',
-            items: [
-              'Browse',
-              'Find your hours/location',
-              'Call or message you directly',
-              'Read what you offer',
-            ],
+            items: ['Read your story and your offer on separate pages'],
           },
           {
             id: 'you-manage',
             label: 'How you manage it',
             items: [
-              'Same walkthrough as Starter',
-              '2 rounds of revisions before launch',
+              '1 revision round — one round of edits after your first look',
             ],
           },
           {
             id: 'help-after',
             label: 'Help after it’s live',
             items: [
-              'Not included: this package is the build only. Add a [hosting plan](#hosting-support) from $19/month',
+              'Build only — add a [hosting plan](#hosting-support) from $19/month.',
             ],
           },
         ],
-        features: ['1–2 pages', 'Built for your business', 'Contact options for your customers'],
+        features: ['1–2 pages', 'Visitor counts'],
+        checklist: ['1–2 pages', 'Visitor counts'],
+        included: [
+          {
+            icon: 'speed-security',
+            term: 'Speed & security',
+            description:
+              'Loads fast, with HTTPS so coffee-shop Wi-Fi can’t snoop a contact form and browsers show a padlock, not “Not Secure.”',
+          },
+          {
+            icon: 'pages-1-2',
+            term: '1–2 pages',
+            description:
+              'Separate your story from your offer instead of one long scroll',
+          },
+          {
+            icon: 'visitor-counts',
+            term: 'Visitor counts',
+            description:
+              'A simple count of how many people visit, so you can see if the site is working',
+          },
+        ],
         cta: 'More',
       },
       // Former Pro tier — renamed Business
       business: {
         name: 'Business',
-        shortSummary: '3–5 pages',
+        shortSummary:
+          'Everything in Basic, plus the extra pages and polish a bigger site needs.',
         summary:
-          'A fuller website — 3 to 5 pages — with room for logins, online orders, and a page you use to make updates.',
+          'Everything in Basic, plus the extra pages and polish a bigger site needs.',
         details: [
           {
             id: 'how-big',
             label: 'How big is the site',
-            items: ['3–5 pages, built to grow with your business'],
+            items: [
+              '3–5 pages — enough room for a full service breakdown, case studies, or a resource section',
+            ],
           },
           {
             id: 'looks-like',
@@ -882,24 +1103,10 @@ export const en: Dictionary = {
             items: [],
             segments: [
               {
-                lead: 'Everything in Basic, plus:',
-                items: [],
-              },
-              {
                 items: [
-                  'Admin page — update your own hours, photos, and services without calling us',
-                  'Local SEO setup across all pages, not just the homepage',
-                  'Not included: booking, ordering, or membership tools (see Pro)',
-                ],
-              },
-              {
-                lead: 'Common examples:',
-                items: [
-                  'Home',
-                  'About',
-                  'Services',
-                  'Gallery',
-                  'Contact',
+                  'Search visibility check — making sure your business/project shows up correctly in local search results and Google Maps',
+                  'Limited branded marketing — logo, colors, a matching look on the site, and how it looks when someone shares the link (starter kit; full social, print, and branded links are in Pro)',
+                  'Not included: Plugins — extra tools beyond a standard website, like online booking (Calendly) or payments (PayPal)',
                 ],
               },
             ],
@@ -907,44 +1114,73 @@ export const en: Dictionary = {
           {
             id: 'customers-use',
             label: 'How customers use it',
-            lead: 'Common examples:',
-            items: [
-              'Compare services',
-              'Check hours',
-              'See past work',
-              'Reach out with questions',
-            ],
+            items: ['Compare services, see proof, and take the next step'],
           },
           {
             id: 'you-manage',
             label: 'How you manage it',
             items: [
-              'We walk you through the admin page so you can make small updates yourself going forward',
-              '2–3 rounds of revisions before launch',
+              '2 revision rounds — an extra round included at no charge',
             ],
           },
           {
             id: 'help-after',
             label: 'Help after it’s live',
             items: [
-              'Not included: this package is the build only. Add a [hosting plan](#hosting-support) from $19/month, or Business support at $39/month if you want help beyond fixes',
+              'Build only — add a [hosting plan](#hosting-support) from $19/month, or Business support at $39/month.',
             ],
           },
         ],
-        features: ['3–5 pages', 'Logins & online orders', 'Admin page for updating'],
+        features: ['3–5 pages', 'Search visibility'],
+        checklist: ['3–5 pages', 'Search visibility'],
+        included: [
+          {
+            icon: 'speed-security',
+            term: 'Speed & security',
+            description:
+              'Loads fast over HTTPS, so a coffee-shop Wi-Fi snoop can’t read a contact form. Encrypted connections are forced, browsers show the padlock, and there’s no leftover template-plugin junk sitting around to get exploited.',
+          },
+          {
+            icon: 'pages-3-5',
+            term: '3–5 pages',
+            description:
+              'Enough room for a full service breakdown, case studies, or a resource section',
+          },
+          {
+            icon: 'search-visibility',
+            term: 'Search visibility check',
+            description:
+              'Making sure your business/project shows up correctly in local search results and Google Maps'
+          },
+          {
+            icon: 'branded-marketing',
+            term: 'Limited branded marketing',
+            example: 'Like a matching logo, colors, a basic Facebook look, and a social sharing preview',
+            description:
+              'A starter kit for the site — logo and colors so the pages look like one business/project, plus how the site looks when someone links it. Full social, print, and branded links are in Pro.'
+          },
+          {
+            icon: 'revision-2',
+            term: '2 revision rounds',
+            description: 'An extra round included at no charge',
+          },
+        ],
         cta: 'More',
       },
       // Former Business tier — renamed Pro
       pro: {
         name: 'Pro',
-        shortSummary: 'Custom tools built for how you work',
+        shortSummary:
+          'Everything in Business, plus the extra features a larger site needs to run.',
         summary:
-          'Custom tools built around how your team actually works — more than a normal website.',
+          'Everything in Business, plus the extra features a larger site needs to run.',
         details: [
           {
             id: 'how-big',
             label: 'How big is the site',
-            items: ['Built for your process, not a fixed page count'],
+            items: [
+              'A larger site — extra features a bigger site needs to run',
+            ],
           },
           {
             id: 'looks-like',
@@ -952,13 +1188,11 @@ export const en: Dictionary = {
             items: [],
             segments: [
               {
-                lead: 'Everything in Business, plus custom tools tailored to how you actually work — for example: appointment booking, simple inventory tracking, online ordering, or a login area for members or repeat customers',
-                items: [],
-              },
-              {
                 items: [
-                  'A planning call up front to map exactly which tools you need',
-                  'Reasonable revisions throughout the build, not just at the end',
+                  'Admin page — a private dashboard to manage your own content without touching code',
+                  'Extra functionality — booking calendars, quote calculators, member logins, or other built-in tools your site needs to work the way your business/project does',
+                  'Site search — a search bar so visitors can find what they need on a larger site',
+                  'Full branded marketing — we make your logo, brand the text links, and match Facebook, socials, Google, and print — including how the site looks when someone shares the link'
                 ],
               },
             ],
@@ -966,34 +1200,88 @@ export const en: Dictionary = {
           {
             id: 'customers-use',
             label: 'How customers use it',
-            lead: 'Common examples:',
-            items: [
-              'Book an appointment',
-              'Place an order',
-              'Log in to check status',
-              'Manage their own account details',
-            ],
+            items: ['Use the built-in tools your site needs to run'],
           },
           {
             id: 'you-manage',
             label: 'How you manage it',
             items: [
-              'We walk you through every custom tool, not just the page content, so you know how to run it day to day',
+              'Walkthrough — we sit down with you in person and walk through every detail of the finished product until you’re comfortable using your custom tool',
+              'Priority build — your project starts at the front of the queue',
+              '3 revision rounds',
             ],
           },
           {
             id: 'help-after',
             label: 'Help after it’s live',
             items: [
-              'Not included: this package is the build only. Add a [hosting plan](#hosting-support) from $19/month, or Ultimate support at $99/month for priority response if you’re relying on these tools daily',
+              'Build only — add a [hosting plan](#hosting-support) from $19/month, or Pro support at $99/month.',
             ],
           },
         ],
-        features: [
-          'Custom tools',
-          'Built for your process',
-          'Grows with your team',
-          'Help included',
+        features: ['Admin page', 'Extra functionality', 'Site search'],
+        checklist: ['Admin page', 'Extra functionality', 'Site search'],
+        included: [
+          {
+            icon: 'speed-security',
+            term: 'Speed & security',
+            description:
+              'Ultimate hardening from the first request: TLS everywhere, forced HTTPS so the padlock never drops, production secrets kept off the page, and a clean custom build with no leftover template attack surface. Visitors get a fast, locked site; leftover builder junk doesn’t get a foothold.',
+          },
+          {
+            icon: 'original-design',
+            term: 'Original design',
+            description:
+              'Every aspect of every design decision is informed by your preferences. No stone is left unturned.',
+          },
+          {
+            icon: 'branded-marketing',
+            term: 'Full branded marketing',
+            example: 'Like your logo, branded links, matching look on every social, and a social sharing preview',
+            description:
+              'The full treatment — we make your logo, brand the links, and match Facebook, socials, Google, and print so you look like the same business/project everywhere, including how the site looks when someone shares the link.',
+            emphasis: true,
+          },
+          {
+            icon: 'larger-site',
+            term: 'Larger site',
+            description:
+              'Extra pages and the features a bigger site needs to run',
+          },
+          {
+            icon: 'admin-page',
+            term: 'Admin page',
+            description:
+              'A private dashboard to manage your own content without touching code',
+          },
+          {
+            icon: 'extra-functionality',
+            term: 'Extra functionality',
+            description:
+              'Booking calendars, quote calculators, member logins, or other built-in tools your site needs to work the way your business/project does'
+          },
+          {
+            icon: 'site-search',
+            term: 'Site search',
+            description:
+              'A search bar so visitors can find what they need on a larger site',
+          },
+          {
+            icon: 'walkthrough',
+            term: 'Walkthrough',
+            description:
+              'We sit down with you in person and walk through every detail of the finished product until you’re comfortable using your custom tool.',
+          },
+          {
+            icon: 'priority-build',
+            term: 'Priority build',
+            description: 'Your project starts at the front of the queue',
+          },
+          {
+            icon: 'revision-3',
+            term: '3 revision rounds',
+            description: 'Three rounds of edits after your first look',
+          },
         ],
         cta: 'More',
       },

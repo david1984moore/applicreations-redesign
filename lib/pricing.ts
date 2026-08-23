@@ -25,6 +25,17 @@ export interface PlanDetailGroup {
   segments?: PlanDetailSegment[]
 }
 
+/** Click-reveal checklist item — icon key is mapped in PlanChecklist. */
+export interface PlanChecklistItem {
+  icon: string
+  term: string
+  description: string
+  /** Always-visible one-liner under the term (e.g. two concrete examples). */
+  example?: string
+  /** New on this tier — render the label in bold */
+  emphasis?: boolean
+}
+
 export interface PricingPlan {
   id: PlanId
   name: string
@@ -32,13 +43,19 @@ export interface PricingPlan {
   priceLabel: string
   /** Custom quote — show priceLabel instead of a dollar amount */
   contactForPricing?: boolean
-  /** One short line for the landing viewport */
+  /** One short line for the landing viewport / pricing-card tagline */
   shortSummary: string
   summary: string
   /** Parallel detail groups — same labels across plans for easy scanning */
   details: PlanDetailGroup[]
   /** Flat feature list (homepage / glance chips) */
   features: string[]
+  /** Collapsed-card checklist — short labels, 1–3 items */
+  checklist: string[]
+  /** Pricing-card “What’s included” click-reveal items */
+  included: PlanChecklistItem[]
+  /** e.g. “Everything in Starter, plus:” */
+  includedLead?: string
   highlighted?: boolean
   cta: string
   ctaHref: string
@@ -56,6 +73,7 @@ export interface SupportPlan {
   whyItHelps: string
   details: PlanDetailGroup[]
   features: string[]
+  included: PlanChecklistItem[]
   highlighted?: boolean
   cta: string
   ctaHref: string
@@ -66,9 +84,9 @@ const WEBSITE_META: Record<
   { price: number; highlighted?: boolean; hash: string; contactForPricing?: boolean }
 > = {
   starter: { price: 349, highlighted: false, hash: 'starter' },
-  basic: { price: 699, highlighted: false, hash: 'basic' },
+  basic: { price: 699, highlighted: true, hash: 'basic' },
   // Names flipped vs prior tiers: Business = former Pro (mid), Pro = former Business (top)
-  business: { price: 999, highlighted: true, hash: 'business' },
+  business: { price: 999, highlighted: false, hash: 'business' },
   pro: { price: 0, contactForPricing: true, highlighted: false, hash: 'pro' },
 }
 
@@ -83,6 +101,9 @@ const SUPPORT_META: Record<
 
 /** One-time fee to build, deploy on Render, then hand hosting off to the client */
 export const BUILD_HANDOFF_FEE = 500
+
+/** Flat fee for one extra revision round beyond what’s included in the package */
+export const EXTRA_REVISION_FEE = 75
 
 function monthlyPriceLabel(amount: number, locale: Locale = defaultLocale): string {
   const money = `$${amount.toLocaleString('en-US')}`
@@ -107,6 +128,94 @@ export const BASIC_SUPPORT = getBasicSupport(en)
 /** @deprecated Use BASIC_SUPPORT */
 export const BASIC_HOSTING = BASIC_SUPPORT
 
+/**
+ * Features that upgrade in place (same slot, new label). Later tiers replace
+ * the earlier item instead of stacking both — e.g. One page → 1–2 pages.
+ */
+const INCLUDED_FAMILY: Record<string, string> = {
+  'one-page': 'pages',
+  'pages-1-2': 'pages',
+  'pages-3-5': 'pages',
+  'larger-site': 'pages',
+  'revision-1': 'revisions',
+  'revision-2': 'revisions',
+  'revision-3': 'revisions',
+  'hours-help': 'hours',
+  'priority-hours': 'hours',
+  'anytime-help': 'hours',
+  'small-updates': 'updates',
+  'medium-updates': 'updates',
+}
+
+function familyOf(item: PlanChecklistItem): string | undefined {
+  return INCLUDED_FAMILY[item.icon]
+}
+
+/** Append extras, or swap them into the slot they supersede. */
+function mergeIncluded(
+  base: PlanChecklistItem[],
+  extras: PlanChecklistItem[],
+  extrasEmphasis: boolean
+): PlanChecklistItem[] {
+  const next = base.map((item) => ({ ...item, emphasis: false }))
+  for (const extra of extras) {
+    const iconIdx = next.findIndex((item) => item.icon === extra.icon)
+    const family = familyOf(extra)
+    const familyIdx = family
+      ? next.findIndex((item) => familyOf(item) === family)
+      : -1
+    if (iconIdx >= 0) {
+      // Same feature, updated copy — not a new-tier extra
+      next[iconIdx] = { ...extra, emphasis: extra.emphasis ?? false }
+    } else if (familyIdx >= 0) {
+      next[familyIdx] = { ...extra, emphasis: extrasEmphasis }
+    } else {
+      next.push({ ...extra, emphasis: extrasEmphasis })
+    }
+  }
+  return next
+}
+
+/** Basic list, then each higher support tier’s extras — current-tier diffs stay bold. */
+function stackedSupportIncluded(
+  id: SupportPlanId,
+  dict: Dictionary
+): PlanChecklistItem[] {
+  const support = dict.plans.support
+  let items: PlanChecklistItem[] = support.support.included.map((item) => ({
+    ...item,
+    emphasis: false,
+  }))
+  if (id === 'support') return items
+
+  items = mergeIncluded(
+    items,
+    support['business-support'].included,
+    id === 'business-support'
+  )
+  if (id === 'business-support') return items
+
+  return mergeIncluded(items, support.ultimate.included, true)
+}
+
+/** Starter list, then each higher tier’s extras — current-tier diffs stay bold. */
+function stackedIncluded(id: PlanId, dict: Dictionary): PlanChecklistItem[] {
+  const website = dict.plans.website
+  let items: PlanChecklistItem[] = website.starter.included.map((item) => ({
+    ...item,
+    emphasis: false,
+  }))
+  if (id === 'starter') return items
+
+  items = mergeIncluded(items, website.basic.included, id === 'basic')
+  if (id === 'basic') return items
+
+  items = mergeIncluded(items, website.business.included, id === 'business')
+  if (id === 'business') return items
+
+  return mergeIncluded(items, website.pro.included, true)
+}
+
 export function getPlans(dict: Dictionary = en, locale: Locale = defaultLocale): PricingPlan[] {
   return (['starter', 'basic', 'business', 'pro'] as const).map((id) => {
     const meta = WEBSITE_META[id]
@@ -123,6 +232,8 @@ export function getPlans(dict: Dictionary = en, locale: Locale = defaultLocale):
       summary: copy.summary,
       details: copy.details,
       features: copy.features,
+      checklist: copy.checklist,
+      included: stackedIncluded(id, dict),
       highlighted: meta.highlighted,
       cta: copy.cta,
       ctaHref: withLocale(`/pricing#${meta.hash}`, locale),
@@ -146,6 +257,7 @@ export function getSupportPlans(
       whyItHelps: copy.whyItHelps,
       details: copy.details,
       features: copy.features,
+      included: stackedSupportIncluded(id, dict),
       highlighted: meta.highlighted,
       cta: copy.cta,
       ctaHref: withLocale('/introspect', locale),
