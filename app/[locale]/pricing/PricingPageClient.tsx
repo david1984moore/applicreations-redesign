@@ -20,6 +20,7 @@ import { IconContact } from '@/components/ui/BrandNavLinks'
 import { BuildHandoffConfirmDialog } from '@/components/pricing/BuildHandoffConfirmDialog'
 import { LinkRenderText } from '@/components/pricing/LinkRenderText'
 import { MixMatchPicker } from '@/components/pricing/MixMatchPicker'
+import { MobilePlanAccordion } from '@/components/pricing/MobilePlanAccordion'
 import { PlanFeatureRevealProvider } from '@/components/pricing/PlanChecklist'
 import { PlanFullDetails } from '@/components/pricing/PlanFullDetails'
 import { PlanTierCard } from '@/components/pricing/PlanTierCard'
@@ -152,7 +153,15 @@ export default function PricingPageClient() {
               </motion.div>
 
               <PlanFeatureRevealProvider>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 xl:flex-1 xl:gap-3.5 items-stretch">
+              <div className="xl:hidden">
+                <MobilePlanAccordion
+                  plans={plans}
+                  selectedId={selectedPlanId}
+                  onSelect={(id) => selectPlan(id as PlanId)}
+                  popularLabel={p.mostPopular}
+                />
+              </div>
+              <div className="hidden xl:grid xl:grid-cols-4 xl:flex-1 xl:gap-3.5 xl:items-stretch">
                 {plans.map((plan) => {
                   const isSelected = selectedPlanId === plan.id
                   return (
@@ -162,6 +171,7 @@ export default function PricingPageClient() {
                       popularLabel={p.mostPopular}
                       selected={isSelected}
                       className="scroll-mt-16"
+                      anchor={false}
                       action={
                         <SelectToggle
                           selected={isSelected}
@@ -240,7 +250,19 @@ export default function PricingPageClient() {
                   icon: 'priority-hours',
                 }}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 xl:gap-3.5 items-stretch">
+                <div className="xl:hidden">
+                  <MobilePlanAccordion
+                    plans={supportPlans}
+                    selectedId={selectedSupportId}
+                    onSelect={(id) => selectSupport(id as SupportPlanId)}
+                    popularLabel={p.mostPopular}
+                    afterLabel={p.hostingWhoFor}
+                    iconFor={(id) => (
+                      <SupportTierIcon planId={id as SupportPlanId} />
+                    )}
+                  />
+                </div>
+                <div className="hidden xl:grid xl:grid-cols-3 xl:gap-3.5 xl:items-stretch">
                   {supportPlans.map((plan) => {
                     const isSelected = selectedSupportId === plan.id
                     return (
@@ -250,6 +272,7 @@ export default function PricingPageClient() {
                         popularLabel={p.mostPopular}
                         selected={isSelected}
                         className="scroll-mt-16"
+                        anchor={false}
                         icon={<SupportTierIcon planId={plan.id} />}
                         action={
                           <SelectToggle
@@ -276,7 +299,7 @@ export default function PricingPageClient() {
 
             <section
               id="mix-and-match"
-              className="scroll-mt-16 -mx-4 bg-[oklch(68%_0.24_232)] px-4 py-6 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+              className="scroll-mt-16 -mx-4 bg-[oklch(68%_0.24_232)] px-4 py-5 sm:-mx-6 sm:px-6 sm:py-6 lg:-mx-8 lg:px-8"
               aria-labelledby="mix-and-match-heading"
             >
               <div>
@@ -287,7 +310,8 @@ export default function PricingPageClient() {
                   {p.mixMatchHeading}
                 </h2>
                 <p className="mt-2 text-sm text-white/90 leading-snug max-w-3xl">
-                  {p.mixMatchLead}
+                  <span className="hidden lg:inline">{p.mixMatchLead}</span>
+                  <span className="lg:hidden">{p.mixMatchLeadTap}</span>
                 </p>
 
                 <div

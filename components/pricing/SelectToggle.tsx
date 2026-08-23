@@ -36,7 +36,7 @@ export function SelectToggle({
       aria-pressed={selected}
       aria-label={selected ? t(dict.pricingPage.chosenAria, { name: label }) : chooseLabel}
       className={cn(
-        'inline-flex w-full sm:w-auto items-center justify-center text-sm font-bold tracking-tight cursor-pointer',
+        'inline-flex w-full sm:w-auto min-h-11 sm:min-h-0 items-center justify-center text-sm font-bold tracking-tight cursor-pointer touch-manipulation',
         'transition-colors duration-200',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-paper',
         variant === 'solid'

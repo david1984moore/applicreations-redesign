@@ -40,7 +40,7 @@ export function MixMatchPicker({
         ) : null}
         {heading}
       </h3>
-      <ul className="mt-2.5 flex flex-col gap-1.5">
+      <ul className="mt-2 flex flex-col gap-1.5 lg:mt-2.5">
         {items.map((item) => (
           <li key={item.id}>
             <button
@@ -48,7 +48,7 @@ export function MixMatchPicker({
               onClick={() => onSelect(item.id)}
               aria-pressed={item.selected}
               className={cn(
-                'box-border flex h-[5.5rem] w-full shrink-0 cursor-pointer flex-col justify-center overflow-hidden rounded-xl px-3 py-2 text-left transition-colors duration-200',
+                'box-border flex min-h-11 h-auto w-full shrink-0 cursor-pointer flex-col justify-center overflow-hidden rounded-xl px-3 py-2 text-left transition-colors duration-200 touch-manipulation lg:h-[5.5rem]',
                 'ring-2 ring-inset',
                 'focus-visible:outline-none focus-visible:ring-[oklch(52%_0.14_295)]',
                 item.selected

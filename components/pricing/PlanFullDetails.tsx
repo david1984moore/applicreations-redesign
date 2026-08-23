@@ -104,6 +104,32 @@ function Mark({ kind }: { kind: ItemKind }) {
   )
 }
 
+function StackedIncluded({ items }: { items: PlanChecklistItem[] }) {
+  return (
+    <ul className="space-y-2">
+      {items.map((item) => (
+        <li key={`${item.icon}-${item.term}`} className="flex gap-1.5">
+          <IncludedMark className="mt-0.5" />
+          <div className="min-w-0">
+            <p
+              className={cn(
+                'text-sm leading-snug text-gray-900',
+                item.emphasis ? 'font-semibold' : 'font-medium'
+              )}
+            >
+              {item.term}
+            </p>
+            {item.example ? (
+              <p className="mt-0.5 text-xs leading-snug text-gray-500">{item.example}</p>
+            ) : null}
+            <p className="mt-0.5 text-xs leading-snug text-gray-600">{item.description}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function BulletList({ items }: { items: Bullet[] }) {
   return (
     <ul className="space-y-1.5">
@@ -145,8 +171,8 @@ const plusHeadingClass =
   'mb-1 text-sm font-extrabold leading-snug text-gray-900'
 
 /** Keeps Not included / After launch on one horizontal line across the four cards. */
-const NOT_INCLUDED_MIN = 'min-h-[7.25rem]'
-const AFTER_LAUNCH_MIN = 'min-h-[4rem]'
+const NOT_INCLUDED_MIN = 'min-h-[7.25rem] max-xl:min-h-0'
+const AFTER_LAUNCH_MIN = 'min-h-[4rem] max-xl:min-h-0'
 
 function Section({
   title,
@@ -228,6 +254,7 @@ export function PlanFullDetails({
   planId,
   afterLabel,
   className,
+  stacked = false,
 }: {
   groups: PlanDetailGroup[]
   included?: PlanChecklistItem[]
@@ -236,6 +263,8 @@ export function PlanFullDetails({
   planId?: string
   afterLabel?: string
   className?: string
+  /** Mobile accordion — show every included line, not the desktop click-reveal. */
+  stacked?: boolean
 }): ReactNode {
   const { dict } = useLocale()
   const p = dict.pricingPage
@@ -263,7 +292,11 @@ export function PlanFullDetails({
               {p.whatsIncluded}
             </p>
           ) : null}
-          <PlanChecklist items={included!} lead={includedLead} planId={planId} />
+          {stacked ? (
+            <StackedIncluded items={included!} />
+          ) : (
+            <PlanChecklist items={included!} lead={includedLead} planId={planId} />
+          )}
         </div>
       ) : (
         <Section

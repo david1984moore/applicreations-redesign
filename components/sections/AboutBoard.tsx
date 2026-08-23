@@ -7,7 +7,7 @@ export function AboutBoard() {
   const { dict } = useLocale()
 
   return (
-    <section className="about-board relative overflow-x-hidden bg-paper lg:min-h-[calc(100svh-var(--spacing-12)-1.75rem)] flex items-start">
+    <section className="about-board relative overflow-x-clip bg-paper lg:min-h-[calc(100svh-var(--spacing-12)-1.75rem)] flex items-start">
       <div className="relative z-10 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3 pb-6 lg:pb-3">
         <div className="relative rounded-xl border border-gray-200/80 bg-white/80 backdrop-blur-sm px-4 py-3 sm:px-5 sm:py-4">
           <p className="text-[0.65rem] font-bold tracking-[0.12em] uppercase text-primary-600 text-center mb-2">

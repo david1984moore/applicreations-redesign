@@ -330,6 +330,8 @@ export type Dictionary = {
     hostingWhoFor: string
     mixMatchHeading: string
     mixMatchLead: string
+    /** Mobile — same sentence, “tap” instead of “click”. */
+    mixMatchLeadTap: string
     mixMatchWebsiteHeading: string
     mixMatchHostingHeading: string
     mixMatchEmptyPackage: string
@@ -382,6 +384,9 @@ export type Dictionary = {
     packageSuffix: string
     oneTimeSuffix: string
     emptySelection: string
+    emptySelectionTap: string
+    expandDetails: string
+    collapseDetails: string
     estimatedTotal: string
     totalWithMonthly: string
     zeroDueToday: string

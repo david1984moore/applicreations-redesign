@@ -162,13 +162,17 @@ body {
   overflow-x: hidden;
 }
 
-/* Mobile: kill horizontal rubber-band / sideways drag while scrolling */
+/* Mobile: kill horizontal rubber-band / sideways drag while scrolling.
+   Use hidden (not clip) on html/body — clip on one axis forces the other
+   axis to clip too, which blocks vertical page scroll. */
 @media (max-width: 1023px) {
   html,
   body {
     overflow-x: hidden;
     overscroll-behavior-x: none;
     max-width: 100%;
+    height: auto;
+    min-height: 0;
   }
 }
 

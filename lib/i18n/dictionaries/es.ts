@@ -216,6 +216,8 @@ export const es: Dictionary = {
     mixMatchHeading: 'Combina y estima',
     mixMatchLead:
       'Elige un paquete de sitio web y un plan de hosting para ver el total.',
+    mixMatchLeadTap:
+      'Toca un paquete de sitio web y un plan de hosting para ver el total.',
     mixMatchWebsiteHeading: 'Elige un paquete de sitio web',
     mixMatchHostingHeading: 'Elige hosting y soporte',
     mixMatchEmptyPackage: 'Tu paquete de sitio web',
@@ -293,6 +295,10 @@ export const es: Dictionary = {
     oneTimeSuffix: '{price} pago único',
     emptySelection:
       'Elige un paquete y un plan de hosting. Aparecerán aquí con el total.',
+    emptySelectionTap:
+      'Toca un paquete y un plan de hosting. Aparecerán aquí con el total.',
+    expandDetails: 'Ver detalles',
+    collapseDetails: 'Ocultar detalles',
     estimatedTotal: 'Total estimado',
     totalWithMonthly: '{oneTime} + {monthly}/mes',
     zeroDueToday: 'Hoy pagas $0.',

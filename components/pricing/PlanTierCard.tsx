@@ -16,7 +16,7 @@ type TierCardPlan = {
  * Landing See more — ink text. Hover flips to HIW wash violet.
  */
 export const planSeeMoreClass =
-  'inline-flex items-center justify-center text-xs font-semibold tracking-tight text-gray-800 underline-offset-2 cursor-pointer whitespace-nowrap transition-colors duration-200 hover:text-[oklch(48%_0.12_310)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(70%_0.10_310)/0.45] focus-visible:ring-offset-2 focus-visible:ring-offset-paper'
+  'inline-flex min-h-11 items-center justify-center px-2 text-xs font-semibold tracking-tight text-gray-800 underline-offset-2 cursor-pointer whitespace-nowrap transition-colors duration-200 touch-manipulation hover:text-[oklch(48%_0.12_310)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(70%_0.10_310)/0.45] focus-visible:ring-offset-2 focus-visible:ring-offset-paper lg:min-h-0 lg:px-0'
 
 /** @deprecated Use planSeeMoreClass — kept so existing landing imports keep working. */
 export const planChooseClass = planSeeMoreClass
@@ -40,6 +40,7 @@ export function PlanTierCard({
   children,
   action,
   className,
+  anchor = true,
 }: {
   plan: TierCardPlan
   popularLabel: string
@@ -51,18 +52,20 @@ export function PlanTierCard({
   children: ReactNode
   action: ReactNode
   className?: string
+  /** Set false when another copy of this plan already owns the hash id. */
+  anchor?: boolean
 }) {
   const isPopular = Boolean(plan.highlighted)
   const compact = density === 'landing'
 
   return (
     <article
-      id={plan.id}
+      id={anchor ? plan.id : undefined}
       className={cn(
         'relative isolate flex flex-col',
         compact
           ? cn(
-              'h-auto self-stretch items-center px-3 pb-3 pt-3 text-center',
+              'h-auto self-stretch items-center px-2 pb-2 pt-2 text-center sm:px-3 sm:pb-3 sm:pt-3',
               isPopular && 'bg-[oklch(90%_0.07_230)]'
             )
           : cn(
@@ -84,15 +87,15 @@ export function PlanTierCard({
 
       {compact ? (
         <div className="w-full">
-          <h3 className="font-display text-base text-gray-900 leading-none tracking-tight">
+          <h3 className="font-display text-[0.9375rem] text-gray-900 leading-none tracking-tight sm:text-base">
             {plan.name}
           </h3>
           <p
             className={cn(
-              'mt-1 flex h-9 w-full items-start justify-center font-sans font-[700] tracking-tight text-primary-600',
+              'mt-0.5 flex h-7 w-full items-start justify-center font-sans font-[700] tracking-tight text-primary-600 sm:mt-1 sm:h-9',
               plan.contactForPricing
-                ? 'text-sm leading-tight px-0.5'
-                : 'text-[1.5rem] leading-none tabular-nums'
+                ? 'text-xs leading-tight px-0.5 sm:text-sm'
+                : 'text-[1.25rem] leading-none tabular-nums sm:text-[1.5rem]'
             )}
           >
             <PackagePriceLabel label={plan.priceLabel} />
@@ -133,10 +136,10 @@ export function PlanTierCard({
           </div>
         </div>
       )}
-      <div className={cn('w-full', compact ? 'mt-3' : 'mt-4 flex min-h-0 flex-1 flex-col')}>
+      <div className={cn('w-full', compact ? 'mt-1.5 flex flex-1 flex-col justify-start sm:mt-3' : 'mt-4 flex min-h-0 flex-1 flex-col')}>
         {children}
       </div>
-      <div className={cn('w-full shrink-0', compact ? 'mt-3 flex justify-center' : 'mt-2.5')}>
+      <div className={cn('w-full shrink-0', compact ? 'mt-1.5 flex justify-center sm:mt-3' : 'mt-2.5')}>
         {action}
       </div>
     </article>

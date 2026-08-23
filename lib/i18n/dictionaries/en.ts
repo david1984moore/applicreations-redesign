@@ -216,6 +216,8 @@ export const en: Dictionary = {
     mixMatchHeading: 'Mix and match',
     mixMatchLead:
       'Click a website package and a hosting plan to see your total.',
+    mixMatchLeadTap:
+      'Tap a website package and a hosting plan to see your total.',
     mixMatchWebsiteHeading: 'Choose a website package',
     mixMatchHostingHeading: 'Choose hosting & support',
     mixMatchEmptyPackage: 'Your website package',
@@ -292,6 +294,10 @@ export const en: Dictionary = {
     oneTimeSuffix: '{price} one-time',
     emptySelection:
       'Click a package and a hosting plan. They’ll show up here with your total.',
+    emptySelectionTap:
+      'Tap a package and a hosting plan. They’ll show up here with your total.',
+    expandDetails: 'Show details',
+    collapseDetails: 'Hide details',
     estimatedTotal: 'Estimated total',
     totalWithMonthly: '{oneTime} + {monthly}/mo',
     zeroDueToday: '$0 due today.',

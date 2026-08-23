@@ -241,7 +241,8 @@ export function SelectionSummary({
           hasSelection && 'invisible'
         )}
       >
-        {p.emptySelection}
+        <span className="hidden lg:inline">{p.emptySelection}</span>
+        <span className="lg:hidden">{p.emptySelectionTap}</span>
       </p>
 
       <div className="mt-2 shrink-0 border-t border-gray-200 pt-2">

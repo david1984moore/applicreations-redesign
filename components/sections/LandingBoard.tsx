@@ -76,7 +76,7 @@ export function LandingBoard() {
   }, [skipCinema])
 
   return (
-    <section className="landing-board relative flex flex-col overflow-x-hidden lg:h-full lg:overflow-hidden">
+    <section className="landing-board relative flex flex-col overflow-x-clip max-lg:overflow-y-clip lg:h-full lg:overflow-hidden">
       <HiwPageWash visible={washVisible} instant={skipCinema} />
       {/* Atmosphere */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
@@ -88,7 +88,7 @@ export function LandingBoard() {
       </div>
 
       {/* LOCKED shell — cream edges + centered board; vh clamps keep HIW unclipped on short laptops */}
-      <div className="relative z-10 flex flex-1 flex-col max-w-[90rem] w-full mx-auto px-3 sm:px-6 lg:px-10 xl:px-12 pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)] min-h-0">
+      <div className="relative z-10 flex flex-1 flex-col max-w-[90rem] w-full mx-auto px-3 sm:px-6 lg:px-10 xl:px-12 pt-6 pb-4 sm:pt-14 sm:pb-8 lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)] min-h-0">
         <div className="flex w-full flex-col gap-4 lg:flex-1 lg:min-h-0 lg:grid lg:grid-cols-12 lg:gap-x-8 xl:gap-x-10 lg:gap-y-0">
           {/* Left column — brand, nav, and pricing share one full-width column edge */}
           <div className="relative z-20 lg:col-span-7 flex w-full min-w-0 flex-col lg:pr-2 lg:h-full lg:min-h-0">
@@ -162,9 +162,9 @@ export function LandingBoard() {
               delay: HIW_MOTION.cardDelay,
               ease: easeOut,
             }}
-            className="relative z-10 flex min-h-[20rem] flex-col overflow-visible lg:col-span-5 lg:flex lg:flex-1 lg:min-h-0 lg:flex-col lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
+            className="relative z-10 flex min-h-[14rem] flex-col overflow-x-clip overflow-y-clip lg:col-span-5 lg:flex lg:flex-1 lg:min-h-0 lg:flex-col lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
           >
-            <div className="flex min-h-[20rem] flex-1 flex-col lg:grid lg:h-full lg:min-h-0 lg:grid-rows-[1fr]">
+            <div className="flex min-h-[14rem] flex-1 flex-col lg:grid lg:h-full lg:min-h-0 lg:grid-rows-[1fr]">
               <div className="min-h-0 overflow-visible lg:h-full">
                 <HowItWorksStage
                   started

@@ -425,7 +425,7 @@ function FinaleRecap({
   }, [instant])
 
   return (
-    <ul ref={listRef} className="flex flex-col items-start gap-4 sm:gap-4 lg:gap-5">
+    <ul ref={listRef} className="flex flex-col items-start gap-2.5 sm:gap-4 lg:gap-5">
       {recap.map((step, index) => (
         <motion.li
           key={`${step.label}-${ready ? 'in' : 'm'}`}
@@ -511,11 +511,7 @@ function FinaleCinema({
   const offsetXRef = useRef(0)
   const [offsetY, setOffsetY] = useState(0)
   const [offsetX, setOffsetX] = useState(0)
-  const [ctaScale, setCtaScale] = useState(() =>
-    fitCtaToWash
-      ? Math.min(timings.ctaGrowScale, ES_CTA_GROW_SCALE)
-      : timings.ctaGrowScale
-  )
+  const [ctaScale, setCtaScale] = useState(1)
 
   useLayoutEffect(() => {
     const slot = ctaSlotRef.current
@@ -527,7 +523,7 @@ function FinaleCinema({
         offsetXRef.current = 0
         setOffsetY(0)
         setOffsetX(0)
-        setCtaScale(timings.ctaGrowScale)
+        setCtaScale(1)
         return
       }
       const priceBox = pricing.getBoundingClientRect()
@@ -585,7 +581,7 @@ function FinaleCinema({
 
   return (
     <div
-      className="relative px-4 py-8 lg:absolute lg:inset-0 lg:px-5 lg:py-4"
+      className="relative px-4 py-5 sm:py-8 lg:absolute lg:inset-0 lg:px-5 lg:py-4"
       style={{ perspective: 1100, perspectiveOrigin: '50% 46%' }}
     >
       <div className="flex items-center justify-center lg:h-full">
@@ -596,7 +592,7 @@ function FinaleCinema({
             transform: offsetY ? `translateY(${offsetY}px)` : undefined,
           }}
         >
-          <div className="pointer-events-none relative mb-6 flex w-full justify-center sm:mb-7 lg:absolute lg:bottom-full lg:mb-8 lg:w-[26rem]">
+          <div className="pointer-events-none relative mb-4 flex w-full justify-center sm:mb-7 lg:absolute lg:bottom-full lg:mb-8 lg:w-[26rem]">
             <AnimatePresence>
               {showPoints ? (
                 <motion.div
@@ -1144,7 +1140,7 @@ export function HowItWorksStage({
     phase.name === 'intro' ? phase.pose : 'exit'
 
   return (
-    <div className="relative flex min-h-[18rem] w-full flex-col items-center justify-center overflow-visible px-2 py-3 sm:min-h-[20rem] sm:px-3 lg:h-full lg:min-h-0 lg:px-2 lg:py-1">
+    <div className="relative flex min-h-[14rem] w-full flex-col items-center justify-center overflow-x-clip overflow-y-clip px-2 py-3 sm:min-h-[16rem] sm:px-3 lg:h-full lg:min-h-0 lg:overflow-visible lg:px-2 lg:py-1">
       <p className="sr-only" aria-live="polite">
         {liveRegion}
       </p>

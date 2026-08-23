@@ -77,7 +77,15 @@ export function PricingComparisonMatrix({
   const { dict } = useLocale()
   const p = dict.pricingPage
   const c = p.comparison
-  const [open, setOpen] = useState(defaultOpen)
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const sync = () => setOpen(mq.matches ? defaultOpen : false)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [defaultOpen])
 
   const byId = Object.fromEntries(plans.map((plan) => [plan.id, plan])) as Record<
     PlanId,
@@ -185,9 +193,9 @@ export function PricingComparisonMatrix({
           }}
         />
 
-        <div className="relative px-4 pt-3.5 sm:px-5 sm:pt-4">
+        <div className="relative px-3 pt-3 sm:px-5 sm:pt-4">
           <div className="flex items-end justify-between gap-3">
-            <h3 className="font-display text-[1.65rem] sm:text-[1.85rem] leading-none text-white">
+            <h3 className="font-display text-xl sm:text-[1.85rem] leading-none text-white">
               {c.heading}
             </h3>
             <button
@@ -207,7 +215,7 @@ export function PricingComparisonMatrix({
               />
             </button>
           </div>
-          <p className="mt-2 max-w-3xl text-[0.95rem] leading-snug text-white/72">
+          <p className="mt-1.5 max-w-3xl text-sm leading-snug text-white/72 sm:mt-2 sm:text-[0.95rem]">
             {c.includedInEvery}
           </p>
         </div>
@@ -215,7 +223,7 @@ export function PricingComparisonMatrix({
         {open ? (
           <div id="pricing-comparison-matrix" className="relative mt-2">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[40rem] border-collapse text-left table-fixed">
+              <table className="w-full min-w-[32rem] border-collapse text-left table-fixed sm:min-w-[40rem]">
                 <colgroup>
                   <col className="w-[24%]" />
                   {PLAN_ORDER.map((id) => (
@@ -226,7 +234,7 @@ export function PricingComparisonMatrix({
                   <tr className="border-b border-white/12">
                     <th
                       scope="col"
-                      className="px-4 py-3 sm:px-5 align-bottom"
+                      className="px-2 py-2 sm:px-5 sm:py-3 align-bottom"
                     >
                       <span className="sr-only">{c.featureCol}</span>
                     </th>
@@ -248,20 +256,20 @@ export function PricingComparisonMatrix({
                             onClick={() => setFeaturedId(id)}
                             aria-pressed={isFeatured}
                             className={cn(
-                              'flex w-full cursor-pointer flex-col items-center border-0 bg-transparent px-2 py-2.5 text-center outline-none',
+                              'flex w-full cursor-pointer flex-col items-center border-0 bg-transparent px-1 py-2 text-center outline-none touch-manipulation sm:px-2 sm:py-2.5',
                               !isFeatured &&
                                 'hover:bg-[oklch(86%_0.03_230/0.08)]'
                             )}
                           >
-                            <span className="block font-display text-[1.25rem] sm:text-[1.4rem] leading-none text-white">
+                            <span className="block font-display text-base sm:text-[1.4rem] leading-none text-white">
                               {plan?.name ?? id}
                             </span>
                             <span
                               className={cn(
-                                'mt-1.5 block font-display leading-none',
+                                'mt-1 block font-display leading-none sm:mt-1.5',
                                 plan?.contactForPricing
-                                  ? 'text-[0.95rem] text-[oklch(80%_0.19_225)]'
-                                  : 'text-[1.45rem] sm:text-[1.65rem] text-[oklch(80%_0.19_225)]'
+                                  ? 'text-xs sm:text-[0.95rem] text-[oklch(80%_0.19_225)]'
+                                  : 'text-xl sm:text-[1.65rem] text-[oklch(80%_0.19_225)]'
                               )}
                             >
                               {plan?.priceLabel}
@@ -289,7 +297,7 @@ export function PricingComparisonMatrix({
                         <th
                           scope="row"
                           className={cn(
-                            'px-4 sm:px-5 text-[1rem] font-medium text-white/90',
+                            'px-2 sm:px-5 text-sm sm:text-[1rem] font-medium text-white/90',
                             rowIndex === 0 ? 'pt-2.5 pb-1.5' : 'py-1.5'
                           )}
                         >

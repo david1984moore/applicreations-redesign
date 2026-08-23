@@ -51,13 +51,8 @@ export function PlanFeatureRevealProvider({
   )
 }
 
-/** Fixed checklist box — 3 rows so See more / CTAs line up across cards. */
+/** Landing glance list — keep the first three highlights. */
 const CHECKLIST_MAX_ROWS = 3
-const CHECKLIST_ROW_HEIGHT_REM = 1.125
-const CHECKLIST_ROW_GAP_REM = 0.35
-const CHECKLIST_HEIGHT_REM =
-  CHECKLIST_MAX_ROWS * CHECKLIST_ROW_HEIGHT_REM +
-  (CHECKLIST_MAX_ROWS - 1) * CHECKLIST_ROW_GAP_REM
 
 /** Sequential fade: out → brief blank → in. Fast enough to scan. */
 const REVEAL_OUT_S = 0.11
@@ -100,17 +95,15 @@ function LandingChecklist({
 }) {
   return (
     <ul
-      className={cn('mx-auto flex w-max max-w-full flex-col', className)}
-      style={{
-        height: `${CHECKLIST_HEIGHT_REM}rem`,
-        gap: `${CHECKLIST_ROW_GAP_REM}rem`,
-      }}
+      className={cn(
+        'mx-auto flex w-max max-w-full flex-col gap-1 lg:gap-[0.35rem]',
+        className
+      )}
     >
       {items.slice(0, CHECKLIST_MAX_ROWS).map((item) => (
         <li
           key={item}
-          className="flex min-w-0 items-center gap-1.5 text-[0.8125rem] leading-none text-gray-900"
-          style={{ height: `${CHECKLIST_ROW_HEIGHT_REM}rem` }}
+          className="flex min-w-0 items-center gap-1.5 text-[0.75rem] leading-none text-gray-900 lg:h-[1.125rem] sm:text-[0.8125rem]"
         >
           <IncludedMark className="h-3 w-3" />
           <span className="min-w-0 text-left">{item}</span>
