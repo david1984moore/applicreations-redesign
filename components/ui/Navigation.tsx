@@ -24,7 +24,7 @@ function useSubpageNavVisibility(enabled: boolean, resetKey: string) {
   const [visible, setVisible] = useState(true)
   const heldRef = useRef(false)
   const atTopRef = useRef(true)
-  const timerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+  const timerRef = useRef<number | null>(null)
 
   useEffect(() => {
     atTopRef.current = isAtPageTop()
