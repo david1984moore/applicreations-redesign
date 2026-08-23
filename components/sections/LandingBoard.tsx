@@ -6,8 +6,9 @@
  * Brand lockup (butterfly over "li"): locked in BrandLockup.tsx — do not restyle.
  *
  * Composition:
- * - Left (~7/12): brand + icon nav, then 4-up vertical website pricing cards
- * - Right (~5/12): How it works cinematic stage (fills remaining height)
+ * - Desktop left (~7/12): brand + icon nav, then 4-up vertical website pricing cards
+ * - Desktop right (~5/12): How it works cinematic stage (fills remaining height)
+ * - Mobile stack: brand → nav → How it works → pricing (cinema is first after chrome)
  *
  * Desktop spacing:
  * - Shell: lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)]
@@ -76,7 +77,7 @@ export function LandingBoard() {
   }, [skipCinema])
 
   return (
-    <section className="landing-board relative flex flex-col overflow-x-clip max-lg:overflow-y-clip lg:h-full lg:overflow-hidden">
+    <section className="landing-board relative flex flex-col overflow-x-clip max-lg:overflow-hidden lg:h-full lg:overflow-hidden">
       <HiwPageWash visible={washVisible} instant={skipCinema} />
       {/* Atmosphere */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
@@ -88,10 +89,10 @@ export function LandingBoard() {
       </div>
 
       {/* LOCKED shell — cream edges + centered board; vh clamps keep HIW unclipped on short laptops */}
-      <div className="relative z-10 flex flex-1 flex-col max-w-[90rem] w-full mx-auto px-3 sm:px-6 lg:px-10 xl:px-12 pt-6 pb-4 sm:pt-14 sm:pb-8 lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)] min-h-0">
-        <div className="flex w-full flex-col gap-4 lg:flex-1 lg:min-h-0 lg:grid lg:grid-cols-12 lg:gap-x-8 xl:gap-x-10 lg:gap-y-0">
-          {/* Left column — brand, nav, and pricing share one full-width column edge */}
-          <div className="relative z-20 lg:col-span-7 flex w-full min-w-0 flex-col lg:pr-2 lg:h-full lg:min-h-0">
+      <div className="relative z-10 flex flex-1 flex-col max-w-[90rem] w-full mx-auto px-3 sm:px-6 lg:px-10 xl:px-12 pt-5 pb-3 sm:pt-14 sm:pb-8 lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)] min-h-0">
+        <div className="flex w-full flex-col gap-3 sm:gap-4 lg:flex-1 lg:min-h-0 lg:grid lg:grid-cols-12 lg:grid-rows-[auto_minmax(0,1fr)] lg:gap-x-8 xl:gap-x-10 lg:gap-y-0">
+          {/* Brand + nav — first on mobile; top of the left column on desktop */}
+          <div className="relative z-20 order-1 flex w-full min-w-0 flex-col lg:col-span-7 lg:col-start-1 lg:row-start-1 lg:pr-2">
             <motion.div
               initial={skipIntro ? false : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -117,42 +118,9 @@ export function LandingBoard() {
             >
               <BrandNavLinks variant="landing" />
             </nav>
-
-            {/* Website pricing — 4-up vertical cards; fills leftover column height */}
-            <motion.div
-              id="pricing"
-              initial={skipIntro ? false : { opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.12 }}
-              className="relative z-20 mt-3 lg:mt-3 flex min-h-0 flex-1 flex-col w-full overflow-visible pt-2"
-            >
-              <h2 className="sr-only">{dict.landing.websitePricing}</h2>
-
-              <LandingPricingRow>
-                {plans.map((plan) => (
-                  <PlanTierCard
-                    key={plan.id}
-                    plan={plan}
-                    popularLabel={dict.pricingPage.mostPopular}
-                    density="landing"
-                    action={
-                      <Link
-                        href={plan.ctaHref}
-                        className={planSeeMoreClass}
-                        aria-label={`${dict.landing.seeMore}, ${plan.name}`}
-                      >
-                        {dict.landing.seeMore}
-                      </Link>
-                    }
-                  >
-                    <PlanChecklist items={plan.checklist} />
-                  </PlanTierCard>
-                ))}
-              </LandingPricingRow>
-            </motion.div>
           </div>
 
-          {/* Right column — How it works cinematic stage */}
+          {/* How it works — directly under nav on mobile; right column on desktop */}
           <motion.div
             id="introspect"
             initial={skipCinema ? false : { opacity: 0, y: 14 }}
@@ -162,10 +130,10 @@ export function LandingBoard() {
               delay: HIW_MOTION.cardDelay,
               ease: easeOut,
             }}
-            className="relative z-10 flex min-h-[14rem] flex-col overflow-x-clip overflow-y-clip lg:col-span-5 lg:flex lg:flex-1 lg:min-h-0 lg:flex-col lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
+            className="relative z-10 order-2 flex h-[min(23.5rem,calc(100svh-11rem))] flex-col overflow-hidden lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
           >
-            <div className="flex min-h-[14rem] flex-1 flex-col lg:grid lg:h-full lg:min-h-0 lg:grid-rows-[1fr]">
-              <div className="min-h-0 overflow-visible lg:h-full">
+            <div className="flex h-full min-h-0 flex-1 flex-col lg:grid lg:grid-rows-[1fr]">
+              <div className="min-h-0 overflow-hidden lg:h-full lg:overflow-visible">
                 <HowItWorksStage
                   started
                   instant={staticFinale}
@@ -174,6 +142,39 @@ export function LandingBoard() {
                 />
               </div>
             </div>
+          </motion.div>
+
+          {/* Website pricing — after the cinema on mobile; leftover left-column height on desktop */}
+          <motion.div
+            id="pricing"
+            initial={skipIntro ? false : { opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.12 }}
+            className="relative z-20 order-3 flex min-h-0 w-full flex-col overflow-visible pt-1 lg:col-span-7 lg:col-start-1 lg:row-start-2 lg:mt-3 lg:flex-1 lg:pr-2 lg:pt-2"
+          >
+            <h2 className="sr-only">{dict.landing.websitePricing}</h2>
+
+            <LandingPricingRow>
+              {plans.map((plan) => (
+                <PlanTierCard
+                  key={plan.id}
+                  plan={plan}
+                  popularLabel={dict.pricingPage.mostPopular}
+                  density="landing"
+                  action={
+                    <Link
+                      href={plan.ctaHref}
+                      className={planSeeMoreClass}
+                      aria-label={`${dict.landing.seeMore}, ${plan.name}`}
+                    >
+                      {dict.landing.seeMore}
+                    </Link>
+                  }
+                >
+                  <PlanChecklist items={plan.checklist} />
+                </PlanTierCard>
+              ))}
+            </LandingPricingRow>
           </motion.div>
         </div>
       </div>

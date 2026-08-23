@@ -170,6 +170,7 @@ body {
   body {
     overflow-x: hidden;
     overscroll-behavior-x: none;
+    overscroll-behavior-y: none;
     max-width: 100%;
     height: auto;
     min-height: 0;

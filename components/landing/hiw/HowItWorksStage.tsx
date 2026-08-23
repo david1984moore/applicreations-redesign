@@ -471,7 +471,7 @@ function FinaleRecap({
               }
             />
           </motion.span>
-          <span className="font-display text-lg font-semibold leading-none tracking-tight text-white whitespace-nowrap sm:text-xl">
+          <span className="font-display text-lg font-semibold leading-none tracking-tight text-gray-900 whitespace-nowrap sm:text-xl lg:text-white">
             {step.label}
           </span>
         </motion.li>
@@ -1140,7 +1140,7 @@ export function HowItWorksStage({
     phase.name === 'intro' ? phase.pose : 'exit'
 
   return (
-    <div className="relative flex min-h-[14rem] w-full flex-col items-center justify-center overflow-x-clip overflow-y-clip px-2 py-3 sm:min-h-[16rem] sm:px-3 lg:h-full lg:min-h-0 lg:overflow-visible lg:px-2 lg:py-1">
+    <div className="relative flex h-full min-h-0 w-full flex-col items-center justify-start overflow-x-clip overflow-y-clip px-2 py-2 sm:min-h-[16rem] sm:px-3 lg:min-h-0 lg:justify-center lg:overflow-visible lg:px-2 lg:py-1">
       <p className="sr-only" aria-live="polite">
         {liveRegion}
       </p>
@@ -1348,7 +1348,7 @@ function StepScene({
       : null
 
   return (
-    <div className="relative flex flex-col items-center overflow-visible px-1 pt-3 pb-8 sm:px-2 sm:pt-4 lg:absolute lg:inset-0 lg:pt-2 lg:pb-0">
+    <div className="relative flex flex-col items-center overflow-visible px-1 pt-2 pb-2 sm:px-2 sm:pt-4 lg:absolute lg:inset-0 lg:pt-2 lg:pb-0">
       <div className="relative z-[2] flex w-full shrink-0 justify-center lg:justify-start lg:pl-1">
         <div className="relative min-h-[2.85rem] w-full max-w-[22rem] overflow-visible sm:min-h-[3.1rem] lg:min-h-[3.4rem] lg:max-w-[24rem]">
           <motion.div
