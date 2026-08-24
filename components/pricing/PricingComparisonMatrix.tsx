@@ -13,7 +13,7 @@ const featuredColClass =
 
 type Cell = { kind: 'check' } | { kind: 'empty' } | { kind: 'text'; value: string }
 
-type SectionId = 'build' | 'visibility' | 'strategy' | 'customTools'
+type SectionId = 'included' | 'build' | 'visibility' | 'strategy' | 'customTools'
 
 type RowDef = {
   section: SectionId
@@ -102,6 +102,36 @@ export function PricingComparisonMatrix({
 
   const rows: RowDef[] = [
     {
+      section: 'included',
+      label: c.rows.originalDesign,
+      cells: { starter: yes, basic: yes, business: yes, pro: yes },
+    },
+    {
+      section: 'included',
+      label: c.rows.responsive,
+      cells: { starter: yes, basic: yes, business: yes, pro: yes },
+    },
+    {
+      section: 'included',
+      label: c.rows.speedSecurity,
+      cells: { starter: yes, basic: yes, business: yes, pro: yes },
+    },
+    {
+      section: 'included',
+      label: c.rows.onPageSeo,
+      cells: { starter: yes, basic: yes, business: yes, pro: yes },
+    },
+    {
+      section: 'included',
+      label: c.rows.contentAsProvided,
+      cells: { starter: yes, basic: yes, business: yes, pro: yes },
+    },
+    {
+      section: 'included',
+      label: c.rows.contactInfo,
+      cells: { starter: yes, basic: yes, business: yes, pro: yes },
+    },
+    {
       section: 'build',
       label: c.rows.pages,
       cells: {
@@ -169,6 +199,7 @@ export function PricingComparisonMatrix({
   ]
 
   const sections: { id: SectionId; label: string }[] = [
+    { id: 'included', label: c.sections.included },
     { id: 'build', label: c.sections.build },
     { id: 'visibility', label: c.sections.visibility },
     { id: 'strategy', label: c.sections.strategy },

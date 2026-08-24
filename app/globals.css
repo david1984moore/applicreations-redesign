@@ -431,6 +431,40 @@ h1, h2, h3, h4, h5, h6 {
       transform: translateZ(0) scale(1.12);
     }
   }
+
+  /* Keep the tagline at its laid-out size so the 3× desktop zoom cannot
+     hit the landing-board clip and flash a hard left/right crop. */
+  .hiw-tagline-live {
+    width: 100%;
+    font-size: inherit;
+    white-space: normal;
+    transform: translate(-50%, -50%) translateZ(0) scale(1);
+  }
+
+  @keyframes hiw-tagline-grow {
+    from {
+      transform: translate(-50%, -50%) translateZ(0) scale(1);
+    }
+    to {
+      transform: translate(-50%, -50%) translateZ(0) scale(1.06);
+    }
+  }
+
+  @keyframes hiw-tagline-fade {
+    0%,
+    18% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .hiw-tagline-grow {
+    animation:
+      hiw-tagline-grow 2.8s cubic-bezier(0.4, 0, 0.2, 1) both,
+      hiw-tagline-fade 2.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
 }
 
 /* Paint the tagline at 3×, then GPU-scale that bitmap. Scaling a 1× layer
@@ -671,6 +705,12 @@ h1, h2, h3, h4, h5, h6 {
     animation: none;
     transform: translate(-50%, -50%) translateZ(0) scale(0.3333);
     opacity: 1;
+  }
+
+  @media (max-width: 1023px) {
+    .hiw-tagline-grow {
+      transform: translate(-50%, -50%) translateZ(0) scale(1);
+    }
   }
 
   .hiw-intro-ripple,

@@ -7,8 +7,8 @@ import { C } from '@/components/pricing/ExampleScreenRotator'
 const EASE = [0.22, 1, 0.36, 1] as const
 const SOFT = { duration: 0.78, ease: EASE }
 const CROSS = [0.4, 0, 0.2, 1] as const
-const POSE_CROSS = { duration: 0.56, ease: CROSS }
-const BUILD = { duration: 0.6, ease: CROSS }
+const POSE_CROSS = { duration: 0.42, ease: CROSS }
+const BUILD = { duration: 0.48, ease: CROSS }
 
 const HAT = 'oklch(84% 0.17 92)'
 const HAT_BRIM = 'oklch(76% 0.15 88)'
@@ -664,7 +664,7 @@ function useHammerCock(playing: boolean, freeze = false) {
     }
     if (playing) {
       const controls = animate(0, 1, {
-        duration: 0.56,
+        duration: 0.42,
         repeat: Infinity,
         ease: 'linear',
         onUpdate: (t) => set(hammerCockFromCycle(t)),

@@ -22,7 +22,8 @@
  * - Intro: staggered 3D fly-in (How it works → 3 → tagline), inner+outer glow pulse,
  *   3 grows then fades toward the viewer; tagline follows, surges past, then step 1
  *   → three sequential steps with cartoon sketches
- *   → recap finale (tagline zoom-in, three points, then centered Get Free Preview)
+ *   → recap finale (tagline keeps receding and fading; then Get Started
+ *     fades in from that far point)
  * - Finale CTA blooms a logo-violet wash on the right of a slight curve
  * - Skip cinema on locale swap / reduced motion / in-site return to home
  *   (a refresh starts a new JS lifetime, so the cinema plays again)
@@ -132,7 +133,7 @@ export function LandingBoard() {
               delay: HIW_MOTION.cardDelay,
               ease: easeOut,
             }}
-            className="relative z-10 order-2 flex w-full flex-col overflow-x-clip max-lg:min-h-[22rem] max-lg:[contain:paint] lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
+            className="relative z-10 order-2 flex w-full flex-col overflow-visible max-lg:min-h-[22rem] lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
           >
             <div className="flex w-full flex-col max-lg:min-h-[22rem] lg:h-full lg:min-h-0 lg:flex-1 lg:grid lg:grid-rows-[1fr]">
               <div className="w-full max-lg:overflow-visible lg:h-full lg:min-h-0 lg:overflow-visible">

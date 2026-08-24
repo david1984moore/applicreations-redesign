@@ -34,7 +34,7 @@ export const PREVIEW_CAPTION_OUT_S = 0.52
 /** Gap after the preview line is gone, then the phone starts. */
 const PHONE_AFTER_CAPTION_S = 0.04
 /** Caption starts this long before the handset has fully settled. */
-export const PHONE_CAPTION_EARLY_S = 0.16
+export const PHONE_CAPTION_EARLY_S = 0.32
 const GROW_S = 2.15
 const HOUSE_FADE_S = 2.15
 /** Whole cord fades in as one piece — no draw-on. */
@@ -58,17 +58,22 @@ const FOUNDATION_AT = 0.07
 /** Laptop is in the DOM; cord fades in as a complete line. */
 const WIRE_AT = 0.11
 /** Retract starts while the house is still planted, just before grow. */
-const WIRE_OUT_AT = 0.336
+const WIRE_OUT_AT = 0.273
 const STAND_AT = 0.125
-const LADDER_AT = 0.215
-const CLIMB_AT = 0.222
-const DETAIL_AT = 0.335
+/** “Then” sits alone this long, then the work line replaces it. */
+const THEN_HOLD_AT = 0.136
+/** Blank beat before the preview line — longer than the construction caption fade. */
+const BUILD_LINE_GAP_MS = 880
+const LADDER_AT = 0.188
+const CLIMB_AT = 0.194
+const WALLS_PAGE_AT = 0.168
+const DETAIL_AT = 0.272
 /** Hammer rests so the last strike finishes before the grow/fade. */
-const SWING_REST_AT = 0.34
-const GROW_AT = 0.351
-const GROWN_AT = 0.376
+const SWING_REST_AT = 0.276
+const GROW_AT = 0.284
+const GROWN_AT = 0.309
 /** Grown site keeps browsing until the phone crossfade. */
-const LAPTOP_FADE_AT = 0.545
+const LAPTOP_FADE_AT = 0.478
 /** Settled phone + readable line, then the stage glows out. */
 const PHONE_HOLD_MS = 2300
 
@@ -1275,7 +1280,7 @@ function PreviewWire({
   )
 }
 
-export type PreviewBeat = 'build' | 'preview' | 'clear' | 'phone'
+export type PreviewBeat = 'build' | 'building' | 'preview' | 'clear' | 'phone'
 
 export function HiwLivePreviewSketch({
   playing,
@@ -1333,11 +1338,17 @@ export function HiwLivePreviewSketch({
       window.setTimeout(() => setPreviewLevel(1), duration * PREVIEW_AT),
       window.setTimeout(() => setSwinging(false), duration * (STAND_AT - 0.012)),
       window.setTimeout(() => {
+        onBeatRef.current?.('building')
+      }, duration * THEN_HOLD_AT),
+      window.setTimeout(() => {
+        onBeatRef.current?.('clear')
+      }, duration * GROW_AT - BUILD_LINE_GAP_MS),
+      window.setTimeout(() => {
         setPhase('walls')
         setShot('walls')
         setSwinging(true)
       }, duration * STAND_AT),
-      window.setTimeout(() => setPreviewLevel(2), duration * 0.187),
+      window.setTimeout(() => setPreviewLevel(2), duration * WALLS_PAGE_AT),
       window.setTimeout(() => setSwinging(false), duration * LADDER_AT),
       window.setTimeout(() => {
         setShot('roof')
@@ -1363,20 +1374,20 @@ export function HiwLivePreviewSketch({
       }, duration * GROWN_AT),
       window.setTimeout(() => {
         setCursor({ x: HIT.homeTea.x, y: HIT.homeTea.y, click: true, intent: 'act' })
-      }, duration * 0.390),
+      }, duration * 0.323),
       window.setTimeout(() => {
         setCursor({ x: HIT.homeTea.x, y: HIT.homeTea.y, click: false, intent: 'act' })
-      }, duration * 0.394),
+      }, duration * 0.327),
       window.setTimeout(() => {
         setCard(pickCard('home', 0))
-      }, duration * 0.395),
+      }, duration * 0.328),
       window.setTimeout(() => {
         setCard(null)
         setCursor({ x: galleryNav.x, y: galleryNav.y, click: false, intent: 'act' })
-      }, duration * 0.415),
+      }, duration * 0.348),
       window.setTimeout(() => {
         setCursor({ x: galleryNav.x, y: galleryNav.y, click: true, intent: 'act' })
-      }, duration * 0.434),
+      }, duration * 0.367),
       window.setTimeout(() => {
         setCursor({ x: galleryNav.x, y: galleryNav.y, click: false, intent: 'act' })
         setScene('gallery')
@@ -1384,32 +1395,32 @@ export function HiwLivePreviewSketch({
         setScroll(0)
         setScrollDuration(0.7)
         setScrollEase(SCROLL_EASE)
-      }, duration * 0.437),
+      }, duration * 0.370),
       window.setTimeout(() => {
         setScrollDuration(1.35)
         setScrollEase(PAN_EASE)
         setScroll(GALLERY_STOOL_SCROLL * 0.42)
-      }, duration * 0.452),
+      }, duration * 0.385),
       window.setTimeout(() => {
         setScrollDuration(1.1)
         setScrollEase(PAN_EASE)
         setScroll(GALLERY_STOOL_SCROLL)
         setCursor({ x: HIT.galleryStool.x, y: HIT.galleryStool.y, click: false, intent: 'act' })
-      }, duration * 0.471),
+      }, duration * 0.404),
       window.setTimeout(() => {
         setCursor({ x: HIT.galleryStool.x, y: HIT.galleryStool.y, click: true, intent: 'act' })
-      }, duration * 0.489),
+      }, duration * 0.422),
       window.setTimeout(() => {
         setCursor({ x: HIT.galleryStool.x, y: HIT.galleryStool.y, click: false, intent: 'act' })
         setCard(pickCard('gallery', 0))
-      }, duration * 0.493),
+      }, duration * 0.426),
       window.setTimeout(() => {
         setCard(null)
         setCursor({ x: aboutNav.x, y: aboutNav.y, click: false, intent: 'act' })
-      }, duration * 0.516),
+      }, duration * 0.449),
       window.setTimeout(() => {
         setCursor({ x: aboutNav.x, y: aboutNav.y, click: true, intent: 'act' })
-      }, duration * 0.535),
+      }, duration * 0.468),
       window.setTimeout(() => {
         setCursor({ x: aboutNav.x, y: aboutNav.y, click: false, intent: 'act' })
         setScene('about')
@@ -1417,7 +1428,7 @@ export function HiwLivePreviewSketch({
         setScroll(0)
         setScrollDuration(0.55)
         setScrollEase(SCROLL_EASE)
-      }, duration * 0.539),
+      }, duration * 0.472),
       window.setTimeout(() => {
         onBeatRef.current?.('clear')
       }, captionClearMs),
@@ -1471,7 +1482,7 @@ export function HiwLivePreviewSketch({
   }
 
   return (
-    <div className="relative isolate w-full min-h-[18rem] sm:min-h-[20rem]">
+    <div className="relative isolate w-full min-h-[13.5rem] sm:min-h-[16.5rem] lg:min-h-[18rem]">
       {keepLaptop ? (
         <motion.div
           className="absolute left-0 top-0 z-[1] flex origin-center items-start justify-start"
@@ -1563,7 +1574,7 @@ export function HiwLivePreviewSketch({
         style={{ pointerEvents: 'none' }}
       >
         {grown || laptopGone || showPhone ? (
-          <div className="w-[8.25rem] origin-center sm:w-[11.5rem] lg:w-[12.5rem]">
+          <div className="w-[8.25rem] origin-center max-lg:-translate-x-10 sm:w-[11.5rem] lg:w-[12.5rem] lg:translate-x-0">
             <PerspectiveShell rotateY={-11} rotateX={5}>
               <PhoneChrome
                 scene={phoneScene}

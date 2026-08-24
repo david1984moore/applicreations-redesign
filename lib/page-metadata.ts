@@ -5,7 +5,7 @@ import type { Locale } from '@/lib/i18n/config'
 import { getSiteUrl } from '@/lib/site'
 
 const OG_IMAGE = {
-  url: '/og-image.png',
+  url: '/og-image.png?v=20260823',
   width: 1200,
   height: 630,
 } as const
@@ -32,7 +32,8 @@ export function pageMetadata({
     openGraph: {
       type: 'website',
       siteName: dict.brand.name,
-      title,
+      // Match siteName so iMessage collapses the title and shows only applicreations.com.
+      title: dict.brand.name,
       description,
       url,
       locale: locale === 'es' ? 'es_ES' : 'en_US',

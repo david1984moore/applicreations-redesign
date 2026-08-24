@@ -504,25 +504,36 @@ export function formatAnswersForEmail(
 }
 
 /** Short branded confirmation for the client (not the full owner dump). */
-export function formatClientIntrospectEmail(
+function joinTrimmed(items: string[], fallback: string): string {
+  const joined = items.map((s) => s.trim()).filter(Boolean).join(', ')
+  return joined || fallback
+}
+
+type IntrospectEmailLabelKey = keyof typeof en.introspectOptions.emailLabels
+
+function introspectLabel(dict: Dictionary, key: IntrospectEmailLabelKey): string {
+  return (
+    dict.introspectOptions.emailLabels[key] ??
+    en.introspectOptions.emailLabels[key] ??
+    key
+  )
+}
+
+function formatYesNo(value: YesNoUnsure | '', dict: Dictionary): string {
+  if (!value) return introspectLabel(dict, 'notAnswered')
+  return dict.introspectOptions.yesNoUnsure[value] ?? value
+}
+
+export function buildIntrospectClientSections(
   answers: IntrospectAnswers,
   recommendation: { planId: PlanId; reason: string },
-  dict: Dictionary = en,
-  locale: Locale = defaultLocale
-): {
-  subject: string
-  text: string
-  title: string
-  intro: string
-  rows: { label: string; value: string }[]
-  notes: string[]
-  signoff: string
-  linkHref: string
-  linkLabel: string
-  footer: string
-} {
-  const L = dict.introspectOptions.emailLabels
+  dict: Dictionary = en
+): { title: string; rows: { label: string; value: string; accent?: boolean }[] }[] {
+  const L = (key: IntrospectEmailLabelKey) => introspectLabel(dict, key)
   const api = dict.api.introspect
+  const depthOptions = getSiteDepthOptions(dict)
+  const designOptions = getDesignFeelOptions(dict)
+  const colorOptions = getColorPaletteOptions(dict)
   const plans = getPlans(dict)
   const supportPlans = getSupportPlans(dict)
 
@@ -540,38 +551,148 @@ export function formatClientIntrospectEmail(
         answers.selectedSupportId
       : null
   const pricingSelection =
-    [pricingPlanLabel && `${pricingPlanLabel} ${L.package}`, pricingSupportLabel]
+    [pricingPlanLabel && `${pricingPlanLabel} ${L('package')}`, pricingSupportLabel]
       .filter(Boolean)
       .join(' + ') || null
 
-  const rows: { label: string; value: string }[] = [
-    { label: L.name ?? 'Name', value: answers.fullName.trim() },
+  const depthLabel =
+    depthOptions.find((o) => o.id === answers.siteDepth)?.title ||
+    answers.siteDepth ||
+    L('notAnswered')
+
+  const designFeelValue = answers.designFeelNoPreference
+    ? L('noPreference')
+    : joinTrimmed(
+        answers.designFeels.map(
+          (id) => designOptions.find((o) => o.id === id)?.title || id
+        ),
+        L('notAnswered')
+      )
+
+  const colorPaletteValue = answers.colorPaletteFromLogo
+    ? L('matchLogo')
+    : answers.colorPaletteNoPreference
+      ? L('noPreference')
+      : joinTrimmed(
+          answers.colorPalettes.map(
+            (id) => colorOptions.find((o) => o.id === id)?.title || id
+          ),
+          L('notAnswered')
+        )
+
+  const howDevelopedValue = answers.selectedPlanId
+    ? `${depthLabel} ${L('fromPricingSelection')}`
+    : depthLabel
+
+  const recommendationRows: { label: string; value: string; accent?: boolean }[] = [
+    { label: api.clientEmailRecommendedLabel, value: recommendedName, accent: true },
+    { label: L('why'), value: recommendation.reason },
+  ]
+  if (pricingSelection) {
+    recommendationRows.push({
+      label: api.clientEmailPricingLabel,
+      value: pricingSelection,
+      accent: true,
+    })
+  }
+
+  return [
     {
-      label: L.businessProject ?? 'Business / project',
-      value: answers.businessName.trim(),
+      title: api.clientEmailSectionRecommendation,
+      rows: recommendationRows,
     },
-    { label: api.clientEmailRecommendedLabel, value: recommendedName },
-    ...(pricingSelection
-      ? [{ label: api.clientEmailPricingLabel, value: pricingSelection }]
-      : []),
     {
-      label: L.howDeveloped ?? 'How developed',
-      value:
-        getSiteDepthOptions(dict).find((o) => o.id === answers.siteDepth)?.title ||
-        answers.siteDepth ||
-        L.notAnswered ||
-        '(not answered)',
+      title: api.clientEmailSectionContact,
+      rows: [
+        { label: L('name'), value: answers.fullName.trim() },
+        { label: L('email'), value: answers.email.trim() },
+        { label: L('phone'), value: answers.phone.trim() },
+        { label: L('businessProject'), value: answers.businessName.trim() },
+        { label: L('location'), value: answers.location.trim() },
+        { label: L('whatItDoes'), value: answers.aboutBusiness.trim() },
+      ],
+    },
+    {
+      title: api.clientEmailSectionOnline,
+      rows: [
+        { label: L('onlinePresence'), value: formatYesNo(answers.hasOnlinePresence, dict) },
+        { label: L('website'), value: answers.websiteUrl.trim() || L('none') },
+        {
+          label: L('socialLinks'),
+          value: joinTrimmed(answers.socialMediaLinks, L('none')),
+        },
+        {
+          label: L('admiredSites'),
+          value: joinTrimmed(answers.admiredWebsiteLinks, L('none')),
+        },
+      ],
+    },
+    {
+      title: api.clientEmailSectionAssets,
+      rows: [
+        { label: L('hasLogo'), value: formatYesNo(answers.hasLogo, dict) },
+        { label: L('logoUpload'), value: answers.logoFileName.trim() || L('none') },
+        { label: L('hasPhotos'), value: formatYesNo(answers.hasPhotos, dict) },
+        {
+          label: L('photoUploads'),
+          value: joinTrimmed(answers.photoFileNames, L('none')),
+        },
+        {
+          label: L('needsPhotosTaken'),
+          value: formatYesNo(answers.needsPhotosTaken, dict),
+        },
+      ],
+    },
+    {
+      title: api.clientEmailSectionDirection,
+      rows: [
+        {
+          label: L('visitorActions'),
+          value: joinTrimmed(answers.visitorActions, L('none')),
+        },
+        { label: L('howDeveloped'), value: howDevelopedValue },
+        { label: L('designFeel'), value: designFeelValue },
+        { label: L('colorPalette'), value: colorPaletteValue },
+        { label: L('colorNotes'), value: answers.colorNotes.trim() || L('none') },
+        {
+          label: L('steerClearOf'),
+          value: answers.designAvoidances.trim() || L('none'),
+        },
+        {
+          label: L('anythingElse'),
+          value: answers.businessExtras.trim() || L('none'),
+        },
+      ],
     },
   ]
+}
+
+export function formatClientIntrospectEmail(
+  answers: IntrospectAnswers,
+  recommendation: { planId: PlanId; reason: string },
+  dict: Dictionary = en,
+  locale: Locale = defaultLocale
+): {
+  subject: string
+  text: string
+  title: string
+  intro: string
+  sections: { title: string; rows: { label: string; value: string; accent?: boolean }[] }[]
+  signoff: string
+  linkHref: string
+  linkLabel: string
+  footer: string
+} {
+  const api = dict.api.introspect
+  const sections = buildIntrospectClientSections(answers, recommendation, dict)
+  const fullSummary = formatAnswersForEmail(answers, recommendation, dict)
 
   const text = [
     api.clientEmailTitle,
     '',
     api.clientEmailIntro,
     '',
-    ...rows.map((r) => `${r.label}: ${r.value}`),
-    '',
-    `${L.why}: ${recommendation.reason}`,
+    fullSummary,
     '',
     api.clientEmailSignoff,
     `${getSiteUrl()}${withLocale('/introspect', locale)}`,
@@ -582,8 +703,7 @@ export function formatClientIntrospectEmail(
     text,
     title: api.clientEmailTitle,
     intro: api.clientEmailIntro,
-    rows,
-    notes: [`${L.why}: ${recommendation.reason}`],
+    sections,
     signoff: api.clientEmailSignoff,
     linkHref: `${getSiteUrl()}${withLocale('/introspect', locale)}`,
     linkLabel: api.clientEmailLinkLabel,

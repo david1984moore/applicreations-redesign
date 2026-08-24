@@ -13,7 +13,7 @@ const FIELDS = [
 
 const TEXT_X = 22
 const CARET_GAP = 0.9
-const CHAR_MS = 46
+const CHAR_MS = 40
 const FIELD_PAUSE = 150
 const FIELD_START = 90
 const CARET_BLINK = {

@@ -33,6 +33,7 @@ const VEST = 'oklch(66% 0.19 48)'
 const STRIPE = 'oklch(97% 0.012 95)'
 const PANTS = 'oklch(28% 0.07 255)'
 const PANT_D = 'oklch(24% 0.06 252)'
+const BOOT = 'oklch(22% 0.04 250)'
 const SKIN = 'oklch(82% 0.06 55)'
 const SKIN_D = 'oklch(74% 0.055 52)'
 const WOOD = 'oklch(62% 0.08 62)'
@@ -47,10 +48,42 @@ const DRESS = 'oklch(62% 0.13 18)'
 const DRESS_D = 'oklch(54% 0.12 16)'
 const BLOUSE = 'oklch(96% 0.012 85)'
 const FIGURE = 1.28
-const SNAP = { duration: 0.48, ease: EASE }
+/** Color washes — slow dissolve so paint never stamps on. */
+const WASH = { duration: 1.02, ease: [0.22, 1, 0.36, 1] as const }
+/** Additive pieces rise into place after the wash has started. */
+const SETTLE = { duration: 1.16, ease: [0.16, 1, 0.28, 1] as const }
+/** Last item in a polish cascade. Keep stage gaps longer than this. */
+const POLISH_TAIL_S = 0.3
+/** Authored against the desktop house beat. Scaled to `duration`. */
+const HOUSE_POLISH_CLOCK_MS = 9800
+/** Paint + flowers, then shutters + yard, then garage + car. */
+const HOUSE_POLISH_AT_MS = [1100, 3180, 5260] as const
 /** Smoke starts this far before the house-to-screens cut, so it reads as “lived in.” */
 const HOUSE_SMOKE_LEAD_MS = 2800
-const HOUSE_SMOKE_MIN_MS = 2400
+/** Authored against the desktop switch beat. Scaled to `duration`. */
+const SWITCH_CLOCK_MS = 5200
+const SWITCH_GRAB_AT_MS = 1080
+const SWITCH_THROW_AT_MS = 1980
+const SWITCH_LIVE_AT_MS = 2860
+const THROW = { duration: 0.82, ease: [0.18, 0.72, 0.22, 1] as const }
+const REACH = { duration: 0.7, ease: EASE }
+const COPPER = 'oklch(62% 0.12 55)'
+const COPPER_D = 'oklch(48% 0.11 50)'
+const BAKELITE = 'oklch(22% 0.02 260)'
+const STEEL = 'oklch(52% 0.02 250)'
+const STEEL_D = 'oklch(40% 0.02 255)'
+const ZAP_CORE = 'oklch(90% 0.14 95)'
+/** Canonical zigzag (u along the wire). The same corners stretch, then get eaten from the box. */
+const ZAP_ZIGS = [
+  { u: 0, side: 0, amp: 0 },
+  { u: 0.13, side: 1, amp: 6.4 },
+  { u: 0.3, side: -1, amp: 9.2 },
+  { u: 0.46, side: 1, amp: 4.2 },
+  { u: 0.56, side: 1, amp: 8.1 },
+  { u: 0.74, side: -1, amp: 8.8 },
+  { u: 0.89, side: 1, amp: 5.6 },
+  { u: 1, side: 0, amp: 0 },
+] as const
 const TRUNK = 'oklch(46% 0.09 55)'
 const LEAF = 'oklch(58% 0.12 145)'
 const LEAF_D = 'oklch(50% 0.11 150)'
@@ -59,15 +92,31 @@ const ASPHALT = 'oklch(58% 0.02 260)'
 const ASPHALT_L = 'oklch(68% 0.02 260)'
 const CAR = 'oklch(42% 0.08 255)'
 
-export type ReviewBeat = 'review' | 'clear' | 'revise' | 'house' | 'screens'
+export type ReviewBeat =
+  | 'review'
+  | 'clear'
+  | 'revise'
+  | 'house'
+  | 'houseGap'
+  | 'fineTune'
+  | 'andFinally'
+  | 'switch'
+  | 'screens'
 type PointAt = 'window' | 'door' | 'roof'
+type SwitchPose = 'reach' | 'grab' | 'throw' | 'live'
 
 type HiwStep3CinemaProps = {
   playing: boolean
   reviewMs: number
   captionGapMs: number
   reviseMs: number
-  houseMs: number
+  /** “Adjusting” holds this long, then a caption gap, then “Fine-tuning”. */
+  adjustMs: number
+  /** “Fine-tuning” holds this long, then a caption gap, then “until…”. */
+  tuneMs: number
+  /** “until” grows, then the dots, then this beat cuts to the switch. */
+  finallyMs: number
+  switchMs: number
   screensMs: number
   onBeat?: (beat: ReviewBeat) => void
 }
@@ -77,7 +126,10 @@ export function HiwStep3Cinema({
   reviewMs,
   captionGapMs,
   reviseMs,
-  houseMs,
+  adjustMs,
+  tuneMs,
+  finallyMs,
+  switchMs,
   screensMs,
   onBeat,
 }: HiwStep3CinemaProps) {
@@ -87,10 +139,16 @@ export function HiwStep3Cinema({
   onBeatRef.current = onBeat
 
   const tableOn = beat === 'review' || beat === 'clear' || beat === 'revise'
-  const houseOn = beat === 'house'
+  const houseOn =
+    beat === 'house' ||
+    beat === 'houseGap' ||
+    beat === 'fineTune' ||
+    beat === 'andFinally'
+  const switchOn = beat === 'switch'
   const screensOn = beat === 'screens'
   const showReview = useKeepMounted(tableOn, CROSS.duration * 1000)
   const showHouse = useKeepMounted(houseOn, CROSS.duration * 1000)
+  const showSwitch = useKeepMounted(switchOn, CROSS.duration * 1000)
   const showScreens = useKeepMounted(screensOn, SCREENS_CROSS.duration * 1000)
 
   useEffect(() => {
@@ -102,6 +160,8 @@ export function HiwStep3Cinema({
 
     const reviseAt = reviewMs + captionGapMs
     const houseAt = reviseAt + reviseMs + captionGapMs
+    const finallyAt = houseAt + adjustMs + captionGapMs + tuneMs + captionGapMs
+    const switchAt = finallyAt + finallyMs
     const timers = [
       window.setTimeout(() => {
         setBeat('clear')
@@ -120,21 +180,50 @@ export function HiwStep3Cinema({
         onBeatRef.current?.('house')
       }, houseAt),
       window.setTimeout(() => {
+        setBeat('houseGap')
+        onBeatRef.current?.('houseGap')
+      }, houseAt + adjustMs),
+      window.setTimeout(() => {
+        setBeat('fineTune')
+        onBeatRef.current?.('fineTune')
+      }, houseAt + adjustMs + captionGapMs),
+      window.setTimeout(() => {
+        setBeat('houseGap')
+        onBeatRef.current?.('houseGap')
+      }, houseAt + adjustMs + captionGapMs + tuneMs),
+      window.setTimeout(() => {
+        setBeat('andFinally')
+        onBeatRef.current?.('andFinally')
+      }, finallyAt),
+      window.setTimeout(() => {
+        setBeat('switch')
+        onBeatRef.current?.('switch')
+      }, switchAt),
+      window.setTimeout(() => {
         setBeat('screens')
         setScreensReady(true)
         onBeatRef.current?.('screens')
-      }, houseAt + houseMs),
+      }, switchAt + switchMs),
     ]
     return () => {
       for (const id of timers) window.clearTimeout(id)
     }
-  }, [playing, reviewMs, captionGapMs, reviseMs, houseMs])
+  }, [
+    playing,
+    reviewMs,
+    captionGapMs,
+    reviseMs,
+    adjustMs,
+    tuneMs,
+    finallyMs,
+    switchMs,
+  ])
 
   return (
-    <div className="relative isolate w-full min-h-[22rem] overflow-visible sm:min-h-[20rem] lg:min-h-[18.5rem]">
+    <div className="relative isolate w-full min-h-[13.75rem] overflow-visible sm:min-h-[16rem] lg:min-h-[18.5rem]">
       {showReview ? (
         <motion.div
-          className="absolute inset-0 flex items-end justify-center"
+          className="absolute inset-0 flex items-end justify-center max-lg:items-start"
           initial={false}
           animate={{ opacity: tableOn ? 1 : 0 }}
           transition={CROSS}
@@ -146,13 +235,31 @@ export function HiwStep3Cinema({
 
       {showHouse ? (
         <motion.div
-          className="absolute inset-0 flex items-end justify-center"
+          className="absolute inset-0 flex items-end justify-center max-lg:items-start"
           initial={{ opacity: 0 }}
           animate={{ opacity: houseOn ? 1 : 0 }}
           transition={CROSS}
           aria-hidden
         >
-          <HouseWalkthrough playing={playing && houseOn} duration={houseMs} />
+          <HouseWalkthrough
+            playing={playing && houseOn}
+            duration={adjustMs + captionGapMs + tuneMs + captionGapMs + finallyMs}
+          />
+        </motion.div>
+      ) : null}
+
+      {showSwitch ? (
+        <motion.div
+          className="absolute inset-0 flex items-end justify-center max-lg:items-start"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: switchOn ? 1 : 0 }}
+          transition={CROSS}
+          aria-hidden
+        >
+          <SwitchThrow
+            playing={playing && switchOn}
+            duration={Math.min(switchMs, SWITCH_CLOCK_MS)}
+          />
         </motion.div>
       ) : null}
 
@@ -231,19 +338,28 @@ function HouseWalkthrough({
       return
     }
     setSmoking(false)
-    const smokeAt = Math.max(HOUSE_SMOKE_MIN_MS, duration - HOUSE_SMOKE_LEAD_MS)
+    const clock = duration / HOUSE_POLISH_CLOCK_MS
+    const at = (ms: number) => Math.round(ms * clock)
+    const paintAt = at(HOUSE_POLISH_AT_MS[0])
+    const yardAt = at(HOUSE_POLISH_AT_MS[1])
+    const garageAt = at(HOUSE_POLISH_AT_MS[2])
+    const polishInMs = (SETTLE.duration + POLISH_TAIL_S) * 1000
+    const smokeAt = Math.max(
+      garageAt + polishInMs + 400,
+      duration - HOUSE_SMOKE_LEAD_MS,
+    )
     const timers = [
       window.setTimeout(() => {
         setPolish(1)
         setPoint('door')
-      }, 360),
+      }, paintAt),
       window.setTimeout(() => {
         setPolish(2)
         setPoint('roof')
-      }, 820),
+      }, yardAt),
       window.setTimeout(() => {
         setPolish(3)
-      }, 1280),
+      }, garageAt),
       window.setTimeout(() => {
         setSmoking(true)
       }, smokeAt),
@@ -281,6 +397,636 @@ function HouseWalkthrough({
   )
 }
 
+/** Wall knife-switch. Box placement is locked. 0° = handle straight up. */
+const SWITCH_PIVOT = { x: 122, y: 116 }
+const SWITCH_OPEN = 40
+const SWITCH_CLOSED = 6
+const SWITCH_GRIP = 42.4
+const SWITCH_WIRE = 'M114.8 66.8 C112.6 48.4 113.8 30.2 116.8 10'
+const WIRE_INK = 'oklch(16% 0.02 260)'
+
+/**
+ * Switch-beat worker, authored in construction-man local units (hip = origin),
+ * then placed with SWITCH_HIP / SWITCH_SCALE. Facing the box (left).
+ */
+const SWITCH_HIP = { x: 192, y: 120 }
+const SWITCH_SCALE = 1.78
+const SWITCH_REACH = { x: -6.8, y: -20.4 }
+const SWITCH_IDLE = { x: 9.2, y: -18.8 }
+const SWITCH_UPPER = 11.2
+const SWITCH_LOWER = 12.2
+
+function leverGrip(deg: number) {
+  const r = (deg * Math.PI) / 180
+  return {
+    x: SWITCH_PIVOT.x + SWITCH_GRIP * Math.sin(r),
+    y: SWITCH_PIVOT.y - SWITCH_GRIP * Math.cos(r),
+  }
+}
+
+function rotateAround(
+  x: number,
+  y: number,
+  ox: number,
+  oy: number,
+  deg: number,
+) {
+  const r = (deg * Math.PI) / 180
+  const dx = x - ox
+  const dy = y - oy
+  return {
+    x: ox + dx * Math.cos(r) - dy * Math.sin(r),
+    y: oy + dx * Math.sin(r) + dy * Math.cos(r),
+  }
+}
+
+function twoBoneIk(
+  sx: number,
+  sy: number,
+  tx: number,
+  ty: number,
+  upper: number,
+  lower: number,
+  bend: 1 | -1,
+) {
+  const dx = tx - sx
+  const dy = ty - sy
+  const reach = upper + lower
+  const d = Math.min(Math.max(Math.hypot(dx, dy), 1.2), reach - 0.4)
+  const base = (Math.atan2(dy, dx) * 180) / Math.PI
+  const cosA = (upper * upper + d * d - lower * lower) / (2 * upper * d)
+  const cosB = (upper * upper + lower * lower - d * d) / (2 * upper * lower)
+  const a = (Math.acos(Math.min(1, Math.max(-1, cosA))) * 180) / Math.PI
+  const b = (Math.acos(Math.min(1, Math.max(-1, cosB))) * 180) / Math.PI
+  return {
+    shoulder: base - bend * a,
+    elbow: bend * (180 - b),
+  }
+}
+
+function SwitchThrow({
+  playing,
+  duration,
+}: {
+  playing: boolean
+  duration: number
+}) {
+  const [pose, setPose] = useState<SwitchPose>('reach')
+  const [leverDeg, setLeverDeg] = useState(SWITCH_OPEN)
+  const leverRef = useRef(SWITCH_OPEN)
+  const [idleShoulder, setIdleShoulder] = useState(58)
+  const [idleElbow, setIdleElbow] = useState(12)
+  const [leanDeg, setLeanDeg] = useState(-3)
+  const idleShoulderRef = useRef(58)
+  const idleElbowRef = useRef(12)
+  const leanRef = useRef(-3)
+
+  useEffect(() => {
+    if (!playing) {
+      setPose('reach')
+      return
+    }
+    const clock = duration / SWITCH_CLOCK_MS
+    const at = (ms: number) => Math.round(ms * clock)
+    const timers = [
+      window.setTimeout(() => setPose('grab'), at(SWITCH_GRAB_AT_MS)),
+      window.setTimeout(() => setPose('throw'), at(SWITCH_THROW_AT_MS)),
+      window.setTimeout(() => setPose('live'), at(SWITCH_LIVE_AT_MS)),
+    ]
+    return () => {
+      for (const id of timers) window.clearTimeout(id)
+    }
+  }, [playing, duration])
+
+  useEffect(() => {
+    if (!playing) {
+      leverRef.current = SWITCH_OPEN
+      setLeverDeg(SWITCH_OPEN)
+      return
+    }
+    const dest = pose === 'throw' || pose === 'live' ? SWITCH_CLOSED : SWITCH_OPEN
+    const controls = animate(leverRef.current, dest, {
+      ...(dest === SWITCH_CLOSED ? THROW : REACH),
+      onUpdate: (value) => {
+        leverRef.current = value
+        setLeverDeg(value)
+      },
+    })
+    return () => controls.stop()
+  }, [playing, pose])
+
+  useEffect(() => {
+    if (!playing) {
+      idleShoulderRef.current = 58
+      idleElbowRef.current = 12
+      leanRef.current = -3
+      setIdleShoulder(58)
+      setIdleElbow(12)
+      setLeanDeg(-3)
+      return
+    }
+    const destShoulder = pose === 'throw' || pose === 'live' ? 50 : 58
+    const destElbow = pose === 'throw' || pose === 'live' ? 22 : 12
+    const destLean = pose === 'throw' || pose === 'live' ? -16 : pose === 'grab' ? -8 : -3
+    const ease = pose === 'throw' || pose === 'live' ? THROW : REACH
+    const a = animate(idleShoulderRef.current, destShoulder, {
+      ...ease,
+      onUpdate: (value) => {
+        idleShoulderRef.current = value
+        setIdleShoulder(value)
+      },
+    })
+    const b = animate(idleElbowRef.current, destElbow, {
+      ...ease,
+      onUpdate: (value) => {
+        idleElbowRef.current = value
+        setIdleElbow(value)
+      },
+    })
+    const c = animate(leanRef.current, destLean, {
+      ...ease,
+      onUpdate: (value) => {
+        leanRef.current = value
+        setLeanDeg(value)
+      },
+    })
+    return () => {
+      a.stop()
+      b.stop()
+      c.stop()
+    }
+  }, [playing, pose])
+
+  const grabbed = pose !== 'reach'
+  const live = pose === 'live'
+  const lean = leanDeg
+  const grip = leverGrip(leverDeg)
+  const shoulderWorld = {
+    x: SWITCH_HIP.x + SWITCH_REACH.x * SWITCH_SCALE,
+    y: SWITCH_HIP.y + SWITCH_REACH.y * SWITCH_SCALE,
+  }
+  const worldTarget = grabbed
+    ? grip
+    : {
+        x: grip.x + (shoulderWorld.x - grip.x) * 0.08,
+        y: grip.y + (shoulderWorld.y - grip.y) * 0.08,
+      }
+  const localTarget = rotateAround(
+    (worldTarget.x - SWITCH_HIP.x) / SWITCH_SCALE,
+    (worldTarget.y - SWITCH_HIP.y) / SWITCH_SCALE,
+    0,
+    0,
+    -lean,
+  )
+  const reach = twoBoneIk(
+    SWITCH_REACH.x,
+    SWITCH_REACH.y,
+    localTarget.x,
+    localTarget.y,
+    SWITCH_UPPER,
+    SWITCH_LOWER,
+    1,
+  )
+  const leverAt = `translate(${SWITCH_PIVOT.x} ${SWITCH_PIVOT.y}) rotate(${leverDeg})`
+
+  return (
+    <svg
+      viewBox="92 16 180 160"
+      preserveAspectRatio="xMidYMid meet"
+      className="h-auto w-full overflow-visible"
+      aria-hidden
+    >
+      <defs>
+        <clipPath id="hiw-switch-frame">
+          <rect x="92" y="16" width="180" height="160" />
+        </clipPath>
+      </defs>
+
+      <ellipse cx="176" cy="168" rx="54" ry="7.6" fill="oklch(78% 0.03 75 / 0.34)" />
+
+      <KnifeSwitchBase />
+
+      <g clipPath="url(#hiw-switch-frame)">
+        <SwitchLead />
+      </g>
+
+      <g transform={leverAt}>
+        <KnifeLever />
+      </g>
+
+      <g transform={`translate(${SWITCH_HIP.x} ${SWITCH_HIP.y}) scale(${SWITCH_SCALE})`}>
+        <SwitchLegs />
+        <g transform={`rotate(${lean})`}>
+          <SwitchArm
+            x={SWITCH_IDLE.x}
+            y={SWITCH_IDLE.y}
+            shoulder={idleShoulder}
+            elbow={idleElbow}
+            upper={7.4}
+            lower={7.8}
+            r1={2.7}
+            r2={2.3}
+            r3={2}
+            fill={SKIN_D}
+            sleeve={2.4}
+          />
+          <SwitchTorso />
+          <SwitchArm
+            x={SWITCH_REACH.x}
+            y={SWITCH_REACH.y}
+            shoulder={reach.shoulder}
+            elbow={reach.elbow}
+            upper={SWITCH_UPPER}
+            lower={SWITCH_LOWER}
+            r1={2.9}
+            r2={2.4}
+            r3={2}
+            fill={SKIN}
+            sleeve={2.8}
+            hand={!grabbed}
+          />
+          <SwitchHead />
+        </g>
+      </g>
+
+      {grabbed ? (
+        <g transform={leverAt}>
+          <GripHand />
+        </g>
+      ) : null}
+
+      <SwitchZap live={live} duration={duration} />
+    </svg>
+  )
+}
+
+function SwitchLegs() {
+  return (
+    <g>
+      <Limb x1={1.8} y1={0} x2={4.4} y2={14.2} r1={3.9} r2={3.2} fill={PANT_D} />
+      <Limb x1={4.4} y1={14.2} x2={6} y2={27} r1={3.2} r2={2.6} fill={PANT_D} />
+      <SwitchBoot x={6} y={27} />
+
+      <Limb x1={-2} y1={0} x2={-7} y2={14} r1={4} r2={3.3} fill={PANTS} />
+      <Limb x1={-7} y1={14} x2={-10.2} y2={27.2} r1={3.3} r2={2.6} fill={PANTS} />
+      <SwitchBoot x={-10.2} y={27.2} flip />
+
+      <path
+        d="M-5.2 -1.6 C-4.6 2.2 5.2 2.4 5.8 -1.6 C4.8 -4.2 -4.2 -4.4 -5.2 -1.6 Z"
+        fill={PANTS}
+      />
+    </g>
+  )
+}
+
+function SwitchBoot({ x, y, flip = false }: { x: number; y: number; flip?: boolean }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${flip ? -1 : 1}, 1)`}>
+      <ellipse cx="2.2" cy="0" rx="5.2" ry="2.4" fill={BOOT} />
+      <rect x="-2.2" y="-3.2" width="6.4" height="3.4" rx="1.4" fill={BOOT} />
+    </g>
+  )
+}
+
+function SwitchTorso() {
+  return (
+    <g>
+      <g transform="translate(0.2 -12.2)">
+        <rect x="-7.2" y="-13" width="16.4" height="27.4" rx="6.2" fill={VEST} />
+        <rect x="-5.4" y="-3.4" width="13" height="3.6" rx="1.6" fill={STRIPE} />
+        <rect x="-5.4" y="3.6" width="13" height="3.6" rx="1.6" fill={STRIPE} />
+      </g>
+      <ellipse cx={SWITCH_IDLE.x} cy={SWITCH_IDLE.y} rx="3.4" ry="3.1" fill={VEST} />
+      <ellipse cx={SWITCH_REACH.x} cy={SWITCH_REACH.y} rx="3.6" ry="3.2" fill={VEST} />
+      <ellipse cx="0.3" cy="-25" rx="2.5" ry="3.8" fill={SKIN} />
+    </g>
+  )
+}
+
+/** Same language as the construction worker: beige circle, hat, no face ink. */
+function SwitchHead() {
+  return (
+    <g transform="translate(0.5 -31.4) rotate(-10)">
+      <circle cx="0.4" cy="2.4" r="7.4" fill={SKIN} />
+      <circle cx="-6.9" cy="3.7" r="2" fill={SKIN} />
+      <ellipse cx="0.6" cy="-3.8" rx="9.2" ry="1.95" fill={HAT_BRIM} />
+      <path
+        d="M-5.4 -4 C-5.6 -11.2 -1.2 -15.4 1.6 -15.6 C5.4 -15.8 8.2 -11.4 7.8 -4 Z"
+        fill={HAT}
+      />
+    </g>
+  )
+}
+
+/** Same joint math as the construction worker — SVG rotate around the shoulder, not the limb bbox. */
+function SwitchArm({
+  x,
+  y,
+  shoulder,
+  elbow,
+  upper,
+  lower,
+  r1,
+  r2,
+  r3,
+  fill,
+  sleeve = 0,
+  hand = false,
+}: {
+  x: number
+  y: number
+  shoulder: number
+  elbow: number
+  upper: number
+  lower: number
+  r1: number
+  r2: number
+  r3: number
+  fill: string
+  sleeve?: number
+  hand?: boolean
+}) {
+  return (
+    <g transform={`translate(${x} ${y}) rotate(${shoulder})`}>
+      <Limb x1={0} y1={0} x2={upper} y2={0} r1={r1} r2={r2} fill={fill} />
+      {sleeve > 0 ? (
+        <Limb x1={0} y1={0} x2={sleeve} y2={0} r1={r1 + 0.55} r2={r2 + 0.15} fill={VEST} />
+      ) : null}
+      <g transform={`translate(${upper} 0) rotate(${elbow})`}>
+        <Limb x1={0} y1={0} x2={lower} y2={0} r1={r2} r2={r3} fill={fill} />
+        <circle cx={lower} cy={0} r={r3} fill={fill} />
+        {hand ? (
+          <ellipse cx={lower + 2.1} cy={-0.1} rx="1.3" ry="1.1" fill={fill} />
+        ) : null}
+      </g>
+    </g>
+  )
+}
+
+function KnifeSwitchBase() {
+  return (
+    <g>
+      <path
+        d="M98 72 L134 64 L140 70 L104 78 Z"
+        fill="oklch(30% 0.02 255)"
+        stroke={C.navy}
+        strokeWidth="1.05"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M134 64 L140 70 L142 122 L136 116 Z"
+        fill="oklch(26% 0.02 255)"
+        stroke={C.navy}
+        strokeWidth="0.95"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M104 78 L140 70 L142 122 L106 130 Z"
+        fill="oklch(38% 0.02 255)"
+        stroke={C.navy}
+        strokeWidth="1.15"
+        strokeLinejoin="round"
+      />
+
+      <rect x="116.4" y="112.6" width="6.2" height="7" rx="1" fill={STEEL_D} stroke={C.navy} strokeWidth="0.7" />
+      <rect x="124.8" y="110.8" width="6.2" height="7" rx="1" fill={STEEL} stroke={C.navy} strokeWidth="0.7" />
+      <circle cx="119.5" cy="116.2" r="1.2" fill={C.gold} />
+      <circle cx="127.9" cy="114.4" r="1.2" fill={C.gold} />
+
+      <ContactJaw x={112.4} y={86.2} />
+      <ContactJaw x={124.6} y={83.4} />
+
+      <ellipse
+        cx="114.8"
+        cy="66.8"
+        rx="3.1"
+        ry="1.6"
+        fill={WIRE_INK}
+        stroke={C.navy}
+        strokeWidth="0.7"
+      />
+      <ellipse cx="114.8" cy="66.8" rx="1.35" ry="0.7" fill={COPPER} />
+    </g>
+  )
+}
+
+function ContactJaw({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect x="-1.4" y="2.4" width="6.2" height="6.4" rx="0.8" fill={WOOD_D} stroke={C.navy} strokeWidth="0.6" />
+      <path
+        d="M-2 2.6 L-2 -8.4 L0.4 -9.2 L0.4 2.4 Z"
+        fill={COPPER}
+        stroke={C.navy}
+        strokeWidth="0.7"
+      />
+      <path
+        d="M3.2 2.6 L3.2 -8.4 L5.6 -9.2 L5.6 2.4 Z"
+        fill={COPPER_D}
+        stroke={C.navy}
+        strokeWidth="0.7"
+      />
+      <path d="M0.4 -7.2 H3.2" stroke={C.gold} strokeWidth="0.85" />
+    </g>
+  )
+}
+
+function KnifeLever() {
+  return (
+    <g>
+      <rect x="-8.2" y="-30.6" width="5" height="29" rx="1.3" fill={COPPER_D} stroke={C.navy} strokeWidth="0.85" />
+      <rect x="3.2" y="-30.6" width="5" height="29" rx="1.3" fill={COPPER} stroke={C.navy} strokeWidth="0.85" />
+      <rect x="-9.4" y="-34.6" width="18.8" height="5.6" rx="1.4" fill={STEEL} stroke={C.navy} strokeWidth="0.9" />
+      <rect x="-7.6" y="-33.6" width="15.2" height="2" rx="0.7" fill={STEEL_D} />
+      <rect x="-3.4" y="-52.8" width="6.8" height="20.8" rx="2.6" fill={BAKELITE} stroke={C.navy} strokeWidth="0.85" />
+      <rect x="-1.8" y="-50.6" width="1.8" height="16.4" rx="0.8" fill="oklch(32% 0.015 260)" />
+      <ellipse cx="0" cy="-52.4" rx="3.5" ry="3.2" fill={BAKELITE} stroke={C.navy} strokeWidth="0.8" />
+    </g>
+  )
+}
+
+function GripHand() {
+  return (
+    <g transform="translate(0 -42.4)">
+      <ellipse cx="0.2" cy="1.2" rx="3.8" ry="2.9" fill={SKIN} />
+      <ellipse cx="-2.8" cy="-0.1" rx="1.15" ry="1.85" fill={SKIN} />
+      <ellipse cx="-0.9" cy="-1.55" rx="1.05" ry="2" fill={SKIN} />
+      <ellipse cx="0.8" cy="-1.6" rx="1" ry="1.9" fill={SKIN} />
+      <ellipse cx="2.4" cy="-0.75" rx="0.95" ry="1.65" fill={SKIN} />
+    </g>
+  )
+}
+
+function SwitchLead() {
+  return (
+    <g>
+      <path
+        d={SWITCH_WIRE}
+        fill="none"
+        stroke={C.navy}
+        strokeWidth="4.2"
+        strokeLinecap="butt"
+      />
+      <path
+        d={SWITCH_WIRE}
+        fill="none"
+        stroke={WIRE_INK}
+        strokeWidth="2.7"
+        strokeLinecap="butt"
+      />
+    </g>
+  )
+}
+
+function cubic(t: number, p0: number, p1: number, p2: number, p3: number) {
+  const u = 1 - t
+  return u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3
+}
+
+function dcubic(t: number, p0: number, p1: number, p2: number, p3: number) {
+  const u = 1 - t
+  return 3 * u * u * (p1 - p0) + 6 * u * t * (p2 - p1) + 3 * t * t * (p3 - p2)
+}
+
+function alongSwitchWire(t: number) {
+  const x = cubic(t, 114.8, 112.6, 113.8, 116.8)
+  const y = cubic(t, 66.8, 48.4, 30.2, 10)
+  const tx = dcubic(t, 114.8, 112.6, 113.8, 116.8)
+  const ty = dcubic(t, 66.8, 48.4, 30.2, 10)
+  const len = Math.hypot(tx, ty) || 1
+  return { x, y, nx: -ty / len, ny: tx / len }
+}
+
+type ZapPt = { t: number; x: number; y: number }
+
+function zapPoint(t: number, side: number, amp: number, ampK: number): ZapPt {
+  const p = alongSwitchWire(t)
+  const a = amp * ampK
+  return { t, x: p.x + p.nx * a * side, y: p.y + p.ny * a * side }
+}
+
+function lerpZap(a: ZapPt, b: ZapPt, t: number): ZapPt {
+  const span = Math.max(b.t - a.t, 1e-6)
+  const f = (t - a.t) / span
+  return {
+    t,
+    x: a.x + (b.x - a.x) * f,
+    y: a.y + (b.y - a.y) * f,
+  }
+}
+
+function atZapT(pts: ZapPt[], t: number) {
+  if (t <= pts[0].t) return pts[0]
+  for (let i = 1; i < pts.length; i++) {
+    if (t <= pts[i].t) return lerpZap(pts[i - 1], pts[i], t)
+  }
+  return pts[pts.length - 1]
+}
+
+/** Same zigzag stretched from the box to `head`, then clipped from `tail` so it eats itself. */
+function zapZigzag(tail: number, head: number) {
+  const span = Math.max(head, 0.001)
+  const ampK = 0.4 + 0.6 * Math.min(span / 0.3, 1)
+  const pts = ZAP_ZIGS.map(({ u, side, amp }) => zapPoint(u * span, side, amp, ampK))
+  const from = Math.max(0, Math.min(tail, head))
+  const to = Math.max(from, head)
+  if (to - from < 0.012) return 'M114.8 66.8'
+
+  const out: ZapPt[] = [atZapT(pts, from)]
+  for (const p of pts) {
+    if (p.t > from && p.t < to) out.push(p)
+  }
+  out.push(atZapT(pts, to))
+
+  return out.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
+}
+
+/**
+ * Grow out of the box, stretch, then shoot. The box end stays put until the
+ * shoot is underway, then retracts slowly and accelerates up the cord.
+ */
+function zapWindow(p: number) {
+  let head: number
+  if (p <= 0.22) {
+    const u = p / 0.22
+    head = 0.28 * (1 - (1 - u) * (1 - u))
+  } else if (p <= 0.52) {
+    const u = (p - 0.22) / 0.3
+    head = 0.28 + 0.72 * u * u
+  } else {
+    head = 1
+  }
+
+  let tail: number
+  if (p <= 0.28) {
+    tail = 0
+  } else if (p <= 0.52) {
+    const u = (p - 0.28) / 0.24
+    tail = 0.16 * u * u
+  } else {
+    const u = (p - 0.52) / 0.48
+    tail = 0.16 + 0.84 * u * u
+  }
+
+  return { head, tail }
+}
+
+function SwitchZap({ live, duration }: { live: boolean; duration: number }) {
+  const [clock, setClock] = useState(0)
+
+  useEffect(() => {
+    if (!live) {
+      setClock(0)
+      return
+    }
+
+    const zapS = 0.4
+    const controls = animate(0, 1, {
+      duration: zapS,
+      ease: 'linear',
+      onUpdate: setClock,
+    })
+    return () => controls.stop()
+  }, [live, duration])
+
+  const { head, tail } = zapWindow(clock)
+  const span = Math.max(0, head - tail)
+  const on = live && span > 0.02
+  const d = on ? zapZigzag(tail, head) : 'M114.8 66.8'
+
+  return (
+    <g>
+      <path
+        d={d}
+        fill="none"
+        stroke={C.navy}
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={on ? 1 : 0}
+      />
+      <path
+        d={d}
+        fill="none"
+        stroke={C.gold}
+        strokeWidth="2.05"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={on ? 1 : 0}
+      />
+      <path
+        d={d}
+        fill="none"
+        stroke={ZAP_CORE}
+        strokeWidth="0.95"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={on ? 0.95 : 0}
+      />
+    </g>
+  )
+}
+
 function SideChair({ x, y, flip = false }: { x: number; y: number; flip?: boolean }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${flip ? -1 : 1}, 1)`}>
@@ -297,6 +1043,36 @@ function SideChair({ x, y, flip = false }: { x: number; y: number; flip?: boolea
   )
 }
 
+function polishWash(on: boolean, opacity = 1, delay = 0) {
+  return {
+    initial: false as const,
+    animate: { opacity: on ? opacity : 0 },
+    transition: { ...WASH, delay },
+  }
+}
+
+function PolishArrive({
+  on,
+  delay = 0,
+  rise = 5,
+  children,
+}: {
+  on: boolean
+  delay?: number
+  rise?: number
+  children: ReactNode
+}) {
+  return (
+    <motion.g
+      initial={false}
+      animate={{ opacity: on ? 1 : 0, y: on ? 0 : rise }}
+      transition={{ ...SETTLE, delay }}
+    >
+      {children}
+    </motion.g>
+  )
+}
+
 function WalkHouse({ polish, smoking }: { polish: number; smoking: boolean }) {
   const painted = polish >= 1
   const finished = polish >= 2
@@ -304,10 +1080,10 @@ function WalkHouse({ polish, smoking }: { polish: number; smoking: boolean }) {
 
   return (
     <g>
-      <motion.g initial={false} animate={{ opacity: expanded ? 1 : 0 }} transition={SNAP}>
+      <PolishArrive on={expanded} rise={7}>
         <YardTree x={128} y={154} s={0.92} round />
         <YardTree x={262} y={154} s={0.72} />
-      </motion.g>
+      </PolishArrive>
 
       <rect
         x="176"
@@ -324,12 +1100,10 @@ function WalkHouse({ polish, smoking }: { polish: number; smoking: boolean }) {
         fill="oklch(78% 0.04 70)"
         stroke={CONCRETE_DARK}
         strokeWidth="0.6"
-        initial={false}
-        animate={{ opacity: painted ? 1 : 0 }}
-        transition={SNAP}
+        {...polishWash(painted, 1, 0.08)}
       />
 
-      <motion.g initial={false} animate={{ opacity: expanded ? 1 : 0 }} transition={SNAP}>
+      <PolishArrive on={expanded} delay={0.12} rise={6}>
         <path d="M118 162 L146 154 L182 154 L176 162 Z" fill={ASPHALT} />
         <path d="M118 162 L176 162 L168 166 L112 166 Z" fill={ASPHALT_L} />
         <rect
@@ -378,8 +1152,10 @@ function WalkHouse({ polish, smoking }: { polish: number; smoking: boolean }) {
           opacity="0.7"
         />
         <rect x="174.4" y="142" width="1.5" height="2.2" rx="0.3" fill={C.gold} />
+      </PolishArrive>
+      <PolishArrive on={expanded} delay={POLISH_TAIL_S} rise={4}>
         <ParkedCar x={132} y={150} />
-      </motion.g>
+      </PolishArrive>
 
       <rect
         x="182"
@@ -396,9 +1172,7 @@ function WalkHouse({ polish, smoking }: { polish: number; smoking: boolean }) {
         width="70"
         height="50"
         fill="oklch(94% 0.03 75)"
-        initial={false}
-        animate={{ opacity: painted ? 0.92 : 0 }}
-        transition={SNAP}
+        {...polishWash(painted, 0.92)}
       />
       <rect x="186" y="108" width="62" height="4" fill={C.sand} />
       <motion.rect
@@ -407,9 +1181,7 @@ function WalkHouse({ polish, smoking }: { polish: number; smoking: boolean }) {
         width="62"
         height="4"
         fill={C.coral}
-        initial={false}
-        animate={{ opacity: finished ? 1 : 0 }}
-        transition={SNAP}
+        {...polishWash(finished)}
       />
 
       <rect
@@ -429,23 +1201,23 @@ function WalkHouse({ polish, smoking }: { polish: number; smoking: boolean }) {
         height="28"
         rx="1"
         fill={C.coral}
-        initial={false}
-        animate={{ opacity: painted ? 1 : 0 }}
-        transition={SNAP}
+        {...polishWash(painted, 1, 0.12)}
       />
       <circle cx="219.5" cy="141" r="1.05" fill={C.gold} />
 
       <Window x={188} y={114} />
       <Window x={226} y={114} />
-      <motion.g initial={false} animate={{ opacity: painted ? 1 : 0 }} transition={SNAP}>
+      <PolishArrive on={painted} delay={0.22} rise={3}>
         <FlowerBox x={186} y={126} />
         <FlowerBox x={224} y={126} />
-      </motion.g>
-      <motion.g initial={false} animate={{ opacity: finished ? 1 : 0 }} transition={SNAP}>
+      </PolishArrive>
+      <PolishArrive on={finished} delay={0.1} rise={3}>
         <Shutter x={182.6} y={114} />
         <Shutter x={204.2} y={114} />
         <Shutter x={220.6} y={114} />
         <Shutter x={242.2} y={114} />
+      </PolishArrive>
+      <PolishArrive on={finished} delay={POLISH_TAIL_S} rise={4}>
         <circle cx="201.6" cy="132" r="2.4" fill={C.gold} opacity="0.9" />
         <path d="M201.6 134.4 V146" stroke={C.navy} strokeWidth="0.7" />
         <rect x="198.8" y="144.6" width="5.6" height="7.4" rx="0.6" fill={WOOD} />
@@ -462,16 +1234,14 @@ function WalkHouse({ polish, smoking }: { polish: number; smoking: boolean }) {
         <rect x="264.2" y="146" width="1.5" height="8" rx="0.4" fill={WOOD_D} />
         <rect x="262.4" y="142.4" width="5.4" height="4.2" rx="0.7" fill={C.navy} />
         <rect x="266.6" y="143.6" width="1.6" height="1.5" rx="0.3" fill={C.coral} />
-      </motion.g>
+      </PolishArrive>
 
       <path d="M176 106 L217 70 L258 106 Z" fill={ROOF} />
       <path d="M182 106 L217 76 L252 106 Z" fill={ROOF_EDGE} opacity="0.35" />
       <motion.path
         d="M176 106 L217 70 L258 106 Z"
         fill={ROOF_FINE}
-        initial={false}
-        animate={{ opacity: finished ? 0.85 : 0 }}
-        transition={SNAP}
+        {...polishWash(finished, 0.85, 0.08)}
       />
       <rect x="190" y="78" width="8" height="16" fill={C.navy} />
       <motion.rect
@@ -480,9 +1250,7 @@ function WalkHouse({ polish, smoking }: { polish: number; smoking: boolean }) {
         width="8"
         height="4"
         fill={C.coral}
-        initial={false}
-        animate={{ opacity: finished ? 1 : 0 }}
-        transition={SNAP}
+        {...polishWash(finished, 1, 0.16)}
       />
       <ChimneySmoke on={smoking} />
     </g>
@@ -494,7 +1262,7 @@ function ChimneySmoke({ on }: { on: boolean }) {
     <motion.g
       initial={false}
       animate={{ opacity: on ? 1 : 0 }}
-      transition={{ duration: 0.55, ease: EASE }}
+      transition={{ duration: 0.9, ease: EASE }}
     >
       {[0, 1, 2].map((i) => (
         <motion.ellipse

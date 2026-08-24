@@ -47,13 +47,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'Applicreations',
-    title: 'Applicreations — Custom apps and websites',
+    title: 'Applicreations',
     description:
       'Friendly custom websites and apps for local businesses. Simple pricing. Clear next steps.',
     url: siteUrl,
     images: [
       {
-        url: '/og-image.png',
+        url: '/og-image.png?v=20260823',
         width: 1200,
         height: 630,
         alt: 'Applicreations — Custom apps and websites',
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     title: 'Applicreations — Custom apps and websites',
     description:
       'Friendly custom websites and apps for local businesses. Simple pricing. Clear next steps.',
-    images: ['/og-image.png'],
+    images: ['/og-image.png?v=20260823'],
   },
 }
 

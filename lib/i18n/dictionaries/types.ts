@@ -180,14 +180,23 @@ export type Dictionary = {
     seeMore: string
     steps: {
       introspect: { label: string; detail: string }
-      livePreview: { label: string; detail: string; building: string; phoneSuffix: string }
+      livePreview: {
+        label: string
+        detail: string
+        building: string
+        buildingPreview: string
+        phoneSuffix: string
+      }
       workingWebsite: {
         label: string
+        recapLabel: string
         detail: string
         review: string
         revise: string
         justRight: string
-        justRightAnd: string
+        justRightTune: string
+        justRightFinally: string
+        goLive: string
         suffix: string
       }
     }
@@ -279,12 +288,19 @@ export type Dictionary = {
       notIncludedAria: string
       hintAria: string
       sections: {
+        included: string
         build: string
         visibility: string
         strategy: string
         customTools: string
       }
       rows: {
+        originalDesign: string
+        responsive: string
+        speedSecurity: string
+        onPageSeo: string
+        contentAsProvided: string
+        contactInfo: string
         pages: string
         revisionRounds: string
         extraRevision: string
@@ -594,6 +610,11 @@ export type Dictionary = {
       clientEmailIntro: string
       clientEmailRecommendedLabel: string
       clientEmailPricingLabel: string
+      clientEmailSectionRecommendation: string
+      clientEmailSectionContact: string
+      clientEmailSectionOnline: string
+      clientEmailSectionAssets: string
+      clientEmailSectionDirection: string
       clientEmailSignoff: string
       clientEmailLinkLabel: string
       emailQuestions: string

@@ -9,23 +9,35 @@ MARK = ROOT / "public" / "logo-mark.png"
 OUT = ROOT / "public" / "og-image.png"
 
 W, H = 1200, 630
-CREAM = (246, 239, 228)
-SKY = (196, 220, 236)
+NAVY = (12, 18, 34)
+NAVY_MID = (18, 28, 52)
+PURPLE = (58, 36, 88)
+CYAN = (42, 92, 128)
 
 
 def gradient() -> Image.Image:
-    img = Image.new("RGB", (W, H), CREAM)
+    img = Image.new("RGB", (W, H), NAVY)
     px = img.load()
     for y in range(H):
         for x in range(W):
-            t = (x / (W - 1)) * 0.72 + ((H - 1 - y) / (H - 1)) * 0.28
-            t = min(1.0, max(0.0, t))
-            px[x, y] = (
-                int(CREAM[0] + (SKY[0] - CREAM[0]) * t),
-                int(CREAM[1] + (SKY[1] - CREAM[1]) * t),
-                int(CREAM[2] + (SKY[2] - CREAM[2]) * t),
-            )
-    return img.filter(ImageFilter.GaussianBlur(radius=0.6))
+            tx = x / (W - 1)
+            ty = y / (H - 1)
+            # Deep navy left/top → slightly purple-cyan right/bottom.
+            r = int(NAVY[0] + (NAVY_MID[0] - NAVY[0]) * tx + (PURPLE[0] - NAVY[0]) * ty * 0.35)
+            g = int(NAVY[1] + (CYAN[1] - NAVY[1]) * tx * 0.28 + (PURPLE[1] - NAVY[1]) * ty * 0.18)
+            b = int(NAVY[2] + (CYAN[2] - NAVY[2]) * tx * 0.42 + (PURPLE[2] - NAVY[2]) * ty * 0.22)
+            px[x, y] = (min(255, r), min(255, g), min(255, b))
+    return img
+
+
+def glow(canvas: Image.Image) -> Image.Image:
+    """Soft logo-colored bloom behind the lockup so the mark reads as lit, not flat."""
+    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    draw.ellipse((40, -40, 560, 420), fill=(90, 140, 210, 58))
+    draw.ellipse((180, 80, 720, 560), fill=(120, 70, 180, 42))
+    overlay = overlay.filter(ImageFilter.GaussianBlur(radius=48))
+    return Image.alpha_composite(canvas.convert("RGBA"), overlay)
 
 
 def load_font(names: list[str], size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -36,41 +48,55 @@ def load_font(names: list[str], size: int) -> ImageFont.FreeTypeFont | ImageFont
     return ImageFont.load_default()
 
 
+def knock_out_black(mark: Image.Image) -> Image.Image:
+    """Treat near-black pixels as transparent so a boxed mark sits on the dark field."""
+    mark = mark.convert("RGBA")
+    pixels = mark.load()
+    w, h = mark.size
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = pixels[x, y]
+            if a == 0:
+                continue
+            if r < 18 and g < 18 and b < 18:
+                pixels[x, y] = (r, g, b, 0)
+    return mark
+
+
 def main() -> None:
-    canvas = gradient()
-    mark = Image.open(MARK).convert("RGBA")
-    mark_size = 168
+    canvas = glow(gradient())
+    mark = knock_out_black(Image.open(MARK))
+    mark_size = 236
     mark = mark.resize((mark_size, mark_size), Image.Resampling.LANCZOS)
 
-    name_font = load_font(["segoeuib.ttf", "arialbd.ttf", "calibrib.ttf"], 58)
-    tag_font = load_font(["segoeuii.ttf", "segoeuiz.ttf", "ariali.ttf", "segoeui.ttf"], 18)
+    name_font = load_font(["segoeuib.ttf", "arialbd.ttf", "calibrib.ttf"], 72)
+    tag_font = load_font(["segoeuib.ttf", "segoeui.ttf", "arialbd.ttf"], 22)
 
     draw = ImageDraw.Draw(canvas)
     name = "Applicreations"
     tag = "CUSTOM APPS AND WEBSITES"
 
     name_bbox = draw.textbbox((0, 0), name, font=name_font)
-    tag_bbox = draw.textbbox((0, 0), tag, font=tag_font)
-    name_w, name_h = name_bbox[2] - name_bbox[0], name_bbox[3] - name_bbox[1]
-    tag_w, tag_h = tag_bbox[2] - tag_bbox[0], tag_bbox[3] - tag_bbox[1]
+    name_h = name_bbox[3] - name_bbox[1]
 
-    gap_mark_name = 22
-    gap_name_tag = 14
-    group_h = mark_size + gap_mark_name + name_h + gap_name_tag + tag_h
-    top = (H - group_h) // 2 - 8
+    # Top-left quadrant lockup — logo left, wordmark beside it, tagline under the name.
+    pad_x = 72
+    pad_y = 78
+    gap = 28
+    text_x = pad_x + mark_size + gap
+    name_y = pad_y + 52
+    tag_y = name_y + name_h + 18
 
-    mark_x = (W - mark_size) // 2
-    canvas.paste(mark, (mark_x, top), mark)
+    canvas.paste(mark, (pad_x, pad_y), mark)
+    draw.text((text_x, name_y), name, font=name_font, fill=(255, 255, 255))
 
-    name_x = (W - name_w) // 2
-    name_y = top + mark_size + gap_mark_name
-    draw.text((name_x, name_y), name, font=name_font, fill=(36, 32, 28))
+    tracking = 5
+    cursor = text_x
+    for ch in tag:
+        draw.text((cursor, tag_y), ch, font=tag_font, fill=(176, 204, 232))
+        cursor += draw.textlength(ch, font=tag_font) + tracking
 
-    tag_x = (W - tag_w) // 2
-    tag_y = name_y + name_h + gap_name_tag
-    draw.text((tag_x, tag_y), tag, font=tag_font, fill=(58, 106, 168))
-
-    canvas.save(OUT, "PNG", optimize=True)
+    canvas.convert("RGB").save(OUT, "PNG", optimize=True)
     print(f"Wrote {OUT} {canvas.size}")
 
 

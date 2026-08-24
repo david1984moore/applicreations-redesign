@@ -4,8 +4,8 @@ import { useId, useLayoutEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 
-const EASE = [0.22, 1, 0.36, 1] as const
-const FADE_MS = 1.15
+const EASE = [0.4, 0, 0.2, 1] as const
+const FADE_MS = 0.72
 
 type Edge = {
   /** Viewport % — just right of the wordmark, at the top of the page. */
