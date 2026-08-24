@@ -138,7 +138,10 @@ export function BrandNavLinks({
   }))
 
   const resolvedIconSize =
-    iconSize ?? (variant === 'landing' ? 'h-5 w-5 lg:h-6 lg:w-6' : 'h-4 w-4')
+    iconSize ??
+    (variant === 'landing'
+      ? 'h-5 w-5 lg:h-6 lg:w-6 max-lg:[&>path]:[stroke-width:2.25]'
+      : 'h-4 w-4')
 
   useEffect(() => {
     for (const item of items) {
@@ -174,7 +177,7 @@ export function BrandNavLinks({
 
           const labelClass =
             variant === 'landing'
-              ? 'text-[0.6875rem] sm:text-[0.8125rem] lg:text-[0.9375rem] font-bold tracking-tight text-gray-900 group-hover:text-gray-700 whitespace-nowrap'
+              ? 'text-[0.75rem] leading-none tracking-tight sm:text-[0.8125rem] sm:leading-normal lg:text-[0.9375rem] font-bold text-gray-900 group-hover:text-gray-700 whitespace-nowrap'
               : 'text-[0.5625rem] sm:text-[0.625rem] font-medium tracking-tight text-gray-900 group-hover:text-gray-600 whitespace-nowrap'
 
           return (
