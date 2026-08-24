@@ -916,11 +916,16 @@ function lerpZap(a: ZapPt, b: ZapPt, t: number): ZapPt {
 }
 
 function atZapT(pts: ZapPt[], t: number) {
-  if (t <= pts[0].t) return pts[0]
+  const first = pts[0]
+  if (!first) return { t, x: 114.8, y: 66.8 }
+  if (t <= first.t) return first
   for (let i = 1; i < pts.length; i++) {
-    if (t <= pts[i].t) return lerpZap(pts[i - 1], pts[i], t)
+    const curr = pts[i]
+    const prev = pts[i - 1]
+    if (!curr || !prev) continue
+    if (t <= curr.t) return lerpZap(prev, curr, t)
   }
-  return pts[pts.length - 1]
+  return pts[pts.length - 1] ?? first
 }
 
 /** Same zigzag stretched from the box to `head`, then clipped from `tail` so it eats itself. */
