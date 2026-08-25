@@ -175,6 +175,8 @@ export type Dictionary = {
     hostingFrom: string
     howItWorks: string
     threeSteps: string
+    /** Finale line after the intro “3” — English starts at “simple”. */
+    threeStepsRest: string
     beginIntrospect: string
     getFreePreview: string
     seeMore: string

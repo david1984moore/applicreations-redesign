@@ -79,6 +79,14 @@ const REVIEW_LEAVE = {
   y: { duration: 0.55, ease: FLOAT_EASE },
 } as const
 
+/** Step-1 form line — quick out, slightly ahead of the form slide. */
+const FORM_LEAVE = {
+  opacity: { duration: 0.68, ease: EXIT_EASE },
+  scale: { duration: 0.68, ease: EXIT_EASE },
+  x: { duration: 0.68, ease: FLOAT_EASE },
+  y: { duration: 0.68, ease: FLOAT_EASE },
+} as const
+
 /** Preview line fades out before the laptop leaves and before the phone arrives. */
 const PREVIEW_LEAVE = {
   opacity: { duration: PREVIEW_CAPTION_OUT_S, ease: EXIT_EASE },
@@ -171,16 +179,19 @@ const PHONE_SKETCH_SLOT: Record<HiwCaptionPlacement, string> = {
   review: 'absolute inset-x-4 top-[6%] origin-top text-center',
   revise: 'absolute inset-x-4 top-[6%] origin-top text-center',
   justRight: 'absolute inset-x-3 bottom-[9.4rem] origin-bottom text-center',
-  house: 'absolute left-3 right-auto bottom-[calc(100cqw*178/492+6rem)] origin-bottom text-left',
-  fineTune: 'absolute left-auto right-3 bottom-[calc(100cqw*178/492+6rem)] origin-bottom text-right',
-  andFinally: 'absolute inset-x-3 bottom-[calc(100cqw*178/492+6rem)] origin-bottom text-center',
+  house:
+    'absolute left-[30%] top-[-2.35rem] w-max origin-bottom text-left',
+  fineTune:
+    'absolute left-[42%] top-[-2.95rem] w-max origin-bottom text-left',
+  andFinally:
+    'absolute inset-x-[14%] top-[-2.6rem] mx-auto w-max origin-bottom text-center',
   switch: 'absolute inset-x-3 top-1 origin-top text-center',
   screens: 'absolute inset-x-3 top-1 origin-top text-center',
 }
 
-/** In-flow line just above the art — used on phone so copy never paints over it. */
+/** Reserved heading band on phone — absolute so caption swaps never reflow the sketch. */
 const PHONE_FLOW_SLOT =
-  'relative mx-auto w-full max-w-[20.5rem] origin-top px-2 text-center'
+  'absolute inset-0 flex items-center justify-center origin-center px-2 text-center'
 
 export type HiwCaptionContent = {
   text: string
@@ -231,6 +242,7 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
     exit: { opacity: 0, x: 88, y: 0, scale: 1 },
     leave: { opacity: 0, x: 88, y: 0, scale: 1 },
     transition: floatTransition(11.5),
+    exitTransition: FORM_LEAVE,
   },
   build: {
     seat: 'stage',
@@ -349,6 +361,10 @@ const PREFIX_IN = { duration: 0.48, ease: ENTER_EASE } as const
 /** Stagger between ellipsis dots — synced with HowItWorksStage caption timing. */
 export const ELLIPSIS_DOT_MS = 300
 export const ELLIPSIS_TAIL_MS = ELLIPSIS_DOT_MS * 2
+/** House beat: dots first, then “and then” after the last dot has landed. */
+export const HOUSE_ELLIPSIS_DELAY_MS = 80
+export const HOUSE_AND_THEN_DELAY_MS =
+  HOUSE_ELLIPSIS_DELAY_MS + ELLIPSIS_TAIL_MS + 400
 const ELLIPSIS_IN = { duration: 0.72, ease: [0.16, 1, 0.32, 1] as const }
 
 function EllipsisDot({

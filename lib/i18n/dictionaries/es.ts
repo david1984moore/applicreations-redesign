@@ -40,6 +40,7 @@ export const es: Dictionary = {
     hostingFrom: '*Hosting y soporte desde {price}',
     howItWorks: 'Cómo funciona',
     threeSteps: 'Tres pasos simples para tener tu sitio web…',
+    threeStepsRest: 'pasos simples para tener tu sitio web…',
     beginIntrospect: 'Comenzar la Introspección',
     getFreePreview: 'Comenzar',
     seeMore: 'Ver más',
@@ -51,8 +52,8 @@ export const es: Dictionary = {
       livePreview: {
         label: 'Sitio demo',
         detail: 'Tienes un sitio demo para probar',
-        building: 'Nos ponemos directo a trabajar en tu vista previa',
-        buildingPreview: 'Nos ponemos directo a trabajar en tu vista previa',
+        building: '...nos ponemos a trabajar',
+        buildingPreview: '...nos ponemos a trabajar',
         phoneSuffix: 'Incluso en tu teléfono',
       },
       workingWebsite: {
@@ -63,7 +64,7 @@ export const es: Dictionary = {
         revise: 'Hacemos revisiones',
         justRight: 'Ajustando',
         justRightTune: 'Afinando',
-        justRightFinally: 'hasta',
+        justRightFinally: 'y entonces',
         goLive: 'Tu sitio se publica',
         suffix: '¡Y ya estás en el negocio!',
       },

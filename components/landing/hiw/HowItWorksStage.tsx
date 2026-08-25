@@ -16,6 +16,8 @@ import { useLocale } from '@/components/i18n/LocaleProvider'
 import {
   HiwCaption,
   HiwStepCopy,
+  HOUSE_AND_THEN_DELAY_MS,
+  HOUSE_ELLIPSIS_DELAY_MS,
   SCREENS_SINK_FADE_S,
   usePhoneStage,
   type HiwCaptionContent,
@@ -53,8 +55,8 @@ const SINK_FADE_EASE = [0.62, 0, 0.22, 1] as const
 const SINK_Y = 240
 /** Fast rise from the vanishing point, soft land — graceful, not a snap. */
 const CTA_GROW_EASE = [0.16, 0.78, 0.18, 1] as const
-/** Headline keeps traveling away after the fly-in — push into the distance. */
-const FINALE_AWAY_EASE = [0.4, 0, 0.58, 0.22] as const
+/** Continuous recession — starts moving immediately, no mid-fade pause. */
+const FINALE_AWAY_EASE = [0.22, 0.02, 0.28, 1] as const
 
 function keepLayer(_latest: unknown, generated: string) {
   return generated.includes('translateZ') ? generated : `${generated} translateZ(0)`
@@ -71,15 +73,15 @@ const DESKTOP_MS = {
   introThreeFadeDelay: 300,
   introThreeFade: 820,
   /** Tagline follows the 3 at a steady pace, then kicks and fades out. */
-  introFollowDelay: 500,
+  introFollowDelay: 780,
   introTaglineTravel: 700,
   introTaglineHold: 1380,
   introTaglineFade: 720,
   /** Keep intro mounted through the tagline fade. */
-  introOut: 3300,
+  introOut: 3580,
   introFade: 520,
   /** Form arrives during the tagline's end surge, after a longer on-screen hold. */
-  introHandoff: 2980,
+  introHandoff: 3260,
   /** Typing starts shortly after the form begins to appear. */
   step1PlayLead: 280,
   step1Enter: 1900,
@@ -109,8 +111,10 @@ const DESKTOP_MS = {
   step1CopyDelay: 280,
   step1CopySettle: 1680,
   /** Centered copy sits alone after the form is gone. */
-  step1CopyHold: 700,
-  step1CopyFade: 960,
+  step1CopyHold: 560,
+  step1CopyFade: 720,
+  /** Form caption starts fading this long before step 2 enters. */
+  step1CopyEarly: 260,
   /** House + laptop stay on this clock. Stage leaves sooner than this. */
   step2Sketch: 30000,
   /** Do not sit on the handset after the line lands. */
@@ -123,16 +127,14 @@ const DESKTOP_MS = {
   step3HeadingFade: 500,
   /** Start “We review” while the heading is still leaving. */
   step3CaptionLead: 280,
-  /** Both characters at the house — Adjusting, Fine-tuning, then “until…”. */
+  /** Both characters at the house — Adjusting, Fine-tuning, then “… and then”. */
   step3House: 9280,
   /** “Adjusting” holds this long before it fades. */
   step3Adjust: 2600,
-  /** “Fine-tuning” holds this long, then a gap, then “until”. */
+  /** “Fine-tuning” holds this long, then a gap, then the ellipsis beat. */
   step3Tune: 2400,
-  /** “until” sits and grows this long before the dots begin. */
-  step3FinallyLead: 1400,
-  /** Grow + ellipsis + a short hold, then the switch cut. */
-  step3Finally: 3000,
+  /** Dots, then “and then”, then a short hold before the switch cut. */
+  step3Finally: 4000,
   /** Close-up: worker throws the go-live switch. */
   step3Switch: 5200,
   /** Screens + “And you're in business!” — hold just long enough to read, then drop. */
@@ -197,13 +199,6 @@ const FINALE_FLY = {
     scale: 1.18,
     rotateX: 7,
     z: 32,
-    transformPerspective: 1100,
-  },
-  fading: {
-    opacity: 0.62,
-    scale: 0.64,
-    rotateX: -4,
-    z: -58,
     transformPerspective: 1100,
   },
   /** Same far pocket the CTA fades in from. */
@@ -292,6 +287,7 @@ function scaleTimings(viewportScale: number) {
     step1CopySettle: Math.round(DESKTOP_MS.step1CopySettle * scale),
     step1CopyHold: Math.round(DESKTOP_MS.step1CopyHold * scale),
     step1CopyFade: Math.round(DESKTOP_MS.step1CopyFade * scale),
+    step1CopyEarly: Math.round(DESKTOP_MS.step1CopyEarly * scale),
     step1Exit:
       Math.round(DESKTOP_MS.step1CopyDelay * scale) +
       Math.round(DESKTOP_MS.step1CopySettle * scale) +
@@ -307,7 +303,6 @@ function scaleTimings(viewportScale: number) {
     step3CaptionLead: Math.round(DESKTOP_MS.step3CaptionLead * scale),
     step3Adjust: Math.round(DESKTOP_MS.step3Adjust * scale),
     step3Tune: Math.round(DESKTOP_MS.step3Tune * scale),
-    step3FinallyLead: Math.round(DESKTOP_MS.step3FinallyLead * scale),
     step3Finally: Math.round(DESKTOP_MS.step3Finally * scale),
     step3House:
       Math.round(DESKTOP_MS.step3Adjust * scale) +
@@ -350,8 +345,7 @@ function captionForStep(
   step: 1 | 2 | 3,
   previewBeat: PreviewBeat,
   reviewBeat: ReviewBeat,
-  dict: Dictionary,
-  timings: IntroTimings
+  dict: Dictionary
 ): HiwCaptionContent | null {
   if (step === 1) {
     return {
@@ -396,10 +390,12 @@ function captionForStep(
   }
   if (reviewBeat === 'andFinally') {
     return {
-      text: copy.justRightFinally,
+      text: '',
       placement: 'andFinally',
       ellipsis: true,
-      ellipsisDelayMs: timings.step3FinallyLead,
+      ellipsisDelayMs: HOUSE_ELLIPSIS_DELAY_MS,
+      suffix: copy.justRightFinally,
+      suffixDelayMs: HOUSE_AND_THEN_DELAY_MS,
     }
   }
   if (reviewBeat === 'switch') {
@@ -552,9 +548,22 @@ function FinaleRecap({
   )
 }
 
+/** Intro “3” — same face, weight, and cyan / purple as the opening numeral. */
+function FinaleHeadlineMark({ rest }: { rest: string }) {
+  return (
+    <span className="max-w-[22rem] text-center sm:max-w-[24rem]">
+      <span className="mr-[0.12em] inline-block origin-center align-[-0.18em] font-display text-[1.95em] font-semibold leading-none text-[oklch(68%_0.15_230)] lg:text-[oklch(58%_0.14_310)]">
+        3
+      </span>{' '}
+      {rest}
+    </span>
+  )
+}
+
 function FinaleCinema({
   beat,
   threeSteps,
+  threeStepsRest,
   recap,
   ctaLabel,
   ctaHref,
@@ -565,6 +574,7 @@ function FinaleCinema({
 }: {
   beat: FinaleBeat
   threeSteps: string
+  threeStepsRest: string
   recap: readonly { n: string; label: string; Icon: LucideIcon }[]
   ctaLabel: string
   ctaHref: string
@@ -574,11 +584,13 @@ function FinaleCinema({
   /** Spanish label is longer — grow only as far as the purple wash allows. */
   fitCtaToWash?: boolean
 }) {
-  const showHeadline = beat !== 'cta'
+  const playingFinale = !(instant || replayFinale)
+  const showHeadline = playingFinale || beat !== 'cta'
   const showPoints = beat === 'points' || beat === 'cta'
   const showCta = beat === 'cta'
   const skipCtaMotion = instant || replayFinale
   const headlineTravelMs = finaleHeadlineTravelMs(timings)
+  const arriveAt = timings.finaleIn / headlineTravelMs
   const headlineAnimate = useMemo(
     () =>
       instant
@@ -587,30 +599,42 @@ function FinaleCinema({
             opacity: [
               FINALE_FLY.hidden.opacity,
               FINALE_FLY.shown.opacity,
-              FINALE_FLY.fading.opacity,
               FINALE_FLY.away.opacity,
             ],
             scale: [
               FINALE_FLY.hidden.scale,
               FINALE_FLY.shown.scale,
-              FINALE_FLY.fading.scale,
               FINALE_FLY.away.scale,
             ],
             rotateX: [
               FINALE_FLY.hidden.rotateX,
               FINALE_FLY.shown.rotateX,
-              FINALE_FLY.fading.rotateX,
               FINALE_FLY.away.rotateX,
             ],
             z: [
               FINALE_FLY.hidden.z,
               FINALE_FLY.shown.z,
-              FINALE_FLY.fading.z,
               FINALE_FLY.away.z,
             ],
             transformPerspective: 1100,
           },
     [instant]
+  )
+  const headlineTransition = useMemo(
+    () =>
+      instant
+        ? { duration: 0 }
+        : {
+            duration: headlineTravelMs / 1000,
+            times: [0, arriveAt, 1],
+            ease: [[0.32, 0, 0.62, 1], FINALE_AWAY_EASE],
+            opacity: {
+              duration: headlineTravelMs / 1000,
+              times: [0, arriveAt, 1],
+              ease: ['easeOut', 'linear'] as const,
+            },
+          },
+    [instant, headlineTravelMs, arriveAt]
   )
   const ctaSlotRef = useRef<HTMLDivElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
@@ -687,10 +711,10 @@ function FinaleCinema({
 
   return (
     <div
-      className="relative px-4 py-5 sm:py-8 lg:absolute lg:inset-0 lg:px-5 lg:py-4"
+      className="relative w-full px-4 py-5 sm:py-8 lg:absolute lg:inset-0 lg:px-5 lg:py-4"
       style={{ perspective: 1100, perspectiveOrigin: '50% 46%' }}
     >
-      <div className="flex items-center justify-center lg:h-full">
+      <div className="flex w-full items-center justify-center lg:h-full">
         <div
           className="relative flex w-full max-w-[26rem] flex-col items-center px-2"
           style={{
@@ -698,7 +722,7 @@ function FinaleCinema({
             transform: offsetY ? `translateY(${offsetY}px)` : undefined,
           }}
         >
-          <div className="pointer-events-none relative mb-4 flex w-full justify-center sm:mb-7 lg:absolute lg:bottom-full lg:mb-8 lg:w-[26rem]">
+          <div className="pointer-events-none relative mb-4 flex min-h-[9.75rem] w-full justify-center sm:mb-7 sm:min-h-[11rem] lg:absolute lg:bottom-full lg:mb-8 lg:min-h-0 lg:w-[26rem]">
             <AnimatePresence>
               {showPoints ? (
                 <motion.div
@@ -717,37 +741,36 @@ function FinaleCinema({
             ref={ctaSlotRef}
             className="relative flex min-h-[5.25rem] w-full items-center justify-center"
           >
+            {/* In-flow width lock — the live headline is absolute, so without
+                this the slot collapses to padding and the line stacks on the
+                right until the recap mounts and the box jumps to center. */}
+            <span
+              aria-hidden
+              className="invisible font-display max-w-[22rem] px-1 text-center text-2xl leading-[1.28] tracking-tight sm:max-w-[24rem] sm:text-3xl lg:text-[1.7rem] lg:leading-[1.25]"
+            >
+              <FinaleHeadlineMark rest={threeStepsRest} />
+            </span>
             <AnimatePresence>
               {showHeadline ? (
                 <motion.h2
                   key="finale-headline"
-                  className="font-display origin-center pointer-events-none absolute inset-x-0 mx-auto max-w-[22rem] px-1 text-center text-2xl leading-[1.28] tracking-tight text-gray-900 antialiased sm:max-w-[24rem] sm:text-3xl lg:text-[1.7rem] lg:leading-[1.25]"
+                  className="font-display origin-center pointer-events-none absolute inset-0 flex items-center justify-center px-1 text-center text-2xl leading-[1.28] tracking-tight text-gray-900 antialiased sm:text-3xl lg:text-[1.7rem] lg:leading-[1.25]"
                   initial={instant ? false : FINALE_FLY.hidden}
                   animate={headlineAnimate}
                   exit={{ opacity: 0, transition: { duration: 0 } }}
-                  transition={
-                    instant
-                      ? { duration: 0 }
-                      : {
-                          duration: headlineTravelMs / 1000,
-                          times: [
-                            0,
-                            timings.finaleIn / headlineTravelMs,
-                            (timings.finaleIn + timings.finaleHeadlineHold) /
-                              headlineTravelMs,
-                            1,
-                          ],
-                          ease: [
-                            [0.32, 0, 0.62, 1],
-                            FINALE_AWAY_EASE,
-                            FINALE_AWAY_EASE,
-                          ],
-                        }
-                  }
-                  style={{ backfaceVisibility: 'hidden' }}
+                  transition={headlineTransition}
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    willChange:
+                      playingFinale && beat !== 'cta'
+                        ? 'transform, opacity'
+                        : undefined,
+                  }}
                   transformTemplate={keepLayer}
+                  aria-hidden={showCta || undefined}
+                  aria-label={showCta ? undefined : threeSteps}
                 >
-                  {threeSteps}
+                  <FinaleHeadlineMark rest={threeStepsRest} />
                 </motion.h2>
               ) : null}
             </AnimatePresence>
@@ -1080,13 +1103,14 @@ function HiwStepView({
               holdMs: timings.step1CopyHold,
               fadeMs: timings.step1CopyFade,
               delayMs: timings.step1CopyDelay,
+              copyEarlyMs: timings.step1CopyEarly,
               artOutMs: timings.step1ArtOut,
               artFadeMs: timings.step1ArtFade,
             }
           : undefined
       }
       copy={<HiwStepCopy n={copy.n} label={copy.label} Icon={copy.Icon} />}
-      caption={captionForStep(step, previewBeat, reviewBeat, dict, timings)}
+      caption={captionForStep(step, previewBeat, reviewBeat, dict)}
       illustration={
         step === 1 ? (
           <HiwFormSketch
@@ -1182,9 +1206,44 @@ export function HowItWorksStage({
         step3Review: 0,
         step3CaptionGap: 0,
         step3Revise: 0,
+        step3Adjust: 120000,
+        step3House: 120000,
       }
       setTimings(t)
       setReviewBeat('house')
+      setPhase({ name: 'step', step: 3, pose: 'play' })
+      return
+    }
+    if (hiwDebug === 'tune') {
+      const scale = window.matchMedia('(max-width: 1023px)').matches ? 0.68 : 1
+      const t = {
+        ...scaleTimings(scale),
+        step3Review: 0,
+        step3CaptionGap: 0,
+        step3Revise: 0,
+        step3Adjust: 0,
+        step3Tune: 120000,
+        step3House: 120000,
+      }
+      setTimings(t)
+      setReviewBeat('fineTune')
+      setPhase({ name: 'step', step: 3, pose: 'play' })
+      return
+    }
+    if (hiwDebug === 'finally') {
+      const scale = window.matchMedia('(max-width: 1023px)').matches ? 0.68 : 1
+      const t = {
+        ...scaleTimings(scale),
+        step3Review: 0,
+        step3CaptionGap: 0,
+        step3Revise: 0,
+        step3Adjust: 0,
+        step3Tune: 0,
+        step3Finally: 120000,
+        step3House: 120000,
+      }
+      setTimings(t)
+      setReviewBeat('andFinally')
       setPhase({ name: 'step', step: 3, pose: 'play' })
       return
     }
@@ -1203,6 +1262,12 @@ export function HowItWorksStage({
       setTimings(t)
       setReviewBeat('switch')
       setPhase({ name: 'step', step: 3, pose: 'play' })
+      return
+    }
+    if (hiwDebug === 'headline') {
+      const scale = window.matchMedia('(max-width: 1023px)').matches ? 0.68 : 1
+      setTimings(scaleTimings(scale))
+      setPhase({ name: 'finale', beat: 'headline' })
       return
     }
     if (hiwDebug === 'finale') {
@@ -1292,7 +1357,7 @@ export function HowItWorksStage({
 
   const stepCaption =
     phase.name === 'step'
-      ? captionForStep(phase.step, previewBeat, reviewBeat, dict, timings)
+      ? captionForStep(phase.step, previewBeat, reviewBeat, dict)
       : null
 
   const stepPoses: Partial<Record<StepNum, StepPose>> =
@@ -1331,7 +1396,7 @@ export function HowItWorksStage({
     phase.name === 'intro' ? phase.pose : 'exit'
 
   return (
-    <div className="relative flex w-full flex-col items-center justify-start overflow-visible px-2 py-2 max-lg:min-h-[22rem] sm:px-3 lg:h-full lg:min-h-0 lg:justify-center lg:overflow-visible lg:px-2 lg:py-1">
+    <div className="relative flex w-full flex-col items-center justify-start overflow-visible px-2 py-2 max-lg:min-h-[24rem] max-lg:[overflow-anchor:none] sm:px-3 lg:h-full lg:min-h-0 lg:justify-center lg:overflow-visible lg:px-2 lg:py-1">
       <p className="sr-only" aria-live="polite">
         {liveRegion}
       </p>
@@ -1356,13 +1421,13 @@ export function HowItWorksStage({
               <div
                 key={step}
                 className={cn(
-                  'w-full',
-                  incoming && 'pointer-events-none absolute inset-0 z-[2]',
-                  // Outgoing stays in normal flow on small screens so the form
-                  // keeps the stage height. Never `relative` here: StepScene is
+                  // Phone: every point is pinned so a fade/unmount cannot
+                  // change stage height. Never `relative` here: StepScene is
                   // `lg:absolute`, and a 0-height relative wrapper becomes its
                   // containing block — the form snaps to the bottom and clips.
-                  overlapping && !incoming && 'lg:absolute lg:inset-0 lg:z-[1]'
+                  'w-full max-lg:absolute max-lg:inset-0',
+                  incoming && 'pointer-events-none z-[2]',
+                  overlapping && !incoming && 'z-[1] lg:absolute lg:inset-0 lg:z-[1]'
                 )}
               >
                 <HiwStepView
@@ -1387,11 +1452,12 @@ export function HowItWorksStage({
             key="finale"
             beat={phase.beat}
             threeSteps={dict.landing.threeSteps}
+            threeStepsRest={dict.landing.threeStepsRest}
             recap={recapSteps}
             ctaLabel={dict.landing.getFreePreview}
             ctaHref={href('/introspect')}
             timings={timings}
-            instant={instant}
+            instant={instant || hiwDebug === 'headline'}
             replayFinale={replayFinale}
             fitCtaToWash={locale === 'es'}
           />
@@ -1445,6 +1511,7 @@ function StepScene({
     holdMs: number
     fadeMs: number
     delayMs: number
+    copyEarlyMs: number
     artOutMs: number
     artFadeMs: number
   }
@@ -1461,6 +1528,7 @@ function StepScene({
   const [headingOff, setHeadingOff] = useState(false)
   const [captionOn, setCaptionOn] = useState(false)
   const [captionPreSink, setCaptionPreSink] = useState(false)
+  const [captionEarlyLeave, setCaptionEarlyLeave] = useState(false)
   const [earlyArtOn, setEarlyArtOn] = useState(false)
   const showArt = pose !== 'enter' || earlyArtOn
 
@@ -1511,6 +1579,24 @@ function StepScene({
     return () => window.clearTimeout(id)
   }, [sinkExit, captionOn, caption?.placement, pose, preSinkAfterMs])
 
+  useEffect(() => {
+    if (!staggeredExit || caption?.placement !== 'form') {
+      setCaptionEarlyLeave(false)
+      return
+    }
+    if (pose === 'exit') {
+      setCaptionEarlyLeave(true)
+      return
+    }
+    if (pose !== 'glow') {
+      setCaptionEarlyLeave(false)
+      return
+    }
+    const leadMs = Math.max(0, glowMs - staggeredExit.copyEarlyMs)
+    const id = window.setTimeout(() => setCaptionEarlyLeave(true), leadMs)
+    return () => window.clearTimeout(id)
+  }, [staggeredExit, caption?.placement, pose, glowMs])
+
   const copyDuration =
     pose === 'enter' ? enterMs / 1000 : pose === 'exit' ? exitMs / 1000 : splitMs / 1000
   const headingTransition =
@@ -1549,33 +1635,52 @@ function StepScene({
     !isHouseCaption
       ? caption
       : null
+  const captionLeaving = leaving || sinking || captionEarlyLeave
 
   return (
     <div className="relative flex flex-col items-center overflow-visible px-1 pt-2 pb-2 sm:px-2 sm:pt-4 lg:absolute lg:inset-0 lg:pt-2 lg:pb-0">
       <div className="relative z-[2] flex w-full shrink-0 justify-center lg:justify-start lg:pl-1">
-        <div
-          className={cn(
-            'relative w-full max-w-[22rem] overflow-visible lg:max-w-[24rem]',
-            phoneStage && headingOff
-              ? 'min-h-0'
-              : 'min-h-[2.85rem] sm:min-h-[3.1rem] lg:min-h-[3.4rem]'
-          )}
-        >
-          <motion.div
-            className="mx-auto w-max origin-center will-change-transform [backface-visibility:hidden] lg:mx-0"
-            initial={{ opacity: 0, x: SLIDE.copyIn, y: 92 }}
-            animate={{
-              opacity: headingOff || leaving ? 0 : 1,
-              x: leaving && !formExit && !headingOff ? SLIDE.copyOut : 0,
-              y: 0,
-              scale: leaving && !formExit && !headingOff ? 0.96 : 1,
-            }}
-            exit={formExit || headingOff ? { opacity: 0 } : { opacity: 0, x: SLIDE.copyOut }}
-            transition={headingTransition}
-            transformTemplate={keepLayer}
-          >
-            {copy}
-          </motion.div>
+        <div className="relative w-full max-w-[22rem] overflow-visible min-h-[2.85rem] max-lg:h-[3.75rem] sm:min-h-[3.1rem] lg:max-w-[24rem] lg:min-h-[3.4rem]">
+          <div className="max-lg:absolute max-lg:inset-0 max-lg:flex max-lg:items-center max-lg:justify-center">
+            <motion.div
+              className="mx-auto w-max origin-center will-change-transform [backface-visibility:hidden] lg:mx-0"
+              initial={{ opacity: 0, x: SLIDE.copyIn, y: 92 }}
+              animate={{
+                opacity: headingOff || leaving ? 0 : 1,
+                x: leaving && !formExit && !headingOff ? SLIDE.copyOut : 0,
+                y: 0,
+                scale: leaving && !formExit && !headingOff ? 0.96 : 1,
+              }}
+              exit={formExit || headingOff ? { opacity: 0 } : { opacity: 0, x: SLIDE.copyOut }}
+              transition={headingTransition}
+              transformTemplate={keepLayer}
+            >
+              {copy}
+            </motion.div>
+          </div>
+          <div className="pointer-events-none absolute inset-0 z-[6] flex items-center justify-center lg:hidden">
+            <AnimatePresence initial={false}>
+              {captionOn && flowCaption ? (
+                <HiwCaption
+                  key={`${flowCaption.placement}-${flowCaption.text}`}
+                  text={flowCaption.text}
+                  placement={flowCaption.placement}
+                  prefix={flowCaption.prefix}
+                  prefixDelayMs={flowCaption.prefixDelayMs}
+                  suffix={flowCaption.suffix}
+                  suffixDelayMs={flowCaption.suffixDelayMs}
+                  suffixBreak={flowCaption.suffixBreak}
+                  ellipsis={flowCaption.ellipsis}
+                  ellipsisDelayMs={flowCaption.ellipsisDelayMs}
+                  leaving={captionLeaving}
+                  preSink={captionPreSink}
+                  leaveMs={sinkExit ? sinkMs : undefined}
+                  preSinkMs={preSinkDurationMs ?? glowMs}
+                  flow
+                />
+              ) : null}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
       <div className="pointer-events-none absolute inset-0 z-[8] overflow-visible">
@@ -1592,7 +1697,7 @@ function StepScene({
               suffixBreak={overlayCaption.suffixBreak}
               ellipsis={overlayCaption.ellipsis}
               ellipsisDelayMs={overlayCaption.ellipsisDelayMs}
-              leaving={leaving || sinking}
+              leaving={captionLeaving}
               preSink={captionPreSink}
               leaveMs={sinkExit ? sinkMs : undefined}
               preSinkMs={preSinkDurationMs ?? glowMs}
@@ -1630,29 +1735,6 @@ function StepScene({
             transformTemplate={keepLayer}
           >
             <div className="@container relative w-full overflow-visible">
-              <AnimatePresence>
-                {captionOn && flowCaption ? (
-                  <div className="relative z-[6] mb-1.5 min-h-[1.7rem] w-full">
-                    <HiwCaption
-                      key={`${flowCaption.placement}-${flowCaption.text}`}
-                      text={flowCaption.text}
-                      placement={flowCaption.placement}
-                      prefix={flowCaption.prefix}
-                      prefixDelayMs={flowCaption.prefixDelayMs}
-                      suffix={flowCaption.suffix}
-                      suffixDelayMs={flowCaption.suffixDelayMs}
-                      suffixBreak={flowCaption.suffixBreak}
-                      ellipsis={flowCaption.ellipsis}
-                      ellipsisDelayMs={flowCaption.ellipsisDelayMs}
-                      leaving={leaving || sinking}
-                      preSink={captionPreSink}
-                      leaveMs={sinkExit ? sinkMs : undefined}
-                      preSinkMs={preSinkDurationMs ?? glowMs}
-                      flow
-                    />
-                  </div>
-                ) : null}
-              </AnimatePresence>
               {glowing && pulseGlow ? (
                 <span
                   className="hiw-glow-pulse"
@@ -1688,7 +1770,7 @@ function StepScene({
                     suffixBreak={artCaption.suffixBreak}
                     ellipsis={artCaption.ellipsis}
                     ellipsisDelayMs={artCaption.ellipsisDelayMs}
-                    leaving={leaving || sinking}
+                    leaving={captionLeaving}
                     preSink={captionPreSink}
                     leaveMs={sinkExit ? sinkMs : undefined}
                     preSinkMs={preSinkDurationMs ?? glowMs}
@@ -1699,7 +1781,7 @@ function StepScene({
                     key={phoneSketchCaption.placement}
                     text={phoneSketchCaption.text}
                     placement={phoneSketchCaption.placement}
-                    leaving={leaving || sinking}
+                    leaving={captionLeaving}
                     leaveMs={sinking ? sinkMs : undefined}
                   />
                 ) : null}

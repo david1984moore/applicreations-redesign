@@ -40,19 +40,20 @@ export const en: Dictionary = {
     hostingFrom: '*Hosting & support from {price}',
     howItWorks: 'How it works',
     threeSteps: 'Three simple steps to get your website…',
+    threeStepsRest: 'simple steps to get your website…',
     beginIntrospect: 'Begin Introspect',
     getFreePreview: 'Get Started',
     seeMore: 'See more',
     steps: {
       introspect: {
         label: 'Introspect',
-        detail: 'Answer a few questions about your project.',
+        detail: 'Answer a few questions...',
       },
       livePreview: {
         label: 'Demo Site',
         detail: 'You get a demo site to try out',
-        building: 'We get straight to work on your preview',
-        buildingPreview: 'We get straight to work on your preview',
+        building: '...we get to work',
+        buildingPreview: '...we get to work',
         phoneSuffix: 'even on your phone',
       },
       workingWebsite: {
@@ -63,7 +64,7 @@ export const en: Dictionary = {
         revise: 'Make revisions',
         justRight: 'Adjusting',
         justRightTune: 'Fine-tuning',
-        justRightFinally: 'until',
+        justRightFinally: 'and then',
         goLive: 'Your site goes live',
         suffix: "And you're in business!",
       },
