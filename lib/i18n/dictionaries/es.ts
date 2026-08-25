@@ -51,7 +51,7 @@ export const es: Dictionary = {
       },
       livePreview: {
         label: 'Sitio demo',
-        detail: 'Tienes un sitio demo para probar',
+        detail: 'Tienes un sitio demo personalizado...',
         building: '...nos ponemos a trabajar',
         buildingPreview: '...nos ponemos a trabajar',
         phoneSuffix: 'Incluso en tu teléfono',
@@ -65,7 +65,7 @@ export const es: Dictionary = {
         justRight: 'Ajustando',
         justRightTune: 'Afinando',
         justRightFinally: 'y entonces',
-        goLive: 'Tu sitio se publica',
+        goLive: 'el sitio web está en vivo.',
         suffix: '¡Y ya estás en el negocio!',
       },
     },
@@ -226,6 +226,9 @@ export const es: Dictionary = {
       'Cuidado mensual que mantiene tu sitio en línea — elige la rapidez de respuesta que te convenga.',
     hostingWhoFor: 'Para quién es',
     mixMatchHeading: 'Combina y estima',
+    redesignPrompt: '"Ya tengo un sitio web, solo necesito rediseñarlo."',
+    redesignHint: 'Asegúrate de seleccionar "{choice}" al completar el formulario.',
+    redesignCta: 'Empezar el rediseño',
     mixMatchLead:
       'Elige un paquete de sitio web y un plan de hosting para ver el total.',
     mixMatchLeadTap:
@@ -387,8 +390,8 @@ export const es: Dictionary = {
     welcomeHeading: 'Bienvenido — conozcamos tu proyecto',
     whatToExpect: 'Qué esperar',
     expect1: 'Responde unas cuantas preguntas.',
-    expect2: 'Applicreations construye tu vista previa gratis en 48 a 72 horas.',
-    expect3: 'Exploras tu sitio web de vista previa durante 3 días y decides si te convence.',
+    expect2: 'En dos días, recibe un sitio web de vista previa funcionando.',
+    expect3: 'Pruébalo durante 24 horas. ¿Te gusta lo que ves? Hablamos de negocio.',
     getStarted: 'Comenzar',
     // Step 1
     step1Title: 'Primero, un poco sobre ti',
@@ -414,6 +417,7 @@ export const es: Dictionary = {
     step3Title: 'Tu presencia en línea hoy',
     step3Subtitle: 'No pasa nada si todavía no tienes un sitio web.',
     hasOnlineLabel: '¿Ya tienes un sitio web o páginas en línea?',
+    hasOnlineYes: 'Tengo un sitio web',
     chooseOne: 'Por favor elige una opción',
     websiteUrlLabel: 'Enlace a tu sitio web actual (si tienes)',
     websiteUrlPlaceholder: 'https://tusitioweb.com',

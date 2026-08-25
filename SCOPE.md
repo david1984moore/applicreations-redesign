@@ -27,6 +27,8 @@
 
 **How it works — LIVE-PREVIEW CORD LOCKED Aug 18 2026 (final):** The laptop-to-foundation cord in `HiwDeviceSketch.tsx` (`wirePath`, `PreviewWire`, stroke, port/jack attachments) is user-approved as absolutely perfect. **Do not edit this cord further.**
 
+**Get Started / Start Re-design — CTA LOCKED Aug 25 2026 (final):** `SpectrumFlipCta` rest + hover (compact centered origin+label; hover check overlay + cluster nudge; no reserved check width) is user-approved. **Do not retune this CTA further.**
+
 **Parking lot — Pass 2:**
 - Simple Introspect form (not the old interactive engine): name, business name, email/phone, what you do, package interest (Basic/Pro/Business), free notes. No sales metrics. No “free demo” language.
 - Drop real project screenshots into `public/images/` (replace SVG stand-ins for Caramel & Jo / Mi Gente Bonita)

@@ -27,14 +27,14 @@ const SCROLL_S = 2.6
 const LIVE_SCROLL_S = 2.8
 const LAPTOP_OUT_S = 1.15
 export const PHONE_IN_S = 1.2
-/** Preview line fades out this long before the laptop starts leaving. */
-export const PREVIEW_CAPTION_LEAD_S = 0.32
+/** Preview line and laptop start fading together. */
+export const PREVIEW_CAPTION_LEAD_S = 0
 /** Preview line fade — done before the phone starts in. */
 export const PREVIEW_CAPTION_OUT_S = 0.52
 /** Gap after the preview line is gone, then the phone starts. */
 const PHONE_AFTER_CAPTION_S = 0.04
 /** Caption starts this long before the handset has fully settled. */
-export const PHONE_CAPTION_EARLY_S = 0.32
+export const PHONE_CAPTION_EARLY_S = 0.78
 const GROW_S = 2.15
 const HOUSE_FADE_S = 2.15
 /** Whole cord fades in as one piece — no draw-on. */
@@ -52,30 +52,41 @@ const GROW_EASE = [0.42, 0.0, 0.22, 1] as const
 const WIRE_FADE_EASE = [0.4, 0, 0.2, 1] as const
 const WIRE_RETRACT_EASE = [0.32, 0.0, 0.18, 1] as const
 const WIRE_OUT_FADE_EASE = [0.28, 0.1, 0.36, 1] as const
-const PREVIEW_AT = 0.098
+const PREVIEW_AT = 0.086
 const SWING_KNEEL_AT = 0
-const FOUNDATION_AT = 0.07
+const FOUNDATION_AT = 0.062
 /** Laptop is in the DOM; cord fades in as a complete line. */
-const WIRE_AT = 0.11
-/** Retract starts while the house is still planted, just before grow. */
-const WIRE_OUT_AT = 0.273
-const STAND_AT = 0.125
+const WIRE_AT = 0.097
+/** Retract as he leaves the walls — fade finishes while the laptop grows. */
+const WIRE_OUT_AT = 0.168
+const STAND_AT = 0.11
 /** “Then” sits alone this long, then the work line replaces it. */
-const THEN_HOLD_AT = 0.136
-/** Blank beat before the preview line — longer than the construction caption fade. */
-const BUILD_LINE_GAP_MS = 880
-const LADDER_AT = 0.188
-const CLIMB_AT = 0.194
-const WALLS_PAGE_AT = 0.168
-const DETAIL_AT = 0.272
-/** Hammer rests so the last strike finishes before the grow/fade. */
-const SWING_REST_AT = 0.276
-const GROW_AT = 0.284
-const GROWN_AT = 0.309
+const THEN_HOLD_AT = 0.12
+/** “…we get to work” clears early in the walls beat — read, then out. */
+const BUILD_LINE_OUT_AT = 0.136
+const LADDER_AT = 0.165
+const CLIMB_AT = 0.171
+const WALLS_PAGE_AT = 0.148
+/** Laptop roof lands with the climb, then the grow overlay takes over. */
+const DETAIL_AT = 0.165
+/** Grow starts as he reaches the roof — keep swinging through the house fade. */
+const GROW_AT = 0.171
+const GROWN_AT = 0.261
 /** Grown site keeps browsing until the phone crossfade. */
-const LAPTOP_FADE_AT = 0.478
+const LAPTOP_FADE_AT = 0.435
 /** Settled phone + readable line, then the stage glows out. */
-const PHONE_HOLD_MS = 2300
+const PHONE_HOLD_MS = 1900
+/** First pan on the products feed after the handset lands. */
+const PHONE_SCROLL_IN_MS = 1180
+const PHONE_SCROLL_IN_S = 0.7
+const PHONE_SCROLL_IN_Y = -22
+/**
+ * Keep the feed moving through glow + exit. Longer than the fade so the
+ * page is still traveling while the handset thins out.
+ */
+const PHONE_SCROLL_FADE_AT_MS = 1680
+const PHONE_SCROLL_FADE_S = 2.6
+const PHONE_SCROLL_FADE_Y = -52
 
 export function hiwPhoneInMs(duration: number) {
   const laptopFadeMs = duration * LAPTOP_FADE_AT
@@ -628,16 +639,33 @@ function ScreenViewport({
   const mobile = layout === 'mobile'
   const pageHeight =
     pageFill === 'fit' ? '100%' : mobile ? 'auto' : '230%'
-  const page = (
+  // Phone scroll is CSS, not Framer: the stage fade animates transform +
+  // opacity on a parent, which cancels in-flight Framer `y` on this page.
+  const page = mobile ? (
+    <div
+      key={scene}
+      className="absolute inset-x-0 top-0 w-full will-change-transform"
+      style={{
+        height: pageHeight,
+        transform: `translate3d(0, ${scroll}%, 0)`,
+        transition:
+          scrollDuration > 0
+            ? `transform ${scrollDuration}s cubic-bezier(${scrollEase.join(', ')})`
+            : 'none',
+      }}
+    >
+      <SiteScreen scene={scene} layout={layout} />
+    </div>
+  ) : (
     <motion.div
       key={scene}
       className="absolute inset-x-0 top-0 w-full will-change-transform"
       style={{ height: pageHeight }}
-      initial={mobile ? false : { opacity: 0, y: '0%' }}
+      initial={{ opacity: 0, y: '0%' }}
       animate={{ opacity: 1, y: `${scroll}%` }}
-      exit={mobile ? undefined : { opacity: 0 }}
+      exit={{ opacity: 0 }}
       transition={{
-        opacity: mobile ? { duration: 0 } : { duration: SCENE_FADE, ease: EASE },
+        opacity: { duration: SCENE_FADE, ease: EASE },
         y: { duration: scrollDuration, ease: scrollEase },
       }}
     >
@@ -1342,7 +1370,7 @@ export function HiwLivePreviewSketch({
       }, duration * THEN_HOLD_AT),
       window.setTimeout(() => {
         onBeatRef.current?.('clear')
-      }, duration * GROW_AT - BUILD_LINE_GAP_MS),
+      }, duration * BUILD_LINE_OUT_AT),
       window.setTimeout(() => {
         setPhase('walls')
         setShot('walls')
@@ -1356,7 +1384,6 @@ export function HiwLivePreviewSketch({
         setSwinging(true)
       }, duration * CLIMB_AT),
       window.setTimeout(() => setPreviewLevel(3), duration * DETAIL_AT),
-      window.setTimeout(() => setSwinging(false), duration * SWING_REST_AT),
       window.setTimeout(() => {
         setHouseGone(true)
         setGrown(true)
@@ -1374,20 +1401,20 @@ export function HiwLivePreviewSketch({
       }, duration * GROWN_AT),
       window.setTimeout(() => {
         setCursor({ x: HIT.homeTea.x, y: HIT.homeTea.y, click: true, intent: 'act' })
-      }, duration * 0.323),
+      }, duration * 0.302),
       window.setTimeout(() => {
         setCursor({ x: HIT.homeTea.x, y: HIT.homeTea.y, click: false, intent: 'act' })
-      }, duration * 0.327),
+      }, duration * 0.305),
       window.setTimeout(() => {
         setCard(pickCard('home', 0))
-      }, duration * 0.328),
+      }, duration * 0.306),
       window.setTimeout(() => {
         setCard(null)
         setCursor({ x: galleryNav.x, y: galleryNav.y, click: false, intent: 'act' })
-      }, duration * 0.348),
+      }, duration * 0.323),
       window.setTimeout(() => {
         setCursor({ x: galleryNav.x, y: galleryNav.y, click: true, intent: 'act' })
-      }, duration * 0.367),
+      }, duration * 0.340),
       window.setTimeout(() => {
         setCursor({ x: galleryNav.x, y: galleryNav.y, click: false, intent: 'act' })
         setScene('gallery')
@@ -1395,32 +1422,32 @@ export function HiwLivePreviewSketch({
         setScroll(0)
         setScrollDuration(0.7)
         setScrollEase(SCROLL_EASE)
-      }, duration * 0.370),
+      }, duration * 0.342),
       window.setTimeout(() => {
         setScrollDuration(1.35)
         setScrollEase(PAN_EASE)
         setScroll(GALLERY_STOOL_SCROLL * 0.42)
-      }, duration * 0.385),
+      }, duration * 0.355),
       window.setTimeout(() => {
         setScrollDuration(1.1)
         setScrollEase(PAN_EASE)
         setScroll(GALLERY_STOOL_SCROLL)
         setCursor({ x: HIT.galleryStool.x, y: HIT.galleryStool.y, click: false, intent: 'act' })
-      }, duration * 0.404),
+      }, duration * 0.371),
       window.setTimeout(() => {
         setCursor({ x: HIT.galleryStool.x, y: HIT.galleryStool.y, click: true, intent: 'act' })
-      }, duration * 0.422),
+      }, duration * 0.387),
       window.setTimeout(() => {
         setCursor({ x: HIT.galleryStool.x, y: HIT.galleryStool.y, click: false, intent: 'act' })
         setCard(pickCard('gallery', 0))
-      }, duration * 0.426),
+      }, duration * 0.390),
       window.setTimeout(() => {
         setCard(null)
         setCursor({ x: aboutNav.x, y: aboutNav.y, click: false, intent: 'act' })
-      }, duration * 0.449),
+      }, duration * 0.410),
       window.setTimeout(() => {
         setCursor({ x: aboutNav.x, y: aboutNav.y, click: true, intent: 'act' })
-      }, duration * 0.468),
+      }, duration * 0.426),
       window.setTimeout(() => {
         setCursor({ x: aboutNav.x, y: aboutNav.y, click: false, intent: 'act' })
         setScene('about')
@@ -1428,7 +1455,7 @@ export function HiwLivePreviewSketch({
         setScroll(0)
         setScrollDuration(0.55)
         setScrollEase(SCROLL_EASE)
-      }, duration * 0.472),
+      }, duration * 0.430),
       window.setTimeout(() => {
         onBeatRef.current?.('clear')
       }, captionClearMs),
@@ -1457,10 +1484,15 @@ export function HiwLivePreviewSketch({
         setPhoneScrollEase(SCROLL_EASE)
       }, phoneInMs + 720),
       window.setTimeout(() => {
-        setPhoneScrollDuration(0.55)
+        setPhoneScrollDuration(PHONE_SCROLL_IN_S)
         setPhoneScrollEase(PAN_EASE)
-        setPhoneScroll(-28)
-      }, phoneInMs + 1180),
+        setPhoneScroll(PHONE_SCROLL_IN_Y)
+      }, phoneInMs + PHONE_SCROLL_IN_MS),
+      window.setTimeout(() => {
+        setPhoneScrollDuration(PHONE_SCROLL_FADE_S)
+        setPhoneScrollEase(CRAWL_EASE)
+        setPhoneScroll(PHONE_SCROLL_FADE_Y)
+      }, phoneInMs + PHONE_SCROLL_FADE_AT_MS),
     ]
 
     return () => {
@@ -1664,8 +1696,8 @@ export function HiwWorkingWebsiteSketch({
 }: SketchProps & { entrance?: 'land' | 'fade' }) {
   const fadeIn = entrance === 'fade'
   const land = {
-    duration: fadeIn ? 1.08 : 0.92,
-    ease: fadeIn ? EASE : LAND,
+    duration: fadeIn ? 1.48 : 0.92,
+    ease: fadeIn ? ([0.4, 0, 0.2, 1] as const) : LAND,
   } as const
   const [laptopScene, setLaptopScene] = useState<ExampleSceneId>('home')
   const [phoneScene, setPhoneScene] = useState<ExampleSceneId>('products')
@@ -1783,9 +1815,9 @@ export function HiwWorkingWebsiteSketch({
               ? 'relative w-[9.25rem] origin-bottom sm:w-[14.25rem] lg:w-[15.75rem]'
               : 'relative w-[10.25rem] origin-bottom sm:w-[16rem] lg:w-[18rem]'
           }
-          initial={fadeIn ? { opacity: 0, y: 12 } : { x: -96, y: -34, scale: 0.56, opacity: 0 }}
+          initial={fadeIn ? { opacity: 0, y: 8 } : { x: -96, y: -34, scale: 0.56, opacity: 0 }}
           animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
-          transition={{ ...land, delay: fadeIn ? 0.04 : 0 }}
+          transition={{ ...land, delay: fadeIn ? 0.1 : 0 }}
         >
           <PerspectiveShell rotateY={fadeIn ? 16 : 12} rotateX={fadeIn ? 3 : 5}>
             <LaptopChrome
@@ -1808,9 +1840,9 @@ export function HiwWorkingWebsiteSketch({
               ? 'relative w-[4.35rem] origin-bottom sm:w-[6.75rem] lg:w-[7.35rem]'
               : 'relative w-[5rem] origin-bottom sm:w-[7.75rem] lg:w-[8.5rem]'
           }
-          initial={fadeIn ? { opacity: 0, y: 16 } : { x: 96, y: -30, scale: 0.56, opacity: 0 }}
+          initial={fadeIn ? { opacity: 0, y: 10 } : { x: 96, y: -30, scale: 0.56, opacity: 0 }}
           animate={{ x: 0, y: fadeIn ? 6 : 2, scale: 1, opacity: 1 }}
-          transition={{ ...land, delay: fadeIn ? 0.16 : 0.06 }}
+          transition={{ ...land, delay: fadeIn ? 0.24 : 0.06 }}
         >
           <PerspectiveShell rotateY={fadeIn ? -24 : -13} rotateX={fadeIn ? 8 : 5}>
             <PhoneChrome
@@ -1833,9 +1865,9 @@ export function HiwWorkingWebsiteSketch({
             ? 'relative z-0 mt-2 w-[6.15rem] origin-bottom sm:mt-3 sm:w-[9.25rem] lg:w-[10.25rem]'
             : 'relative z-0 -mt-1 w-[6.75rem] origin-bottom sm:mt-0 sm:w-[10.25rem] lg:w-[11.25rem]'
         }
-        initial={fadeIn ? { opacity: 0, y: 14 } : { y: -22, scale: 0.5, opacity: 0 }}
+        initial={fadeIn ? { opacity: 0, y: 9 } : { y: -22, scale: 0.5, opacity: 0 }}
         animate={{ y: fadeIn ? 0 : -8, scale: 1, opacity: 1 }}
-        transition={{ ...land, delay: fadeIn ? 0.28 : 0.1 }}
+        transition={{ ...land, delay: fadeIn ? 0.38 : 0.1 }}
       >
         <PerspectiveShell rotateY={fadeIn ? 2 : 8} rotateX={fadeIn ? 12 : 7}>
           <TabletChrome

@@ -38,6 +38,7 @@ import { HowItWorksStage } from '@/components/landing/hiw/HowItWorksStage'
 import { HiwPageWash } from '@/components/landing/hiw/HiwPageWash'
 import { LandingPricingRow } from '@/components/landing/LandingPricingRow'
 import { PlanChecklist } from '@/components/pricing/PlanChecklist'
+import { RedesignPrompt } from '@/components/pricing/RedesignPrompt'
 import { PlanTierCard, planSeeMoreClass } from '@/components/pricing/PlanTierCard'
 import { BrandLockup } from '@/components/ui/BrandLockup'
 import { BrandNavLinks } from '@/components/ui/BrandNavLinks'
@@ -178,6 +179,8 @@ export function LandingBoard() {
                 </PlanTierCard>
               ))}
             </LandingPricingRow>
+
+            <RedesignPrompt compact className="mt-2.5 shrink-0 lg:mt-3" />
           </motion.div>
         </div>
       </div>

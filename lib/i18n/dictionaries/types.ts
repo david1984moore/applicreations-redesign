@@ -36,6 +36,7 @@ export type IntrospectUiKey =
   | 'step3Title'
   | 'step3Subtitle'
   | 'hasOnlineLabel'
+  | 'hasOnlineYes'
   | 'chooseOne'
   | 'websiteUrlLabel'
   | 'websiteUrlPlaceholder'
@@ -347,6 +348,10 @@ export type Dictionary = {
     hostingSupportLead: string
     hostingWhoFor: string
     mixMatchHeading: string
+    /** Quiet prompt under the mix-and-match preview — not a full section. */
+    redesignPrompt: string
+    redesignHint: string
+    redesignCta: string
     mixMatchLead: string
     /** Mobile — same sentence, “tap” instead of “click”. */
     mixMatchLeadTap: string

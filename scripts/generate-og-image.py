@@ -2,42 +2,18 @@
 
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 MARK = ROOT / "public" / "logo-mark.png"
 OUT = ROOT / "public" / "og-image.png"
 
 W, H = 1200, 630
-NAVY = (12, 18, 34)
-NAVY_MID = (18, 28, 52)
-PURPLE = (58, 36, 88)
-CYAN = (42, 92, 128)
-
-
-def gradient() -> Image.Image:
-    img = Image.new("RGB", (W, H), NAVY)
-    px = img.load()
-    for y in range(H):
-        for x in range(W):
-            tx = x / (W - 1)
-            ty = y / (H - 1)
-            # Deep navy left/top → slightly purple-cyan right/bottom.
-            r = int(NAVY[0] + (NAVY_MID[0] - NAVY[0]) * tx + (PURPLE[0] - NAVY[0]) * ty * 0.35)
-            g = int(NAVY[1] + (CYAN[1] - NAVY[1]) * tx * 0.28 + (PURPLE[1] - NAVY[1]) * ty * 0.18)
-            b = int(NAVY[2] + (CYAN[2] - NAVY[2]) * tx * 0.42 + (PURPLE[2] - NAVY[2]) * ty * 0.22)
-            px[x, y] = (min(255, r), min(255, g), min(255, b))
-    return img
-
-
-def glow(canvas: Image.Image) -> Image.Image:
-    """Soft logo-colored bloom behind the lockup so the mark reads as lit, not flat."""
-    overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-    draw.ellipse((40, -40, 560, 420), fill=(90, 140, 210, 58))
-    draw.ellipse((180, 80, 720, 560), fill=(120, 70, 180, 42))
-    overlay = overlay.filter(ImageFilter.GaussianBlur(radius=48))
-    return Image.alpha_composite(canvas.convert("RGBA"), overlay)
+BLACK = (0, 0, 0)
+NAME_FILL = (255, 255, 255)
+TAG_FILL = (176, 204, 232)
+NAME_FONTS = ["segoeuib.ttf", "arialbd.ttf", "calibrib.ttf"]
+TAG_FONTS = ["segoeuib.ttf", "segoeui.ttf", "arialbd.ttf"]
 
 
 def load_font(names: list[str], size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -49,7 +25,7 @@ def load_font(names: list[str], size: int) -> ImageFont.FreeTypeFont | ImageFont
 
 
 def knock_out_black(mark: Image.Image) -> Image.Image:
-    """Treat near-black pixels as transparent so a boxed mark sits on the dark field."""
+    """Treat near-black pixels as transparent so the mark sits on the dark field."""
     mark = mark.convert("RGBA")
     pixels = mark.load()
     w, h = mark.size
@@ -63,38 +39,85 @@ def knock_out_black(mark: Image.Image) -> Image.Image:
     return mark
 
 
+def tracked_width(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont, tracking: float) -> float:
+    if not text:
+        return 0
+    return sum(draw.textlength(ch, font=font) + tracking for ch in text) - tracking
+
+
+def fit_font(
+    names: list[str],
+    text: str,
+    target_w: float,
+    min_size: int,
+    max_size: int,
+    tracking: float = 0,
+) -> ImageFont.ImageFont:
+    probe = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    best = min_size
+    lo, hi = min_size, max_size
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        font = load_font(names, mid)
+        width = tracked_width(probe, text, font, tracking) if tracking else probe.textlength(text, font=font)
+        if width <= target_w:
+            best = mid
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return load_font(names, best)
+
+
+def draw_tracked(
+    draw: ImageDraw.ImageDraw,
+    xy: tuple[int, int],
+    text: str,
+    font: ImageFont.ImageFont,
+    fill: tuple[int, int, int],
+    tracking: float,
+) -> None:
+    x, y = xy
+    for ch in text:
+        draw.text((x, y), ch, font=font, fill=fill)
+        x += draw.textlength(ch, font=font) + tracking
+
+
 def main() -> None:
-    canvas = glow(gradient())
+    canvas = Image.new("RGBA", (W, H), (*BLACK, 255))
     mark = knock_out_black(Image.open(MARK))
-    mark_size = 236
+
+    # ~1/3 of the card, large enough for the first letters to sit on the mark.
+    mark_size = 420
     mark = mark.resize((mark_size, mark_size), Image.Resampling.LANCZOS)
 
-    name_font = load_font(["segoeuib.ttf", "arialbd.ttf", "calibrib.ttf"], 72)
-    tag_font = load_font(["segoeuib.ttf", "segoeui.ttf", "arialbd.ttf"], 22)
-
-    draw = ImageDraw.Draw(canvas)
     name = "Applicreations"
     tag = "CUSTOM APPS AND WEBSITES"
+    pad_left = 28
+    pad_right = 48
+    # Start the wordmark on the right half of the butterfly so "App" overlaps it.
+    text_x = pad_left + int(mark_size * 0.46)
+    target_w = W - text_x - pad_right
+    tag_tracking = 6
 
-    name_bbox = draw.textbbox((0, 0), name, font=name_font)
-    name_h = name_bbox[3] - name_bbox[1]
+    name_font = fit_font(NAME_FONTS, name, target_w, 72, 118)
+    tag_font = fit_font(TAG_FONTS, tag, target_w, 22, 40, tracking=tag_tracking)
 
-    # Top-left quadrant lockup — logo left, wordmark beside it, tagline under the name.
-    pad_x = 72
-    pad_y = 78
-    gap = 28
-    text_x = pad_x + mark_size + gap
-    name_y = pad_y + 52
-    tag_y = name_y + name_h + 18
+    probe = ImageDraw.Draw(canvas)
+    name_box = probe.textbbox((0, 0), name, font=name_font)
+    tag_box = probe.textbbox((0, 0), tag, font=tag_font)
+    name_h = name_box[3] - name_box[1]
+    tag_h = tag_box[3] - tag_box[1]
+    # Keep descenders of "p" well clear of the tagline.
+    line_gap = 36
+    block_h = name_h + line_gap + tag_h
+    name_y = (H - block_h) // 2 - name_box[1]
+    tag_y = name_y + name_box[3] + line_gap - tag_box[1]
+    mark_y = (H - mark_size) // 2
 
-    canvas.paste(mark, (pad_x, pad_y), mark)
-    draw.text((text_x, name_y), name, font=name_font, fill=(255, 255, 255))
-
-    tracking = 5
-    cursor = text_x
-    for ch in tag:
-        draw.text((cursor, tag_y), ch, font=tag_font, fill=(176, 204, 232))
-        cursor += draw.textlength(ch, font=tag_font) + tracking
+    canvas.paste(mark, (pad_left, mark_y), mark)
+    draw = ImageDraw.Draw(canvas)
+    draw.text((text_x, name_y), name, font=name_font, fill=NAME_FILL)
+    draw_tracked(draw, (text_x, tag_y), tag, tag_font, TAG_FILL, tag_tracking)
 
     canvas.convert("RGB").save(OUT, "PNG", optimize=True)
     print(f"Wrote {OUT} {canvas.size}")

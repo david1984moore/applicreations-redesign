@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import { Button } from '@/components/ui/Button'
+import { SpectrumFlipCta } from '@/components/ui/SpectrumFlipCta'
 import { Progress } from '@/components/ui/Progress'
 import type { Dictionary } from '@/lib/i18n/dictionaries/types'
 import { isLocaleTransition } from '@/lib/i18n/locale-transition'
@@ -219,6 +220,9 @@ export function IntrospectBoard() {
   const [skipIntro] = useState(() => isLocaleTransition())
 
   const yesNoUnsure = getYesNoUnsure(dict)
+  const hasOnlineOptions = yesNoUnsure.map((o) =>
+    o.id === 'yes' ? { ...o, label: ui.hasOnlineYes } : o
+  )
   const siteDepthOptions = getSiteDepthOptions(dict)
   const designFeelOptions = getDesignFeelOptions(dict)
   const colorPaletteOptions = getColorPaletteOptions(dict)
@@ -226,6 +230,11 @@ export function IntrospectBoard() {
   const yesNoLabel = (value: YesNoUnsure | ''): string => {
     if (!value) return dash
     return yesNoUnsure.find((o) => o.id === value)?.label ?? value
+  }
+
+  const hasOnlineLabelFor = (value: YesNoUnsure | ''): string => {
+    if (value === 'yes') return ui.hasOnlineYes
+    return yesNoLabel(value)
   }
 
   const [phase, setPhase] = useState<Phase>('welcome')
@@ -781,24 +790,16 @@ export function IntrospectBoard() {
               </div>
 
               <div className="flex justify-center">
-                <button
-                  type="button"
+                <SpectrumFlipCta
+                  checkOnHover={false}
+                  className="rounded-full"
                   onClick={() => {
                     setPhase('questions')
                     setStep(1)
                   }}
-                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl px-8 py-3 font-sans text-base font-bold tracking-tight shadow-[0_8px_24px_-8px_rgba(0,0,0,0.28),0_2px_8px_-2px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 cursor-pointer bg-[oklch(68%_0.15_230)] text-white ring-1 ring-[oklch(68%_0.15_230)/0.35] focus-visible:ring-[oklch(68%_0.15_230)/0.45] lg:bg-white lg:text-primary-800 lg:ring-primary-300/70 lg:focus-visible:ring-primary/40"
                 >
-                  <span className="relative inline-flex items-center gap-3">
-                    <span className="relative z-0 hidden h-2 w-2 shrink-0 lg:block" aria-hidden>
-                      <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(58%_0.14_310)] shadow-[0_0_0_0_oklch(58%_0.14_310)] transition-[box-shadow] duration-200 ease-in-out group-hover:shadow-[0_0_0_220px_oklch(58%_0.14_310)] group-focus-visible:shadow-[0_0_0_220px_oklch(58%_0.14_310)]" />
-                      <span className="relative z-20 block h-2 w-2 rounded-full bg-[oklch(58%_0.14_310)] transition-colors duration-200 ease-in-out group-hover:bg-white group-focus-visible:bg-white" />
-                    </span>
-                    <span className="relative z-10 lg:transition-colors lg:duration-200 lg:ease-in-out lg:group-hover:text-white lg:group-focus-visible:text-white">
-                      {ui.getStarted}
-                    </span>
-                  </span>
-                </button>
+                  {ui.getStarted}
+                </SpectrumFlipCta>
               </div>
             </motion.div>
           )}
@@ -931,7 +932,7 @@ export function IntrospectBoard() {
                   <ChoiceRow
                     label={ui.hasOnlineLabel}
                     error={errors.hasOnlinePresence}
-                    options={yesNoUnsure}
+                    options={hasOnlineOptions}
                     value={answers.hasOnlinePresence}
                     onChange={(v) => setChoice('hasOnlinePresence', v as YesNoUnsure)}
                   />
@@ -1384,7 +1385,7 @@ export function IntrospectBoard() {
                 <ReviewSection title={ui.reviewOnlinePresence}>
                   <ReviewRow
                     label={ui.reviewAlreadyOnline}
-                    value={yesNoLabel(answers.hasOnlinePresence)}
+                    value={hasOnlineLabelFor(answers.hasOnlinePresence)}
                   />
                   <ReviewRow
                     label={ui.reviewWebsite}

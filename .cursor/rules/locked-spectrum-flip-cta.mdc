@@ -1,0 +1,19 @@
+---
+description: Frozen Get Started / Start Re-design CTA — do not retune layout or hover
+alwaysApply: true
+---
+
+# Locked SpectrumFlipCta (Aug 25 2026, final)
+
+Get Started and Start Re-design are **user-approved and frozen**. Quote: “I like exactly how the get started button and the start redesign buttons act. Lock it in.”
+
+Do not edit the following in `components/ui/SpectrumFlipCta.tsx`:
+
+- Compact in-flow mark + label (`inline-flex`, `gap-2`, origin slot `h-2 w-2`)
+- Hover check overlay (`right-0`, `h-8/w-8` sm, `h-10/w-10` md) and cluster nudge (`translate-x-3` / `translate-x-4`)
+- Fill bloom, origin fade, `BoldCheck` path, colors, shadow, morph easing
+- Default `checkOnHover={true}` behavior
+
+Do not reserve check width at rest (that stretches the pill). Do not pin the mark to the left padding. `checkOnHover={false}` on Introspect Start is the only allowed variant.
+
+Leave this CTA exactly as it is.

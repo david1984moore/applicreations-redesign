@@ -6,6 +6,8 @@
 
 **⚠️ LOCKED Aug 18 2026 (final) — How it works live-preview cord.** User: absolutely perfect. Do not edit `wirePath` / `PreviewWire` / cord stroke / port-jack attachments in `HiwDeviceSketch.tsx`.
 
+**⚠️ LOCKED Aug 25 2026 (final) — Get Started / Start Re-design CTA.** User: likes exactly how they act. Do not retune `SpectrumFlipCta` layout, origin, hover check, nudge, or bloom.
+
 ---
 
 ## Progress Tracking

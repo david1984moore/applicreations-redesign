@@ -51,7 +51,7 @@ export const en: Dictionary = {
       },
       livePreview: {
         label: 'Demo Site',
-        detail: 'You get a demo site to try out',
+        detail: 'You get a custom demo site...',
         building: '...we get to work',
         buildingPreview: '...we get to work',
         phoneSuffix: 'even on your phone',
@@ -65,7 +65,7 @@ export const en: Dictionary = {
         justRight: 'Adjusting',
         justRightTune: 'Fine-tuning',
         justRightFinally: 'and then',
-        goLive: 'Your site goes live',
+        goLive: 'the website is live.',
         suffix: "And you're in business!",
       },
     },
@@ -225,7 +225,10 @@ export const en: Dictionary = {
     hostingSupportLead:
       'Monthly care that keeps your site live — pick the reply speed that fits.',
     hostingWhoFor: 'Who it’s for',
-    mixMatchHeading: 'Mix and match',
+    mixMatchHeading: 'Pricing Preview',
+    redesignPrompt: '"I already have a website, I just need it redesigned."',
+    redesignHint: 'Make sure to select "{choice}" when filling out the form.',
+    redesignCta: 'Start Re-design',
     mixMatchLead:
       'Click a website package and a hosting plan to see your total.',
     mixMatchLeadTap:
@@ -236,7 +239,7 @@ export const en: Dictionary = {
     mixMatchEmptyHosting: 'Your hosting plan',
     hostingIntroBeforeRender: 'When we host your site, it runs on',
     hostingIntroRender: 'Render',
-    goingLiveHeading: 'Going live',
+    goingLiveHeading: 'Going Live',
     goingLiveLead: 'What you need to get your site on the internet.',
     goingLiveStep1Title: 'Website package',
     goingLiveStep1Bullet:
@@ -301,7 +304,7 @@ export const en: Dictionary = {
     choose: 'Choose {name}',
     chosen: 'Chosen',
     chosenAria: 'Chosen {name}',
-    yourSelection: 'Payment preview',
+    yourSelection: 'Payment Summary',
     packageSuffix: '{name} package',
     oneTimeSuffix: '{price} one-time',
     emptySelection:
@@ -386,9 +389,9 @@ export const en: Dictionary = {
     welcomeHeading: 'Welcome — let’s learn about your project',
     whatToExpect: 'What to expect',
     expect1: 'Answer a few questions.',
-    expect2: 'Applicreations builds your free preview in 48 to 72 hours.',
-    expect3: 'You play with your preview website for 3 days and decide if it’s a fit.',
-    getStarted: 'Get Started',
+    expect2: 'Within two days, get a working preview website.',
+    expect3: 'Try it out for 24 hours. Like what you see? We talk business.',
+    getStarted: 'Start',
     // Step 1
     step1Title: 'First, a little about you',
     nameLabel: 'Your name',
@@ -413,6 +416,7 @@ export const en: Dictionary = {
     step3Title: 'Your online presence today',
     step3Subtitle: "It's fine if you don't have a website yet.",
     hasOnlineLabel: 'Do you already have a website or online pages?',
+    hasOnlineYes: 'I have a website',
     chooseOne: 'Please choose one',
     websiteUrlLabel: 'Link to your current website (if any)',
     websiteUrlPlaceholder: 'https://yourwebsite.com',

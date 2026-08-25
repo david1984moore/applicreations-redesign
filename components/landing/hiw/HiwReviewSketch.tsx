@@ -8,6 +8,12 @@ import { HiwWorkingWebsiteSketch } from '@/components/landing/hiw/HiwDeviceSketc
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const CROSS = { duration: 1.05, ease: EASE }
+const SOFT_DISSOLVE = [0.4, 0, 0.2, 1] as const
+/** Switch dissolves — screens bloom through while the lever stays thrown. */
+const SWITCH_TO_SCREENS = { duration: 1.58, ease: SOFT_DISSOLVE }
+/** Go-live line stays up while the man starts dissolving, then yields. */
+export const SWITCH_CAPTION_LAG_MS = 680
+const SCREENS_IN = { duration: 1.78, ease: SOFT_DISSOLVE, delay: 0.18 }
 const SCREENS_CROSS = { duration: 1.12, ease: EASE }
 const SOFT = { duration: 0.86, ease: EASE }
 
@@ -60,12 +66,18 @@ const HOUSE_POLISH_CLOCK_MS = 9800
 const HOUSE_POLISH_AT_MS = [1100, 3180, 5260] as const
 /** Smoke starts this far before the house-to-screens cut, so it reads as “lived in.” */
 const HOUSE_SMOKE_LEAD_MS = 2800
-/** Authored against the desktop switch beat. Scaled to `duration`. */
+/** Authored against the desktop switch beat. Pose times scale to `duration`. */
 const SWITCH_CLOCK_MS = 5200
-const SWITCH_GRAB_AT_MS = 1080
-const SWITCH_THROW_AT_MS = 1980
-const SWITCH_LIVE_AT_MS = 2860
-const THROW = { duration: 0.82, ease: [0.18, 0.72, 0.22, 1] as const }
+/** Throw starts on the incoming fade — grab is already on the lever. */
+const SWITCH_THROW_AT_MS = 160
+/** Throw itself is unscaled — live/zap wait for it to seat. */
+const THROW = { duration: 0.56, ease: [0.18, 0.72, 0.22, 1] as const }
+const SWITCH_LIVE_PAD_MS = 40
+
+/** Caption + zap land when the lever seats, matching SwitchThrow. */
+export function hiwSwitchLiveAtMs(_switchMs?: number) {
+  return SWITCH_THROW_AT_MS + Math.round(THROW.duration * 1000) + SWITCH_LIVE_PAD_MS
+}
 const REACH = { duration: 0.7, ease: EASE }
 const COPPER = 'oklch(62% 0.12 55)'
 const COPPER_D = 'oklch(48% 0.11 50)'
@@ -148,8 +160,11 @@ export function HiwStep3Cinema({
   const screensOn = beat === 'screens'
   const showReview = useKeepMounted(tableOn, CROSS.duration * 1000)
   const showHouse = useKeepMounted(houseOn, CROSS.duration * 1000)
-  const showSwitch = useKeepMounted(switchOn, CROSS.duration * 1000)
-  const showScreens = useKeepMounted(screensOn, SCREENS_CROSS.duration * 1000)
+  const showSwitch = useKeepMounted(switchOn, SWITCH_TO_SCREENS.duration * 1000)
+  const showScreens = useKeepMounted(
+    screensOn,
+    (SCREENS_IN.duration + SCREENS_IN.delay) * 1000,
+  )
 
   useEffect(() => {
     if (!playing) return
@@ -202,8 +217,10 @@ export function HiwStep3Cinema({
       window.setTimeout(() => {
         setBeat('screens')
         setScreensReady(true)
-        onBeatRef.current?.('screens')
       }, switchAt + switchMs),
+      window.setTimeout(() => {
+        onBeatRef.current?.('screens')
+      }, switchAt + switchMs + SWITCH_CAPTION_LAG_MS),
     ]
     return () => {
       for (const id of timers) window.clearTimeout(id)
@@ -253,7 +270,7 @@ export function HiwStep3Cinema({
           className="absolute inset-0 flex items-end justify-center max-lg:items-start"
           initial={{ opacity: 0 }}
           animate={{ opacity: switchOn ? 1 : 0 }}
-          transition={CROSS}
+          transition={switchOn ? CROSS : SWITCH_TO_SCREENS}
           aria-hidden
         >
           <SwitchThrow
@@ -268,7 +285,7 @@ export function HiwStep3Cinema({
           className="absolute inset-0 flex items-start justify-center overflow-visible pt-1 sm:pt-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: screensOn ? 1 : 0 }}
-          transition={SCREENS_CROSS}
+          transition={screensOn ? SCREENS_IN : SCREENS_CROSS}
           aria-hidden
         >
           {screensReady ? (
@@ -482,53 +499,47 @@ function SwitchThrow({
   const leanRef = useRef(-3)
 
   useEffect(() => {
-    if (!playing) {
-      setPose('reach')
-      return
-    }
-    const clock = duration / SWITCH_CLOCK_MS
-    const at = (ms: number) => Math.round(ms * clock)
+    if (!playing) return
+    leverRef.current = SWITCH_OPEN
+    setLeverDeg(SWITCH_OPEN)
+    idleShoulderRef.current = 58
+    idleElbowRef.current = 12
+    leanRef.current = -3
+    setIdleShoulder(58)
+    setIdleElbow(12)
+    setLeanDeg(-3)
+    setPose('grab')
     const timers = [
-      window.setTimeout(() => setPose('grab'), at(SWITCH_GRAB_AT_MS)),
-      window.setTimeout(() => setPose('throw'), at(SWITCH_THROW_AT_MS)),
-      window.setTimeout(() => setPose('live'), at(SWITCH_LIVE_AT_MS)),
+      window.setTimeout(() => setPose('throw'), SWITCH_THROW_AT_MS),
+      window.setTimeout(() => setPose('live'), hiwSwitchLiveAtMs()),
     ]
     return () => {
       for (const id of timers) window.clearTimeout(id)
     }
-  }, [playing, duration])
+  }, [playing])
+
+  const thrown = pose === 'throw' || pose === 'live'
+  const bodyBeat: SwitchPose = thrown ? 'throw' : pose
 
   useEffect(() => {
-    if (!playing) {
-      leverRef.current = SWITCH_OPEN
-      setLeverDeg(SWITCH_OPEN)
-      return
-    }
-    const dest = pose === 'throw' || pose === 'live' ? SWITCH_CLOSED : SWITCH_OPEN
+    if (!playing) return
+    const dest = thrown ? SWITCH_CLOSED : SWITCH_OPEN
     const controls = animate(leverRef.current, dest, {
-      ...(dest === SWITCH_CLOSED ? THROW : REACH),
+      ...(thrown ? THROW : REACH),
       onUpdate: (value) => {
         leverRef.current = value
         setLeverDeg(value)
       },
     })
     return () => controls.stop()
-  }, [playing, pose])
+  }, [playing, thrown])
 
   useEffect(() => {
-    if (!playing) {
-      idleShoulderRef.current = 58
-      idleElbowRef.current = 12
-      leanRef.current = -3
-      setIdleShoulder(58)
-      setIdleElbow(12)
-      setLeanDeg(-3)
-      return
-    }
-    const destShoulder = pose === 'throw' || pose === 'live' ? 50 : 58
-    const destElbow = pose === 'throw' || pose === 'live' ? 22 : 12
-    const destLean = pose === 'throw' || pose === 'live' ? -16 : pose === 'grab' ? -8 : -3
-    const ease = pose === 'throw' || pose === 'live' ? THROW : REACH
+    if (!playing) return
+    const destShoulder = bodyBeat === 'throw' ? 50 : 58
+    const destElbow = bodyBeat === 'throw' ? 22 : 12
+    const destLean = bodyBeat === 'throw' ? -16 : bodyBeat === 'grab' ? -8 : -3
+    const ease = bodyBeat === 'throw' ? THROW : REACH
     const a = animate(idleShoulderRef.current, destShoulder, {
       ...ease,
       onUpdate: (value) => {
@@ -555,7 +566,7 @@ function SwitchThrow({
       b.stop()
       c.stop()
     }
-  }, [playing, pose])
+  }, [playing, bodyBeat])
 
   const grabbed = pose !== 'reach'
   const live = pose === 'live'

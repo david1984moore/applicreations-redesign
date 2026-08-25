@@ -27,14 +27,19 @@ type SpectrumFlipCtaProps = {
   /** Compact for side rails / cards */
   size?: 'sm' | 'md'
   type?: 'button' | 'submit'
+  /** Desktop hover/focus: origin morphs into a check. Off = origin stays a dot. */
+  checkOnHover?: boolean
 }
 
 /**
- * CTA — matches Begin Introspect / Get Free Preview.
+ * LOCKED Aug 25 2026 (final) — Get Started / Start Re-design.
+ * User: likes exactly how they act. Do not retune layout, origin, hover
+ * check, nudge, bloom, or sizes. checkOnHover={false} is the only variant.
+ *
  * Mobile (< lg): solid coastal blue, no mark.
  * Desktop (lg+): white button with a sky-blue origin dot.
- * Hover/focus: fill blooms from the dot; the dot becomes an enlarged check.
- * Slot stays 8px so hover does not reserve extra white width at the end.
+ * Hover/focus: fill blooms from the dot; optional check replaces the dot.
+ * Mark + label are one in-flow unit (fixed gap), centered in the pill.
  */
 export function SpectrumFlipCta({
   children,
@@ -44,6 +49,7 @@ export function SpectrumFlipCta({
   className,
   size = 'md',
   type = 'button',
+  checkOnHover = true,
 }: SpectrumFlipCtaProps) {
   const classes = cn(
     'group relative inline-flex items-center justify-center overflow-hidden rounded-2xl font-sans font-bold tracking-tight whitespace-nowrap cursor-pointer',
@@ -59,46 +65,72 @@ export function SpectrumFlipCta({
   const morphEase =
     'duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none'
 
-  const content = (
-    <>
-      <span className="relative z-10 inline-flex items-center gap-4">
-        <span
-          className="relative z-0 hidden h-2 w-2 shrink-0 overflow-visible lg:block"
-          aria-hidden
-        >
-          {/* Fill scales from this slot’s center so it tracks padding and stays edge-to-edge. */}
-          <span className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2">
-            <span
-              className={cn(
-                'absolute inset-0 origin-center rounded-full bg-[oklch(68%_0.15_230)] scale-0 transition-transform',
-                'group-hover:scale-[70] group-focus-visible:scale-[70]',
-                morphEase
-              )}
-            />
-          </span>
+  // Slot stays the origin-dot size so the pill hugs the label. The check
+  // overlays (overflows left) and the cluster nudges right so the unit
+  // stays centered without stretching the button.
+  const checkNudge =
+    checkOnHover &&
+    (size === 'sm'
+      ? 'lg:group-hover:translate-x-3 lg:group-focus-visible:translate-x-3'
+      : 'lg:group-hover:translate-x-4 lg:group-focus-visible:translate-x-4')
 
-          {/* Rest-state core — fades as the check takes over. */}
+  const content = (
+    <span
+      className={cn(
+        'relative z-10 inline-flex items-center gap-2',
+        checkOnHover &&
+          cn(
+            'lg:transition-transform',
+            morphEase,
+            checkNudge
+          )
+      )}
+    >
+      <span
+        className="pointer-events-none relative hidden h-2 w-2 shrink-0 overflow-visible lg:block"
+        aria-hidden
+      >
+        {/* Fill blooms from the origin so it tracks the mark. */}
+        <span className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2">
           <span
             className={cn(
-              'absolute inset-0 z-[1] rounded-full bg-[oklch(68%_0.15_230)] transition-opacity',
-              'group-hover:opacity-0 group-focus-visible:opacity-0',
+              'absolute inset-0 origin-center rounded-full bg-[oklch(68%_0.15_230)] scale-0 transition-transform',
+              'group-hover:scale-[70] group-focus-visible:scale-[70]',
               morphEase
             )}
           />
+        </span>
 
+        {/* Rest-state core — fades when the check takes over; turns white if it stays. */}
+        <span
+          className={cn(
+            'absolute left-1/2 top-1/2 z-[1] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(68%_0.15_230)]',
+            checkOnHover
+              ? cn(
+                  'transition-opacity group-hover:opacity-0 group-focus-visible:opacity-0',
+                  morphEase
+                )
+              : cn(
+                  'transition-colors group-hover:bg-white group-focus-visible:bg-white',
+                  morphEase
+                )
+          )}
+        />
+
+        {checkOnHover && (
           <BoldCheck
             className={cn(
-              'pointer-events-none absolute left-1/2 top-1/2 z-[2] hidden -translate-x-1/2 -translate-y-1/2 text-white',
+              'pointer-events-none absolute right-0 top-1/2 z-[2] hidden -translate-y-1/2 text-white',
               'group-hover:block group-focus-visible:block',
-              size === 'sm' ? 'h-[2rem] w-[2rem]' : 'h-[2.5rem] w-[2.5rem]'
+              size === 'sm' ? 'h-8 w-8' : 'h-10 w-10'
             )}
           />
-        </span>
-        <span className="relative z-10 whitespace-nowrap lg:transition-colors lg:duration-300 lg:ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover:text-white lg:group-focus-visible:text-white motion-reduce:lg:transition-none">
-          {children}
-        </span>
+        )}
       </span>
-    </>
+      <span className="relative z-10 whitespace-nowrap lg:transition-colors lg:duration-300 lg:ease-[cubic-bezier(0.22,1,0.36,1)] lg:group-hover:text-white lg:group-focus-visible:text-white motion-reduce:lg:transition-none">
+        {children}
+      </span>
+    </span>
   )
 
   if (href && !disabled) {

@@ -25,6 +25,7 @@ import { PlanFeatureRevealProvider } from '@/components/pricing/PlanChecklist'
 import { PlanFullDetails } from '@/components/pricing/PlanFullDetails'
 import { PlanTierCard } from '@/components/pricing/PlanTierCard'
 import { PricingComparisonMatrix } from '@/components/pricing/PricingComparisonMatrix'
+import { RedesignPrompt } from '@/components/pricing/RedesignPrompt'
 import { SelectToggle } from '@/components/pricing/SelectToggle'
 import { SelectionSummary } from '@/components/pricing/SelectionSummary'
 import { SupportTierIcon } from '@/components/pricing/SupportTierIcon'
@@ -194,13 +195,14 @@ export default function PricingPageClient() {
               </PlanFeatureRevealProvider>
               <p className="mt-2 shrink-0 text-xs text-gray-500 leading-snug">
                 <span
-                  className="mr-1 font-semibold text-primary-700"
+                  className="mr-1 inline-block translate-y-[0.08em] text-[1.15rem] font-bold leading-none text-primary-700"
                   aria-hidden
                 >
                   *
                 </span>
                 {p.startingPriceNote}
               </p>
+              <RedesignPrompt className="mt-4" />
             </section>
 
             <section
