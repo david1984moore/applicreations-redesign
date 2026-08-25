@@ -56,6 +56,7 @@ const SINK_Y = 240
 /** Fast rise from the vanishing point, soft land — graceful, not a snap. */
 const CTA_GROW_EASE = [0.16, 0.78, 0.18, 1] as const
 /** Continuous recession — starts moving immediately, no mid-fade pause. */
+const FINALE_IN_EASE = [0.32, 0, 0.62, 1] as const
 const FINALE_AWAY_EASE = [0.22, 0.02, 0.28, 1] as const
 
 function keepLayer(_latest: unknown, generated: string) {
@@ -627,7 +628,7 @@ function FinaleCinema({
         : {
             duration: headlineTravelMs / 1000,
             times: [0, arriveAt, 1],
-            ease: [[0.32, 0, 0.62, 1], FINALE_AWAY_EASE],
+            ease: [FINALE_IN_EASE, FINALE_AWAY_EASE],
             opacity: {
               duration: headlineTravelMs / 1000,
               times: [0, arriveAt, 1],

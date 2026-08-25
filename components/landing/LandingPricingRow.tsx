@@ -29,7 +29,12 @@ export function LandingPricingRow({
           '[&>*:nth-child(odd)]:border-r',
           '[&>*:nth-child(-n+2)]:border-b',
           'lg:[&>*:nth-child(-n+2)]:border-b-0',
-          'lg:[&>*:nth-child(2)]:border-r'
+          'lg:[&>*:nth-child(2)]:border-r',
+          /* Match outer sheet radius on each corner cell (Basic’s fill needs its own TR radius on mobile). */
+          '[&>*:nth-child(1)]:rounded-tl-2xl lg:[&>*:nth-child(1)]:rounded-bl-2xl',
+          '[&>*:nth-child(2)]:rounded-tr-[1.85rem] lg:[&>*:nth-child(2)]:rounded-none',
+          '[&>*:nth-child(3)]:rounded-bl-2xl lg:[&>*:nth-child(3)]:rounded-none',
+          '[&>*:nth-child(4)]:rounded-br-[1.85rem] lg:[&>*:nth-child(4)]:rounded-tr-[1.85rem]'
         )}
       >
         {children}

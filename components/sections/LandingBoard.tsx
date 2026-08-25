@@ -133,9 +133,9 @@ export function LandingBoard() {
               delay: HIW_MOTION.cardDelay,
               ease: easeOut,
             }}
-            className="relative z-10 order-2 flex w-full flex-col overflow-visible max-lg:min-h-[22rem] lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
+            className="relative z-10 order-2 flex w-full flex-col overflow-visible max-lg:min-h-[24rem] max-lg:[overflow-anchor:none] lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
           >
-            <div className="flex w-full flex-col max-lg:min-h-[22rem] lg:h-full lg:min-h-0 lg:flex-1 lg:grid lg:grid-rows-[1fr]">
+            <div className="flex w-full flex-col max-lg:min-h-[24rem] lg:h-full lg:min-h-0 lg:flex-1 lg:grid lg:grid-rows-[1fr]">
               <div className="w-full max-lg:overflow-visible lg:h-full lg:min-h-0 lg:overflow-visible">
                 <HowItWorksStage
                   started

@@ -112,9 +112,9 @@ type HiwStep3CinemaProps = {
   reviseMs: number
   /** “Adjusting” holds this long, then a caption gap, then “Fine-tuning”. */
   adjustMs: number
-  /** “Fine-tuning” holds this long, then a caption gap, then “until…”. */
+  /** “Fine-tuning” holds this long, then a caption gap, then “… and then”. */
   tuneMs: number
-  /** “until” grows, then the dots, then this beat cuts to the switch. */
+  /** Dots, then “and then”, then this beat cuts to the switch. */
   finallyMs: number
   switchMs: number
   screensMs: number

@@ -431,49 +431,12 @@ h1, h2, h3, h4, h5, h6 {
       transform: translateZ(0) scale(1.12);
     }
   }
-
-  /* Keep the tagline at its laid-out size so the 3× desktop zoom cannot
-     hit the landing-board clip and flash a hard left/right crop. */
-  .hiw-tagline-live {
-    width: 100%;
-    font-size: inherit;
-    white-space: normal;
-    transform: translate(-50%, -50%) translateZ(0) scale(1);
-  }
-
-  @keyframes hiw-tagline-grow {
-    from {
-      transform: translate(-50%, -50%) translateZ(0) scale(1);
-    }
-    to {
-      transform: translate(-50%, -50%) translateZ(0) scale(1.06);
-    }
-  }
-
-  @keyframes hiw-tagline-fade {
-    0%,
-    18% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-
-  .hiw-tagline-grow {
-    animation:
-      hiw-tagline-grow 2.8s cubic-bezier(0.4, 0, 0.2, 1) both,
-      hiw-tagline-fade 2.8s cubic-bezier(0.4, 0, 0.2, 1) both;
-  }
 }
 
-/* Paint the tagline at 3×, then GPU-scale that bitmap. Scaling a 1× layer
-   up looks blurry and can snap when Chrome re-rasters; this stays sharp.
-   Scale and fade share one clock. Slow approach, then most of the extra
-   size dumps in a last-beat rush toward the viewer (linear() so the join
-   stays continuous). Fade starts as the rush begins, so the letters get
-   bigger on screen, then drop out before they spill into the left column.
-   Max 3× visual (already invisible at the peak). */
+/* Mobile-first: paint at the laid-out size. The later 3× desktop rules
+   used to sit unscoped and override this, so the line hit overflow-x-clip
+   / contain:paint while still opaque. Hold a beat, then fade out before
+   any grow can reach the board edges. */
 .hiw-tagline-slot {
   position: relative;
   display: block;
@@ -490,11 +453,12 @@ h1, h2, h3, h4, h5, h6 {
   left: 50%;
   top: 50%;
   z-index: 1;
-  width: 300%;
-  font-size: 300%;
+  width: 100%;
+  font-size: inherit;
   line-height: inherit;
   text-align: center;
-  transform: translate(-50%, -50%) translateZ(0) scale(0.3333);
+  white-space: normal;
+  transform: translate(-50%, -50%) translateZ(0) scale(1);
   transform-origin: 50% 50%;
   opacity: 1;
   will-change: transform, opacity;
@@ -508,22 +472,21 @@ h1, h2, h3, h4, h5, h6 {
 
 @keyframes hiw-tagline-grow {
   from {
-    transform: translate(-50%, -50%) translateZ(0) scale(0.3333);
+    transform: translate(-50%, -50%) translateZ(0) scale(1);
   }
   to {
-    transform: translate(-50%, -50%) translateZ(0) scale(1);
+    transform: translate(-50%, -50%) translateZ(0) scale(1.08);
   }
 }
 
 @keyframes hiw-tagline-fade {
   0%,
-  68% {
+  24% {
     opacity: 1;
   }
-  76% {
-    opacity: 0.28;
+  58% {
+    opacity: 0;
   }
-  82%,
   100% {
     opacity: 0;
   }
@@ -531,36 +494,81 @@ h1, h2, h3, h4, h5, h6 {
 
 .hiw-tagline-grow {
   animation:
-    hiw-tagline-grow 2.8s
-      linear(
-        0,
-        0.038 5%,
-        0.07 10%,
-        0.098 15%,
-        0.122 20%,
-        0.144 25%,
-        0.164 30%,
-        0.184 35%,
-        0.204 40%,
-        0.226 45%,
-        0.25 50%,
-        0.276 55%,
-        0.306 60%,
-        0.34 65%,
-        0.378 70%,
-        0.412 74%,
-        0.45 78%,
-        0.5 82%,
-        0.57 86%,
-        0.67 90%,
-        0.78 93%,
-        0.86 95%,
-        0.93 97%,
-        0.975 98.5%,
-        1
-      )
-      both,
-    hiw-tagline-fade 2.8s linear both;
+    hiw-tagline-grow 2.8s cubic-bezier(0.4, 0, 0.2, 1) both,
+    hiw-tagline-fade 2.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Desktop: paint at 3×, then GPU-scale that bitmap. Scaling a 1× layer
+   up looks blurry and can snap when Chrome re-rasters; this stays sharp.
+   Scale and fade share one clock. Slow approach, then most of the extra
+   size dumps in a last-beat rush toward the viewer (linear() so the join
+   stays continuous). Fade starts as the rush begins, so the letters get
+   bigger on screen, then drop out before they spill into the left column.
+   Max 3× visual (already invisible at the peak). */
+@media (min-width: 1024px) {
+  .hiw-tagline-live {
+    width: 300%;
+    font-size: 300%;
+    white-space: normal;
+    transform: translate(-50%, -50%) translateZ(0) scale(0.3333);
+  }
+
+  @keyframes hiw-tagline-grow {
+    from {
+      transform: translate(-50%, -50%) translateZ(0) scale(0.3333);
+    }
+    to {
+      transform: translate(-50%, -50%) translateZ(0) scale(1);
+    }
+  }
+
+  @keyframes hiw-tagline-fade {
+    0%,
+    68% {
+      opacity: 1;
+    }
+    76% {
+      opacity: 0.28;
+    }
+    82%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .hiw-tagline-grow {
+    animation:
+      hiw-tagline-grow 2.8s
+        linear(
+          0,
+          0.038 5%,
+          0.07 10%,
+          0.098 15%,
+          0.122 20%,
+          0.144 25%,
+          0.164 30%,
+          0.184 35%,
+          0.204 40%,
+          0.226 45%,
+          0.25 50%,
+          0.276 55%,
+          0.306 60%,
+          0.34 65%,
+          0.378 70%,
+          0.412 74%,
+          0.45 78%,
+          0.5 82%,
+          0.57 86%,
+          0.67 90%,
+          0.78 93%,
+          0.86 95%,
+          0.93 97%,
+          0.975 98.5%,
+          1
+        )
+        both,
+      hiw-tagline-fade 2.8s linear both;
+  }
 }
 
 @keyframes hiw-intro-ripple-inner {
