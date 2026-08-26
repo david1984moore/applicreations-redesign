@@ -157,7 +157,9 @@ function CheckLabel({
 
 function dealToSlots(items: string[], slotCount: number): string[][] {
   const slots = Array.from({ length: slotCount }, () => [] as string[])
-  items.forEach((item, i) => slots[i % slotCount].push(item))
+  items.forEach((item, i) => {
+    slots[i % slotCount]?.push(item)
+  })
   return slots
 }
 
