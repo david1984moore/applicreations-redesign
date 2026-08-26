@@ -27,8 +27,10 @@
  * - Finale CTA blooms a logo-violet wash on the right of a slight curve
  * - Skip cinema on locale swap / reduced motion / in-site return to home
  *   (a refresh starts a new JS lifetime, so the cinema plays again)
+ * - Introspect success redirect uses the resting finale (three points + Get Started)
+ *   with no cinema and no recap stagger
  * - In-site return still replays the recap points (staggered slide-in) with
- *   the Get Free Preview button already at its resting place
+ *   the Get Started button already at its resting place
  */
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -42,9 +44,14 @@ import { RedesignPrompt } from '@/components/pricing/RedesignPrompt'
 import { PlanTierCard, planSeeMoreClass } from '@/components/pricing/PlanTierCard'
 import { BrandLockup } from '@/components/ui/BrandLockup'
 import { BrandNavLinks } from '@/components/ui/BrandNavLinks'
-import { hasPlayedHiwCinema, markHiwCinemaPlayed } from '@/lib/hiw-cinema'
+import {
+  hasPlayedHiwCinema,
+  markHiwCinemaPlayed,
+  shouldUseStaticHiwFinale,
+} from '@/lib/hiw-cinema'
 import { isLocaleTransition } from '@/lib/i18n/locale-transition'
 import { getPlans } from '@/lib/pricing'
+import { getRouteCovered, uncoverRoute } from '@/lib/route-cover'
 
 /**
  * How it works entrance: stage is open on first paint so the cinema
@@ -63,8 +70,10 @@ export function LandingBoard() {
   // Locale swaps remount this board — skip fade/slide so the page doesn't flash
   const [skipIntro] = useState(() => isLocaleTransition())
   const [playedHiw] = useState(() => hasPlayedHiwCinema())
+  const [forceStaticFinale] = useState(() => shouldUseStaticHiwFinale())
   const prefersReducedMotion = useReducedMotion()
-  const staticFinale = skipIntro || !!prefersReducedMotion
+  const skipEntrance = skipIntro || forceStaticFinale
+  const staticFinale = skipEntrance || !!prefersReducedMotion
   const replayFinale = playedHiw && !staticFinale
   const skipCinema = staticFinale || playedHiw
   const [washVisible, setWashVisible] = useState(skipCinema)
@@ -75,6 +84,20 @@ export function LandingBoard() {
     const id = window.setTimeout(() => markHiwCinemaPlayed(), 0)
     return () => window.clearTimeout(id)
   }, [])
+
+  useEffect(() => {
+    if (!forceStaticFinale || !getRouteCovered()) return
+    let cancelled = false
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!cancelled) uncoverRoute(40)
+      })
+    })
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(id)
+    }
+  }, [forceStaticFinale])
 
   useEffect(() => {
     if (skipCinema) setWashVisible(true)
@@ -94,11 +117,11 @@ export function LandingBoard() {
 
       {/* LOCKED shell — cream edges + centered board; vh clamps keep HIW unclipped on short laptops */}
       <div className="relative z-10 flex flex-1 flex-col max-w-[90rem] w-full mx-auto px-3 sm:px-6 lg:px-10 xl:px-12 pt-5 pb-3 sm:pt-14 sm:pb-8 lg:pt-[clamp(1.5rem,5.5vh,5rem)] lg:pb-[clamp(0.75rem,3vh,2.5rem)] min-h-0">
-        <div className="flex w-full flex-col gap-3 sm:gap-4 lg:flex-1 lg:min-h-0 lg:grid lg:grid-cols-12 lg:grid-rows-[auto_minmax(0,1fr)] lg:gap-x-8 xl:gap-x-10 lg:gap-y-0">
+        <div className="flex w-full flex-col gap-5 sm:gap-6 lg:flex-1 lg:min-h-0 lg:grid lg:grid-cols-12 lg:grid-rows-[auto_minmax(0,1fr)] lg:gap-x-8 xl:gap-x-10 lg:gap-y-0">
           {/* Brand + nav — first on mobile; top of the left column on desktop */}
           <div className="relative z-20 order-1 flex w-full min-w-0 flex-col lg:col-span-7 lg:col-start-1 lg:row-start-1 lg:pr-2">
             <motion.div
-              initial={skipIntro ? false : { opacity: 0, y: 16 }}
+              initial={skipEntrance ? false : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               className="shrink-0 w-full"
@@ -107,7 +130,7 @@ export function LandingBoard() {
                 {/* Shrink-wrap brand + tagline, then center that unit over the nav. */}
                 <div className="mx-auto w-fit">
                   {/* Approved butterfly-over-"li" lockup — geometry lives in BrandLockup.tsx and must not be tweaked here. */}
-                  <BrandLockup name={dict.brand.name} skipIntro={skipIntro} />
+                  <BrandLockup name={dict.brand.name} skipIntro={skipEntrance} />
 
                   <p className="mt-2.5 whitespace-nowrap text-left text-[length:clamp(0.72rem,calc((100vw-3.5rem)/22),0.92rem)] font-[700] italic uppercase leading-none tracking-[0.02em] text-primary-600 sm:text-base sm:tracking-[0.12em]">
                     {dict.landing.tagline}
@@ -134,9 +157,9 @@ export function LandingBoard() {
               delay: HIW_MOTION.cardDelay,
               ease: easeOut,
             }}
-            className="relative z-10 order-2 flex w-full flex-col overflow-visible max-lg:min-h-[24rem] max-lg:[overflow-anchor:none] lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
+            className="relative z-10 order-2 flex w-full flex-col overflow-visible max-lg:pb-3 max-lg:[overflow-anchor:none] lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1 lg:h-auto lg:min-h-0 lg:flex-1 lg:overflow-visible lg:pl-16 lg:[clip-path:inset(-6rem_-100vw_-6rem_0)] xl:pl-20"
           >
-            <div className="flex w-full flex-col max-lg:min-h-[24rem] lg:h-full lg:min-h-0 lg:flex-1 lg:grid lg:grid-rows-[1fr]">
+            <div className="flex w-full flex-col lg:h-full lg:min-h-0 lg:flex-1 lg:grid lg:grid-rows-[1fr]">
               <div className="w-full max-lg:overflow-visible lg:h-full lg:min-h-0 lg:overflow-visible">
                 <HowItWorksStage
                   started
@@ -151,10 +174,10 @@ export function LandingBoard() {
           {/* Website pricing — after the cinema on mobile; leftover left-column height on desktop */}
           <motion.div
             id="pricing"
-            initial={skipIntro ? false : { opacity: 0, y: 14 }}
+            initial={skipEntrance ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.12 }}
-            className="relative z-20 order-3 flex min-h-0 w-full flex-col overflow-visible pt-1 lg:col-span-7 lg:col-start-1 lg:row-start-2 lg:mt-3 lg:flex-1 lg:pr-2 lg:pt-2"
+            className="relative z-20 order-3 flex min-h-0 w-full flex-col overflow-visible pt-1 max-lg:pt-3 lg:col-span-7 lg:col-start-1 lg:row-start-2 lg:mt-3 lg:flex-1 lg:pr-2 lg:pt-2"
           >
             <h2 className="sr-only">{dict.landing.websitePricing}</h2>
 

@@ -31,7 +31,11 @@ export const PHONE_IN_S = 1.2
 export const PREVIEW_CAPTION_LEAD_S = 0
 /** Preview line fade — done before the phone starts in. */
 export const PREVIEW_CAPTION_OUT_S = 0.52
-/** Gap after the preview line is gone, then the phone starts. */
+/** Readable hold on “You get a custom demo site”, then fade. */
+const PREVIEW_LINE_HOLD_S = 2.9
+/** Empty beat after that line is gone, before “…that actually works”. */
+const WORKS_LINE_GAP_S = 0.34
+/** Gap after the punchline is gone, then the phone starts. */
 const PHONE_AFTER_CAPTION_S = 0.04
 /** Caption starts this long before the handset has fully settled. */
 export const PHONE_CAPTION_EARLY_S = 0.78
@@ -54,16 +58,21 @@ const WIRE_RETRACT_EASE = [0.32, 0.0, 0.18, 1] as const
 const WIRE_OUT_FADE_EASE = [0.28, 0.1, 0.36, 1] as const
 const PREVIEW_AT = 0.086
 const SWING_KNEEL_AT = 0
-const FOUNDATION_AT = 0.062
+/**
+ * Slab fade is keyed to when the crew is on screen, not the play clock.
+ * Play waits through enter + split (~2s); tying the slab to that left him
+ * swinging at empty ground. One hammer cycle, then the foundation eases in.
+ */
+const FOUNDATION_IN_MS = 420
 /** Laptop is in the DOM; cord fades in as a complete line. */
 const WIRE_AT = 0.097
 /** Retract as he leaves the walls — fade finishes while the laptop grows. */
 const WIRE_OUT_AT = 0.168
 const STAND_AT = 0.11
-/** “Then” sits alone this long, then the work line replaces it. */
-const THEN_HOLD_AT = 0.12
-/** “…we get to work” clears early in the walls beat — read, then out. */
-const BUILD_LINE_OUT_AT = 0.136
+/** Work line lands as he finishes the foundation and starts to stand. */
+const THEN_HOLD_AT = 0.105
+/** “…we get to work” — readable hold, then dissolve before the climb. */
+const BUILD_LINE_OUT_AT = 0.152
 const LADDER_AT = 0.165
 const CLIMB_AT = 0.171
 const WALLS_PAGE_AT = 0.148
@@ -92,6 +101,14 @@ export function hiwPhoneInMs(duration: number) {
   const laptopFadeMs = duration * LAPTOP_FADE_AT
   const captionClearMs = laptopFadeMs - PREVIEW_CAPTION_LEAD_S * 1000
   return captionClearMs + (PREVIEW_CAPTION_OUT_S + PHONE_AFTER_CAPTION_S) * 1000
+}
+
+function previewWorksTimes(duration: number) {
+  const scale = duration / 30_000
+  const previewOutMs = duration * GROW_AT + PREVIEW_LINE_HOLD_S * 1000 * scale
+  const worksInMs =
+    previewOutMs + (PREVIEW_CAPTION_OUT_S + WORKS_LINE_GAP_S * scale) * 1000
+  return { previewOutMs, worksInMs }
 }
 
 export function hiwStep2PlayMs(sketchMs: number) {
@@ -1308,7 +1325,13 @@ function PreviewWire({
   )
 }
 
-export type PreviewBeat = 'build' | 'building' | 'preview' | 'clear' | 'phone'
+export type PreviewBeat =
+  | 'build'
+  | 'building'
+  | 'preview'
+  | 'works'
+  | 'clear'
+  | 'phone'
 
 export function HiwLivePreviewSketch({
   playing,
@@ -1344,6 +1367,11 @@ export function HiwLivePreviewSketch({
   onBeatRef.current = onBeat
 
   useEffect(() => {
+    const id = window.setTimeout(() => setShowFoundation(true), FOUNDATION_IN_MS)
+    return () => window.clearTimeout(id)
+  }, [])
+
+  useEffect(() => {
     if (!playing) {
       // Keep the phone on screen. Resetting here replays the kneeling worker.
       return
@@ -1357,10 +1385,10 @@ export function HiwLivePreviewSketch({
     const laptopFadeMs = duration * LAPTOP_FADE_AT
     const captionClearMs = laptopFadeMs - PREVIEW_CAPTION_LEAD_S * 1000
     const phoneInMs = hiwPhoneInMs(duration)
+    const { previewOutMs, worksInMs } = previewWorksTimes(duration)
 
     const timers = [
       window.setTimeout(() => setSwinging(true), duration * SWING_KNEEL_AT),
-      window.setTimeout(() => setShowFoundation(true), duration * FOUNDATION_AT),
       window.setTimeout(() => setShowWire(true), duration * WIRE_AT),
       window.setTimeout(() => setShowWire(false), duration * WIRE_OUT_AT),
       window.setTimeout(() => setPreviewLevel(1), duration * PREVIEW_AT),
@@ -1393,6 +1421,12 @@ export function HiwLivePreviewSketch({
         setCursor({ x: HIT.open.x, y: HIT.open.y, click: false, intent: 'glide' })
         onBeatRef.current?.('preview')
       }, duration * GROW_AT),
+      window.setTimeout(() => {
+        onBeatRef.current?.('clear')
+      }, previewOutMs),
+      window.setTimeout(() => {
+        onBeatRef.current?.('works')
+      }, worksInMs),
       window.setTimeout(() => {
         setScrollDuration(1.6)
         setScrollEase(PAN_EASE)

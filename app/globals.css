@@ -248,6 +248,36 @@ body {
     var(--color-background);
 }
 
+/* Introspect: one cream field from nav through the page. Morphing
+   color regions are painted by IntrospectMorphWash (fixed, z-[1]). */
+.introspect-page-wash {
+  background:
+    radial-gradient(ellipse 80% 60% at 8% 0%, oklch(93% 0.03 228 / 0.4), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 92% 12%, oklch(94% 0.024 292 / 0.32), transparent 50%),
+    oklch(99.2% 0.006 85);
+}
+
+html[data-introspect] {
+  background:
+    radial-gradient(ellipse 80% 60% at 8% 0%, oklch(93% 0.03 228 / 0.4), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 92% 12%, oklch(94% 0.024 292 / 0.32), transparent 50%),
+    oklch(99.2% 0.006 85);
+}
+
+html[data-introspect] body {
+  background: oklch(99.2% 0.006 85);
+}
+
+html[data-introspect] .site-nav {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-introspect] footer {
+  background: transparent;
+}
+
 .coastal-grain {
   position: relative;
 }
@@ -435,8 +465,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Mobile-first: paint at the laid-out size. The later 3× desktop rules
    used to sit unscoped and override this, so the line hit overflow-x-clip
-   / contain:paint while still opaque. Hold a beat, then fade out before
-   any grow can reach the board edges. */
+   / contain:paint while still opaque. Hold long enough to read, then fade
+   before the modest grow can reach the board edges. */
 .hiw-tagline-slot {
   position: relative;
   display: block;
@@ -481,10 +511,10 @@ h1, h2, h3, h4, h5, h6 {
 
 @keyframes hiw-tagline-fade {
   0%,
-  24% {
+  58% {
     opacity: 1;
   }
-  58% {
+  82% {
     opacity: 0;
   }
   100% {

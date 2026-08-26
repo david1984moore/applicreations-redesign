@@ -10,10 +10,10 @@ export type IntrospectUiKey =
   | 'progressAria'
   | 'welcomeEyebrow'
   | 'welcomeHeading'
-  | 'whatToExpect'
-  | 'expect1'
-  | 'expect2'
-  | 'expect3'
+  | 'welcomeGreeting'
+  | 'welcomeContinue'
+  | 'redesignWelcomeContinue'
+  | 'redesignWelcomeHeading'
   | 'getStarted'
   | 'step1Title'
   | 'nameLabel'
@@ -27,18 +27,29 @@ export type IntrospectUiKey =
   | 'phoneKeepTyping'
   | 'yesContinue'
   | 'step2Title'
+  | 'step2SubtitleRedesign'
   | 'businessNameLabel'
   | 'businessNamePlaceholder'
   | 'aboutBusinessLabel'
   | 'aboutBusinessPlaceholder'
   | 'locationLabel'
-  | 'locationPlaceholder'
+  | 'locationCityLabel'
+  | 'locationCityPlaceholder'
+  | 'locationStateLabel'
+  | 'locationStatePlaceholder'
+  | 'locationCountryLabel'
+  | 'locationNoMatches'
   | 'step3Title'
   | 'step3Subtitle'
+  | 'step3TitleRedesign'
+  | 'step3SubtitleRedesign'
   | 'hasOnlineLabel'
   | 'hasOnlineYes'
   | 'chooseOne'
   | 'websiteUrlLabel'
+  | 'websiteUrlLabelHasSite'
+  | 'websiteUrlLabelRedesign'
+  | 'websiteUrlRequired'
   | 'websiteUrlPlaceholder'
   | 'socialLinksLabel'
   | 'socialLinksHint'
@@ -51,6 +62,7 @@ export type IntrospectUiKey =
   | 'removeItemAria'
   | 'step4Title'
   | 'step4Subtitle'
+  | 'step4SubtitleRedesign'
   | 'hasLogoLabel'
   | 'uploadLogoLabel'
   | 'uploadLogoHint'
@@ -67,13 +79,22 @@ export type IntrospectUiKey =
   | 'addMorePictures'
   | 'removeFileAria'
   | 'uploadSecurityNotice'
+  | 'keepChangeTitle'
+  | 'keepChangeSubtitle'
+  | 'keepHeading'
+  | 'changeHeading'
+  | 'keepItemsError'
+  | 'changePrioritiesError'
+  | 'keepChangeNotesLabel'
+  | 'keepChangeNotesPlaceholder'
   | 'step5Title'
   | 'step5Hint'
-  | 'addAction'
-  | 'actionPlaceholder'
+  | 'step5TitleRedesign'
+  | 'step5HintRedesign'
   | 'visitorActionsError'
   | 'step6Title'
   | 'step6Subtitle'
+  | 'step6SubtitleRedesign'
   | 'siteDepthError'
   | 'step7Title'
   | 'step7Subtitle'
@@ -81,6 +102,7 @@ export type IntrospectUiKey =
   | 'colorsHeading'
   | 'noPreference'
   | 'matchLogoColors'
+  | 'keepCurrentLook'
   | 'designFeelsError'
   | 'colorPalettesError'
   | 'colorNotesError'
@@ -94,11 +116,14 @@ export type IntrospectUiKey =
   | 'step9Title'
   | 'step9Aria'
   | 'step9Placeholder'
+  | 'step9PlaceholderRedesign'
   | 'continue'
   | 'continueToReview'
   | 'submitIntrospect'
   | 'reviewHeading'
   | 'reviewSubtitle'
+  | 'reviewEdit'
+  | 'reviewDone'
   | 'reviewAboutYou'
   | 'reviewName'
   | 'reviewEmail'
@@ -108,8 +133,13 @@ export type IntrospectUiKey =
   | 'reviewLocation'
   | 'reviewWhatYouDo'
   | 'reviewOnlinePresence'
+  | 'reviewCurrentWebsite'
   | 'reviewAlreadyOnline'
   | 'reviewWebsite'
+  | 'reviewKeepChange'
+  | 'reviewKeep'
+  | 'reviewChange'
+  | 'reviewCurrentSiteNotes'
   | 'reviewSocialLinks'
   | 'reviewSitesAdmire'
   | 'reviewLogoPhotos'
@@ -131,14 +161,17 @@ export type IntrospectUiKey =
   | 'reviewAnythingElse'
   | 'reviewNotes'
   | 'successEyebrow'
+  | 'successThanks'
   | 'successHeading'
+  | 'successHeadingRest'
+  | 'successHeadingRedesign'
+  | 'successHeadingRestRedesign'
   | 'successNextHeading'
   | 'successNext1'
+  | 'successNext1Redesign'
   | 'successNext2'
-  | 'successNext3'
-  | 'successNext4'
-  | 'successFootnote'
-  | 'successHomeAria'
+  | 'successClosing'
+  | 'successClosingRedesign'
   | 'errorGeneric'
   | 'errorTryEmail'
 
@@ -153,6 +186,8 @@ export type Dictionary = {
     contactDescription: string
     introspectTitle: string
     introspectDescription: string
+    redesignTitle: string
+    redesignDescription: string
     pricingTitle: string
     pricingDescription: string
     demosTitle: string
@@ -188,6 +223,7 @@ export type Dictionary = {
         detail: string
         building: string
         buildingPreview: string
+        actuallyWorks: string
         phoneSuffix: string
       }
       workingWebsite: {
@@ -343,7 +379,6 @@ export type Dictionary = {
     /** Footnote in expanded “what’s included” for website package prices */
     startingPriceNote: string
     highlightsAria: string
-    exampleTotal: string
     hostingSupportHeading: string
     hostingSupportLead: string
     hostingWhoFor: string
@@ -369,6 +404,8 @@ export type Dictionary = {
     goingLiveStep2Title: string
     goingLiveStep2BulletPlan: string
     goingLiveStep2CancellationHeading: string
+    goingLiveStep2CancelBuildHeading: string
+    goingLiveStep2BulletCancelBuild: string
     goingLiveStep2BulletCancel: string
     goingLiveStep2CancelItems: string[]
     goingLiveStep2CancelClosing: string
@@ -472,8 +509,10 @@ export type Dictionary = {
     businessName: string
     aboutBusinessEmpty: string
     aboutBusinessShort: string
-    locationEmpty: string
-    locationShort: string
+    locationCityEmpty: string
+    locationCityShort: string
+    locationStateEmpty: string
+    locationCountryEmpty: string
     nameHardShort: string
     nameHardLetters: string
     nameSoftWarning: string
@@ -496,6 +535,70 @@ export type Dictionary = {
       | 'airy-light'
       | 'editorial',
       { title: string; description: string }
+    >
+    visitorActions: Record<
+      | 'call-you'
+      | 'email-you'
+      | 'see-hours'
+      | 'find-you'
+      | 'get-directions'
+      | 'see-photos'
+      | 'read-about-you'
+      | 'see-a-menu'
+      | 'see-prices'
+      | 'see-what-you-offer'
+      | 'see-events'
+      | 'see-a-calendar'
+      | 'browse-a-gallery'
+      | 'watch-a-video'
+      | 'listen'
+      | 'read-updates'
+      | 'read-stories'
+      | 'meet-the-people'
+      | 'see-a-portfolio'
+      | 'download-a-file'
+      | 'ask-a-question'
+      | 'fill-out-a-form'
+      | 'join-email-list'
+      | 'leave-a-review'
+      | 'rsvp'
+      | 'volunteer'
+      | 'share'
+      | 'book-a-visit'
+      | 'make-a-reservation'
+      | 'schedule-an-appointment'
+      | 'request-a-quote'
+      | 'donate'
+      | 'buy-something'
+      | 'place-an-order'
+      | 'pay-online'
+      | 'create-an-account'
+      | 'apply'
+      | 'search-the-site'
+      | 'chat'
+      | 'sign-up-for-a-class',
+      string
+    >
+    keepItems: Record<
+      | 'logo'
+      | 'colors'
+      | 'photos'
+      | 'words'
+      | 'pages'
+      | 'contact'
+      | 'start-fresh',
+      string
+    >
+    changePriorities: Record<
+      | 'looks-old'
+      | 'hard-on-phone'
+      | 'hard-to-find'
+      | 'easier-to-update'
+      | 'new-things'
+      | 'words-off'
+      | 'hard-to-search'
+      | 'slow-or-broken',
+      string
     >
     colorPalettes: Record<
       | 'ocean-blues'
@@ -615,11 +718,15 @@ export type Dictionary = {
       clientEmailSubject: string
       clientEmailTitle: string
       clientEmailIntro: string
+      clientEmailSubjectRedesign: string
+      clientEmailTitleRedesign: string
+      clientEmailIntroRedesign: string
       clientEmailRecommendedLabel: string
       clientEmailPricingLabel: string
       clientEmailSectionRecommendation: string
       clientEmailSectionContact: string
       clientEmailSectionOnline: string
+      clientEmailSectionKeepChange: string
       clientEmailSectionAssets: string
       clientEmailSectionDirection: string
       clientEmailSignoff: string
@@ -628,6 +735,11 @@ export type Dictionary = {
       ownerEmailSubject: string
       ownerEmailTitle: string
       ownerEmailIntro: string
+      ownerEmailSubjectRedesign: string
+      ownerEmailTitleRedesign: string
+      ownerEmailIntroRedesign: string
+      websiteUrlRequired: string
+      keepChangeRequired: string
     }
     pricingSelection: {
       invalidBody: string

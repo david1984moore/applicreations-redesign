@@ -1,7 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import type { MouseEventHandler, ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  type MouseEventHandler,
+  type ReactNode,
+} from 'react'
 import { cn } from '@/lib/utils'
 
 function BoldCheck({ className }: { className?: string }) {
@@ -51,8 +57,38 @@ export function SpectrumFlipCta({
   type = 'button',
   checkOnHover = true,
 }: SpectrumFlipCtaProps) {
+  const bloomRef = useRef<HTMLSpanElement>(null)
+  const restTimerRef = useRef<number>(0)
+
+  const cancelBloomRest = useCallback(() => {
+    window.clearTimeout(restTimerRef.current)
+  }, [])
+
+  const snapBloomRest = useCallback(() => {
+    const bloom = bloomRef.current
+    const host = bloom?.closest('a, button')
+    if (!bloom || !host) return
+    if (host.matches(':hover') || host.matches(':focus-visible')) return
+    bloom.style.transition = 'none'
+    bloom.style.scale = '0'
+    bloom.style.transform = 'scale(0)'
+    void bloom.offsetWidth
+    bloom.style.transition = ''
+    bloom.style.scale = ''
+    bloom.style.transform = ''
+  }, [])
+
+  const scheduleBloomRest = useCallback(() => {
+    cancelBloomRest()
+    // Morph is 300ms. If a compositor layer is still mid-bloom after that,
+    // snap to rest so a leftover slab cannot linger.
+    restTimerRef.current = window.setTimeout(snapBloomRest, 320)
+  }, [cancelBloomRest, snapBloomRest])
+
+  useEffect(() => () => cancelBloomRest(), [cancelBloomRest])
+
   const classes = cn(
-    'group relative inline-flex items-center justify-center overflow-hidden rounded-2xl font-sans font-bold tracking-tight whitespace-nowrap cursor-pointer',
+    'group relative isolate inline-flex items-center justify-center overflow-hidden rounded-2xl font-sans font-bold tracking-tight whitespace-nowrap cursor-pointer',
     'shadow-[0_8px_24px_-8px_rgba(0,0,0,0.28),0_2px_8px_-2px_rgba(0,0,0,0.12)]',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
     'disabled:opacity-45 disabled:pointer-events-none disabled:cursor-not-allowed',
@@ -65,36 +101,34 @@ export function SpectrumFlipCta({
   const morphEase =
     'duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none'
 
-  // Slot stays the origin-dot size so the pill hugs the label. The check
-  // overlays (overflows left) and the cluster nudges right so the unit
-  // stays centered without stretching the button.
+  // Same 12px / 16px cluster shift as translate-x-3 / translate-x-4.
+  // `left` does not promote a compositor layer, so a w-full pill cannot
+  // rest as a leftover white slab with a smeared origin.
   const checkNudge =
     checkOnHover &&
     (size === 'sm'
-      ? 'lg:group-hover:translate-x-3 lg:group-focus-visible:translate-x-3'
-      : 'lg:group-hover:translate-x-4 lg:group-focus-visible:translate-x-4')
+      ? 'lg:group-hover:left-3 lg:group-focus-visible:left-3'
+      : 'lg:group-hover:left-4 lg:group-focus-visible:left-4')
 
   const content = (
     <span
       className={cn(
-        'relative z-10 inline-flex items-center gap-2',
-        checkOnHover &&
-          cn(
-            'lg:transition-transform',
-            morphEase,
-            checkNudge
-          )
+        'relative z-10 inline-flex items-center gap-2 left-0',
+        checkOnHover && cn('lg:transition-[left]', morphEase, checkNudge)
       )}
     >
       <span
         className="pointer-events-none relative hidden h-2 w-2 shrink-0 overflow-visible lg:block"
         aria-hidden
       >
-        {/* Fill blooms from the origin so it tracks the mark. */}
-        <span className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2">
+        {/* Fill blooms from the origin so it tracks the mark.
+            Center with margin, not translate — a transform on this 8px
+            wrapper rasterizes the scale-[70] fill into a leftover slab. */}
+        <span className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-2 w-2 -ml-1 -mt-1">
           <span
+            ref={bloomRef}
             className={cn(
-              'absolute inset-0 origin-center rounded-full bg-[oklch(68%_0.15_230)] scale-0 transition-transform',
+              'absolute inset-0 origin-center rounded-full bg-[oklch(68%_0.15_230)] scale-0 transition-[transform,scale]',
               'group-hover:scale-[70] group-focus-visible:scale-[70]',
               morphEase
             )}
@@ -104,7 +138,7 @@ export function SpectrumFlipCta({
         {/* Rest-state core — fades when the check takes over; turns white if it stays. */}
         <span
           className={cn(
-            'absolute left-1/2 top-1/2 z-[1] h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(68%_0.15_230)]',
+            'absolute left-1/2 top-1/2 z-[1] h-2 w-2 -ml-1 -mt-1 rounded-full bg-[oklch(68%_0.15_230)]',
             checkOnHover
               ? cn(
                   'transition-opacity group-hover:opacity-0 group-focus-visible:opacity-0',
@@ -120,9 +154,9 @@ export function SpectrumFlipCta({
         {checkOnHover && (
           <BoldCheck
             className={cn(
-              'pointer-events-none absolute right-0 top-1/2 z-[2] hidden -translate-y-1/2 text-white',
+              'pointer-events-none absolute right-0 top-1/2 z-[2] hidden text-white',
               'group-hover:block group-focus-visible:block',
-              size === 'sm' ? 'h-8 w-8' : 'h-10 w-10'
+              size === 'sm' ? 'h-8 w-8 -mt-4' : 'h-10 w-10 -mt-5'
             )}
           />
         )}
@@ -133,16 +167,29 @@ export function SpectrumFlipCta({
     </span>
   )
 
+  const hoverSafety = {
+    onPointerEnter: cancelBloomRest,
+    onPointerLeave: scheduleBloomRest,
+    onPointerCancel: scheduleBloomRest,
+    onBlur: scheduleBloomRest,
+  }
+
   if (href && !disabled) {
     return (
-      <Link href={href} className={classes} onClick={onClick}>
+      <Link href={href} className={classes} onClick={onClick} {...hoverSafety}>
         {content}
       </Link>
     )
   }
 
   return (
-    <button type={type} className={classes} disabled={disabled} onClick={onClick}>
+    <button
+      type={type}
+      className={classes}
+      disabled={disabled}
+      onClick={onClick}
+      {...hoverSafety}
+    >
       {content}
     </button>
   )

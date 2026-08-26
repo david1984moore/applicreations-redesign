@@ -5,9 +5,11 @@ import { cn } from '@/lib/utils'
 export function IncludedMark({
   className,
   size = 'sm',
+  strokeWidth = 2.85,
 }: {
   className?: string
   size?: 'sm' | 'md'
+  strokeWidth?: number
 }) {
   return (
     <Check
@@ -16,7 +18,7 @@ export function IncludedMark({
         size === 'md' ? 'h-4 w-4' : 'h-3.5 w-3.5',
         className
       )}
-      strokeWidth={2.85}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       absoluteStrokeWidth

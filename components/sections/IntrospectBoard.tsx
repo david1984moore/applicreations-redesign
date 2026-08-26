@@ -6,11 +6,11 @@ import {
   type ReactNode,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
 } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import Image from 'next/image'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import {
   AlignLeft,
@@ -29,7 +29,11 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useLocale } from '@/components/i18n/LocaleProvider'
+import { IntrospectMorphWash } from '@/components/introspect/IntrospectMorphWash'
+import { IntrospectSuccess } from '@/components/introspect/IntrospectSuccess'
+import { LocationCombobox } from '@/components/introspect/LocationCombobox'
 import { Button } from '@/components/ui/Button'
+import { SITE_VIEWPORT_BELOW_NAV_CLASS } from '@/components/ui/Navigation'
 import { SpectrumFlipCta } from '@/components/ui/SpectrumFlipCta'
 import { Progress } from '@/components/ui/Progress'
 import type { Dictionary } from '@/lib/i18n/dictionaries/types'
@@ -42,22 +46,40 @@ import {
   getColorPaletteOptions,
   getDesignFeelOptions,
   getSiteDepthOptions,
+  getVisitorActionOptions,
   getYesNoUnsure,
   isValidEmail,
   liveEmailError,
-  locationError,
+  formatLocation,
+  locationFieldErrors,
   mergeDraftAnswers,
   nameHardError,
   nameLooksSuspicious,
   nameSoftWarning,
+  normalizeWebsiteEntry,
   phoneDigits,
   recommendPlan,
+  formatChangePriorityLabels,
+  formatKeepItemLabels,
+  formatVisitorActionLabels,
+  getChangePriorityOptions,
+  getKeepItemOptions,
+  getQuestionSequence,
+  websiteUrlRequiredError,
+  withNormalizedWebsiteUrls,
+  type ChangePriority,
   type ColorPalette,
   type DesignFeel,
   type IntrospectAnswers,
+  type IntrospectVariant,
+  type KeepItem,
+  type QuestionId,
   type SiteDepth,
+  type VisitorAction,
   type YesNoUnsure,
 } from '@/lib/introspect'
+import { countryOptions, DEFAULT_COUNTRY, isCountryCode } from '@/lib/countries'
+import { US_CITIES, US_STATES, matchUsState, usStateCode } from '@/lib/us-places'
 import {
   isPlanId,
   isSupportPlanId,
@@ -68,8 +90,8 @@ import {
 } from '@/lib/pricing'
 import { cn } from '@/lib/utils'
 
-const STORAGE_KEY = 'applicreations-introspect-draft'
-const TOTAL_STEPS = 9 // welcome is phase 'welcome'; steps 1–9 are questions
+const STORAGE_KEY_NEW_SITE = 'applicreations-introspect-draft'
+const STORAGE_KEY_REDESIGN = 'applicreations-redesign-draft'
 
 const UPLOAD_ACCEPT = 'image/jpeg,image/png,image/webp,image/svg+xml,.jpg,.jpeg,.png,.webp,.svg'
 const MAX_LOGO_BYTES = 5 * 1024 * 1024
@@ -82,13 +104,15 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-/** Light purple selection — cohesive with progress bar / logo gradient */
+/** Sky-blue selection — matches Introspect Start (`oklch(68% 0.15 230)`) */
 const choiceSelectedClass =
-  'border-[oklch(58%_0.13_280)] bg-[oklch(96%_0.04_280)] text-[oklch(38%_0.10_280)] ring-2 ring-[oklch(58%_0.13_280/0.18)]'
+  'border-[oklch(62%_0.12_230)] bg-[oklch(96%_0.04_230)] text-[oklch(38%_0.10_230)] ring-2 ring-[oklch(68%_0.15_230/0.18)]'
 const choiceUnselectedClass =
   'border-gray-300 bg-white text-gray-800 hover:border-gray-400'
 const cardSelectedClass =
-  'border-[oklch(58%_0.13_280)] bg-[oklch(96%_0.04_280/0.85)] ring-2 ring-[oklch(58%_0.13_280/0.18)]'
+  'border-[oklch(62%_0.12_230)] bg-[oklch(96%_0.04_230/0.85)] ring-2 ring-[oklch(68%_0.15_230/0.18)]'
+const skyButtonClass =
+  '!bg-[oklch(68%_0.15_230)] hover:!bg-[oklch(62%_0.14_230)] focus-visible:!ring-[oklch(68%_0.15_230)/0.45]'
 const cardUnselectedClass = 'border-gray-200 bg-white/80 hover:border-gray-300'
 
 const DESIGN_FEEL_ICONS: Record<DesignFeel, LucideIcon> = {
@@ -105,6 +129,96 @@ const DESIGN_FEEL_ICONS: Record<DesignFeel, LucideIcon> = {
 }
 
 type Phase = 'welcome' | 'questions' | 'review' | 'success'
+
+const WELCOME_LINE_ENTER_S = 0.9
+const WELCOME_LINE_HOLD_MS = 700
+const WELCOME_LINE_DRIFT_S = 1.2
+const WELCOME_LINE_FADE_IN_S = 1.35
+const WELCOME_LINE_FADE_IN_DELAY_S = 0.32
+
+function WelcomeHeadline({
+  greeting,
+  continueLine,
+  fullHeading,
+  skipAnimation,
+}: {
+  greeting: string
+  continueLine: string
+  fullHeading: string
+  skipAnimation: boolean
+}) {
+  const prefersReducedMotion = useReducedMotion()
+  const instant = skipAnimation || !!prefersReducedMotion
+  const [line, setLine] = useState<'greeting' | 'continue'>(
+    instant ? 'continue' : 'greeting'
+  )
+
+  useEffect(() => {
+    if (instant) return
+    const id = window.setTimeout(
+      () => setLine('continue'),
+      WELCOME_LINE_ENTER_S * 1000 + WELCOME_LINE_HOLD_MS
+    )
+    return () => window.clearTimeout(id)
+  }, [instant])
+
+  return (
+    <h1 className="relative overflow-visible font-mi-gente text-2xl sm:text-3xl text-gray-900 leading-tight">
+      <span className="sr-only">{fullHeading}</span>
+      <span className="invisible block" aria-hidden>
+        {continueLine}
+      </span>
+      <span
+        className="absolute inset-0 overflow-visible flex items-center justify-center"
+        aria-hidden
+      >
+        <AnimatePresence initial={!instant}>
+          <motion.span
+            key={line}
+            className="absolute inset-0 flex items-center justify-center text-center"
+            initial={
+              instant
+                ? false
+                : line === 'greeting'
+                  ? { opacity: 0, y: 8 }
+                  : { opacity: 0, y: 10 }
+            }
+            animate={{ opacity: 1, y: 0 }}
+            exit={{
+              opacity: 0,
+              y: -36,
+              transition: {
+                opacity: { duration: 0.95, ease: [0.22, 1, 0.36, 1] },
+                y: { duration: WELCOME_LINE_DRIFT_S, ease: [0.16, 1, 0.3, 1] },
+              },
+            }}
+            transition={
+              line === 'continue'
+                ? {
+                    opacity: {
+                      duration: WELCOME_LINE_FADE_IN_S,
+                      delay: WELCOME_LINE_FADE_IN_DELAY_S,
+                      ease: [0.33, 0, 0.2, 1],
+                    },
+                    y: {
+                      duration: WELCOME_LINE_FADE_IN_S,
+                      delay: WELCOME_LINE_FADE_IN_DELAY_S,
+                      ease: [0.16, 1, 0.3, 1],
+                    },
+                  }
+                : {
+                    duration: WELCOME_LINE_ENTER_S,
+                    ease: [0.22, 1, 0.36, 1],
+                  }
+            }
+          >
+            {line === 'greeting' ? greeting : continueLine}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </h1>
+  )
+}
 
 function listOrDash(items: string[]): string {
   const cleaned = items.map((s) => s.trim()).filter(Boolean)
@@ -131,16 +245,17 @@ function textareaClass(error?: string) {
 
 type FieldErrors = Partial<Record<keyof IntrospectAnswers, string>>
 
-function validateStep(
-  step: number,
+function validateQuestion(
+  questionId: QuestionId,
   answers: IntrospectAnswers,
-  dict: Dictionary
+  dict: Dictionary,
+  isRedesign: boolean
 ): FieldErrors {
   const errors: FieldErrors = {}
   const ui = dict.introspectUi
   const v = dict.introspectValidation
 
-  if (step === 1) {
+  if (questionId === 'about-you') {
     const nameErr = nameHardError(answers.fullName, v)
     if (nameErr) errors.fullName = nameErr
     if (!isValidEmail(answers.email)) {
@@ -152,45 +267,64 @@ function validateStep(
     }
   }
 
-  if (step === 2) {
+  if (questionId === 'business') {
     const bizErr = businessNameError(answers.businessName, v)
     if (bizErr) errors.businessName = bizErr
     const aboutErr = aboutBusinessError(answers.aboutBusiness, v)
     if (aboutErr) errors.aboutBusiness = aboutErr
-    const locErr = locationError(answers.location, v)
-    if (locErr) errors.location = locErr
+    const locErrs = locationFieldErrors(answers, v)
+    if (locErrs.city) errors.city = locErrs.city
+    if (locErrs.state) errors.state = locErrs.state
+    if (locErrs.country) errors.country = locErrs.country
   }
 
-  if (step === 3) {
-    if (!answers.hasOnlinePresence) {
+  if (questionId === 'online') {
+    if (isRedesign) {
+      const urlErr = websiteUrlRequiredError(answers.websiteUrl, ui.websiteUrlRequired)
+      if (urlErr) errors.websiteUrl = urlErr
+    } else if (!answers.hasOnlinePresence) {
       errors.hasOnlinePresence = ui.chooseOne
     }
   }
 
-  if (step === 4) {
+  if (questionId === 'logo') {
     if (!answers.hasLogo) errors.hasLogo = ui.chooseOne
     if (!answers.hasPhotos) errors.hasPhotos = ui.chooseOne
     if (!answers.needsPhotosTaken) errors.needsPhotosTaken = ui.chooseOne
   }
 
-  if (step === 5) {
+  if (questionId === 'keep-change') {
+    if (answers.keepItems.length === 0) {
+      errors.keepItems = ui.keepItemsError
+    }
+    if (answers.changePriorities.length === 0) {
+      errors.changePriorities = ui.changePrioritiesError
+    }
+  }
+
+  if (questionId === 'visitor-actions') {
     const actions = answers.visitorActions.map((a) => a.trim()).filter(Boolean)
     if (actions.length === 0) {
       errors.visitorActions = ui.visitorActionsError
     }
   }
 
-  if (step === 6) {
+  if (questionId === 'site-depth') {
     if (!answers.siteDepth) {
       errors.siteDepth = ui.siteDepthError
     }
   }
 
-  if (step === 7) {
-    if (!answers.designFeelNoPreference && answers.designFeels.length === 0) {
+  if (questionId === 'design') {
+    if (
+      !answers.keepCurrentLook &&
+      !answers.designFeelNoPreference &&
+      answers.designFeels.length === 0
+    ) {
       errors.designFeels = ui.designFeelsError
     }
     if (
+      !answers.keepCurrentLook &&
       !answers.colorPaletteNoPreference &&
       !answers.colorPaletteFromLogo &&
       answers.colorPalettes.length === 0
@@ -198,6 +332,7 @@ function validateStep(
       errors.colorPalettes = ui.colorPalettesError
     }
     if (
+      !answers.keepCurrentLook &&
       !answers.colorPaletteNoPreference &&
       !answers.colorPaletteFromLogo &&
       answers.colorPalettes.includes('custom') &&
@@ -207,16 +342,22 @@ function validateStep(
     }
   }
 
-  // steps 8–9 (avoidances, business extras) are optional
-
   return errors
 }
 
-export function IntrospectBoard() {
+export function IntrospectBoard({
+  variant = 'new-site',
+}: {
+  variant?: IntrospectVariant
+} = {}) {
   const formId = useId()
   const { dict, t, href, locale } = useLocale()
   const ui = dict.introspectUi
   const dash = dict.common.emptyDash
+  const isRedesign = variant === 'redesign'
+  const storageKey = isRedesign ? STORAGE_KEY_REDESIGN : STORAGE_KEY_NEW_SITE
+  const sequence = useMemo(() => getQuestionSequence(variant), [variant])
+  const totalSteps = sequence.length
   const [skipIntro] = useState(() => isLocaleTransition())
 
   const yesNoUnsure = getYesNoUnsure(dict)
@@ -224,8 +365,11 @@ export function IntrospectBoard() {
     o.id === 'yes' ? { ...o, label: ui.hasOnlineYes } : o
   )
   const siteDepthOptions = getSiteDepthOptions(dict)
+  const visitorActionOptions = getVisitorActionOptions(dict)
   const designFeelOptions = getDesignFeelOptions(dict)
   const colorPaletteOptions = getColorPaletteOptions(dict)
+  const keepItemOptions = getKeepItemOptions(dict)
+  const changePriorityOptions = getChangePriorityOptions(dict)
 
   const yesNoLabel = (value: YesNoUnsure | ''): string => {
     if (!value) return dash
@@ -239,6 +383,7 @@ export function IntrospectBoard() {
 
   const [phase, setPhase] = useState<Phase>('welcome')
   const [step, setStep] = useState(1)
+  const questionId = sequence[step - 1] ?? sequence[0] ?? 'about-you'
   const [answers, setAnswers] = useState<IntrospectAnswers>(emptyAnswers)
   const [errors, setErrors] = useState<FieldErrors>({})
   const [warnings, setWarnings] = useState<FieldErrors>({})
@@ -251,11 +396,32 @@ export function IntrospectBoard() {
   const [uploadErrors, setUploadErrors] = useState<{ logo?: string; photos?: string }>({})
   /** True when a website package was chosen on /pricing — skip site-depth step. */
   const [skipSiteDepth, setSkipSiteDepth] = useState(false)
+  /** Jumping to one question from Review — Continue/Back return there. */
+  const [editingFromReview, setEditingFromReview] = useState(false)
+
+  const countryComboboxOptions = useMemo(
+    () => countryOptions(locale).map((c) => ({ value: c.code, label: c.name })),
+    [locale]
+  )
+  const stateComboboxOptions = useMemo(
+    () => US_STATES.map((s) => ({ value: s.name, label: s.name, hint: s.code })),
+    []
+  )
+  const isUsLocation = answers.country === DEFAULT_COUNTRY
+  const cityComboboxOptions = useMemo(() => {
+    const code = usStateCode(answers.state)
+    const rows = code ? US_CITIES.filter((c) => c.state === code) : US_CITIES
+    return rows.map((c) => ({
+      value: `${c.name}|${c.state}`,
+      label: c.name,
+      hint: code ? undefined : c.state,
+    }))
+  }, [answers.state])
 
   useEffect(() => {
     let draft: IntrospectAnswers = emptyAnswers
     try {
-      const raw = localStorage.getItem(STORAGE_KEY)
+      const raw = localStorage.getItem(storageKey)
       if (raw) {
         const parsed = JSON.parse(raw) as Parameters<typeof mergeDraftAnswers>[0]
         draft = mergeDraftAnswers({
@@ -312,19 +478,29 @@ export function IntrospectBoard() {
       }
     }
 
+    if (isRedesign) {
+      draft = {
+        ...draft,
+        variant: 'redesign',
+        hasOnlinePresence: draft.hasOnlinePresence || 'yes',
+      }
+    } else {
+      draft = { ...draft, variant: 'new-site' }
+    }
+
     setAnswers(draft)
-  }, [])
+  }, [isRedesign])
 
   useEffect(() => {
     if (phase !== 'questions' && phase !== 'review') return
     try {
       // File binaries aren't persisted — omit names so drafts don't claim uploads we don't have.
       const { logoFileName: _logo, photoFileNames: _photos, ...persistable } = answers
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable))
+      localStorage.setItem(storageKey, JSON.stringify(persistable))
     } catch {
       /* ignore quota */
     }
-  }, [answers, phase])
+  }, [answers, phase, storageKey])
 
   useEffect(() => {
     const lock = phase === 'welcome' || phase === 'success'
@@ -339,6 +515,20 @@ export function IntrospectBoard() {
       document.body.style.overflow = prevBody
     }
   }, [phase])
+
+  useEffect(() => {
+    const root = document.documentElement
+    root.dataset.introspect = phase === 'success' ? 'success' : ''
+    return () => {
+      delete root.dataset.introspect
+    }
+  }, [phase])
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return
+    if (new URLSearchParams(window.location.search).get('preview') !== 'success') return
+    setPhase('success')
+  }, [])
 
   const update =
     (field: keyof IntrospectAnswers) =>
@@ -396,13 +586,30 @@ export function IntrospectBoard() {
         }))
         return
       }
-      if (field === 'location') {
+      if (field === 'city') {
         const trimmed = value.trim()
         setErrors((prev) => ({
           ...prev,
-          location:
+          city:
             trimmed.length > 0
-              ? locationError(value, dict.introspectValidation)
+              ? locationFieldErrors(
+                  { city: value, state: answers.state, country: answers.country },
+                  dict.introspectValidation
+                ).city
+              : undefined,
+        }))
+        return
+      }
+      if (field === 'state') {
+        const trimmed = value.trim()
+        setErrors((prev) => ({
+          ...prev,
+          state:
+            trimmed.length > 0 || answers.country !== DEFAULT_COUNTRY
+              ? locationFieldErrors(
+                  { city: answers.city, state: value, country: answers.country },
+                  dict.introspectValidation
+                ).state
               : undefined,
         }))
         return
@@ -490,11 +697,23 @@ export function IntrospectBoard() {
   }
 
   const setLinkList = (
-    field: 'socialMediaLinks' | 'admiredWebsiteLinks' | 'visitorActions',
+    field: 'socialMediaLinks' | 'admiredWebsiteLinks',
     links: string[]
   ) => {
     setAnswers((prev) => ({ ...prev, [field]: links }))
-    if (field === 'visitorActions' && errors.visitorActions) {
+  }
+
+  const toggleVisitorAction = (id: VisitorAction) => {
+    setAnswers((prev) => {
+      const has = prev.visitorActions.includes(id)
+      return {
+        ...prev,
+        visitorActions: has
+          ? prev.visitorActions.filter((a) => a !== id)
+          : [...prev.visitorActions, id],
+      }
+    })
+    if (errors.visitorActions) {
       setErrors((prev) => ({ ...prev, visitorActions: undefined }))
     }
   }
@@ -505,6 +724,7 @@ export function IntrospectBoard() {
       return {
         ...prev,
         designFeelNoPreference: false,
+        keepCurrentLook: false,
         designFeels: has
           ? prev.designFeels.filter((f) => f !== id)
           : [...prev.designFeels, id],
@@ -519,6 +739,7 @@ export function IntrospectBoard() {
       return {
         ...prev,
         designFeelNoPreference: next,
+        keepCurrentLook: next ? false : prev.keepCurrentLook,
         designFeels: next ? [] : prev.designFeels,
       }
     })
@@ -532,6 +753,7 @@ export function IntrospectBoard() {
         ...prev,
         colorPaletteNoPreference: false,
         colorPaletteFromLogo: false,
+        keepCurrentLook: false,
         colorPalettes: has
           ? prev.colorPalettes.filter((c) => c !== id)
           : [...prev.colorPalettes, id],
@@ -547,6 +769,7 @@ export function IntrospectBoard() {
       return {
         ...prev,
         colorPaletteNoPreference: next,
+        keepCurrentLook: next ? false : prev.keepCurrentLook,
         colorPaletteFromLogo: next ? false : prev.colorPaletteFromLogo,
         colorPalettes: next ? [] : prev.colorPalettes,
         colorNotes: next ? '' : prev.colorNotes,
@@ -563,6 +786,7 @@ export function IntrospectBoard() {
         ...prev,
         colorPaletteFromLogo: next,
         colorPaletteNoPreference: next ? false : prev.colorPaletteNoPreference,
+        keepCurrentLook: next ? false : prev.keepCurrentLook,
         colorPalettes: next ? [] : prev.colorPalettes,
         colorNotes: next ? '' : prev.colorNotes,
       }
@@ -571,30 +795,80 @@ export function IntrospectBoard() {
     if (errors.colorNotes) setErrors((prev) => ({ ...prev, colorNotes: undefined }))
   }
 
+  const toggleKeepCurrentLook = () => {
+    setAnswers((prev) => {
+      const next = !Boolean(prev.keepCurrentLook)
+      return {
+        ...prev,
+        keepCurrentLook: next,
+        designFeelNoPreference: next ? false : prev.designFeelNoPreference,
+        designFeels: next ? [] : prev.designFeels,
+        colorPaletteFromLogo: next ? false : prev.colorPaletteFromLogo,
+        colorPaletteNoPreference: next ? false : prev.colorPaletteNoPreference,
+        colorPalettes: next ? [] : prev.colorPalettes,
+        colorNotes: next ? '' : prev.colorNotes,
+      }
+    })
+    if (errors.designFeels) setErrors((prev) => ({ ...prev, designFeels: undefined }))
+    if (errors.colorPalettes) setErrors((prev) => ({ ...prev, colorPalettes: undefined }))
+    if (errors.colorNotes) setErrors((prev) => ({ ...prev, colorNotes: undefined }))
+  }
+
+  const toggleKeepItem = (id: KeepItem) => {
+    setAnswers((prev) => {
+      if (id === 'start-fresh') {
+        return {
+          ...prev,
+          keepItems: prev.keepItems.includes('start-fresh') ? [] : ['start-fresh'],
+        }
+      }
+      const withoutFresh = prev.keepItems.filter((item) => item !== 'start-fresh')
+      const has = withoutFresh.includes(id)
+      return {
+        ...prev,
+        keepItems: has ? withoutFresh.filter((item) => item !== id) : [...withoutFresh, id],
+      }
+    })
+    if (errors.keepItems) setErrors((prev) => ({ ...prev, keepItems: undefined }))
+  }
+
+  const toggleChangePriority = (id: ChangePriority) => {
+    setAnswers((prev) => {
+      const has = prev.changePriorities.includes(id)
+      return {
+        ...prev,
+        changePriorities: has
+          ? prev.changePriorities.filter((item) => item !== id)
+          : [...prev.changePriorities, id],
+      }
+    })
+    if (errors.changePriorities) setErrors((prev) => ({ ...prev, changePriorities: undefined }))
+  }
+
   const advanceFrom = (current: number) => {
     let next = current + 1
-    if (skipSiteDepth && next === 6) next = 7
+    if (skipSiteDepth && sequence[next - 1] === 'site-depth') next += 1
     return next
   }
 
   const retreatFrom = (current: number) => {
     let prev = current - 1
-    if (skipSiteDepth && prev === 6) prev = 5
+    if (skipSiteDepth && sequence[prev - 1] === 'site-depth') prev -= 1
     return prev
   }
 
-  const stepErrors = validateStep(step, answers, dict)
+  const stepErrors = validateQuestion(questionId, answers, dict, isRedesign)
   const canContinue = Object.keys(stepErrors).length === 0
 
   const goNext = () => {
-    const nextErrors = validateStep(step, answers, dict)
+    const nextErrors = validateQuestion(questionId, answers, dict, isRedesign)
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
       setWarnings({})
       return
     }
 
-    if (step === 1 && nameLooksSuspicious(answers.fullName) && !nameConfirmPending) {
+    if (questionId === 'about-you' && nameLooksSuspicious(answers.fullName) && !nameConfirmPending) {
       setWarnings({ fullName: nameSoftWarning(dict) })
       setNameConfirmPending(true)
       return
@@ -603,9 +877,15 @@ export function IntrospectBoard() {
     setErrors({})
     setWarnings({})
     setNameConfirmPending(false)
-    if (step < TOTAL_STEPS) {
+    setAnswers((prev) => withNormalizedWebsiteUrls(prev))
+    if (editingFromReview) {
+      setEditingFromReview(false)
+      setPhase('review')
+      return
+    }
+    if (step < totalSteps) {
       const next = advanceFrom(step)
-      if (next > TOTAL_STEPS) {
+      if (next > totalSteps) {
         setPhase('review')
         return
       }
@@ -621,9 +901,14 @@ export function IntrospectBoard() {
     setNameConfirmPending(false)
     setServerMessage('')
     setStatus('idle')
+    if (editingFromReview) {
+      setEditingFromReview(false)
+      setPhase('review')
+      return
+    }
     if (phase === 'review') {
       setPhase('questions')
-      setStep(TOTAL_STEPS)
+      setStep(totalSteps)
       return
     }
     if (step === 1) {
@@ -634,16 +919,34 @@ export function IntrospectBoard() {
   }
 
   useEffect(() => {
-    if (skipSiteDepth && step === 6) setStep(7)
-  }, [skipSiteDepth, step])
+    if (skipSiteDepth && questionId === 'site-depth' && !editingFromReview) {
+      const next = advanceFrom(step)
+      if (next > totalSteps) setPhase('review')
+      else setStep(next)
+    }
+  }, [skipSiteDepth, questionId, step, editingFromReview, totalSteps])
+
+  const editReviewSection = (target: QuestionId) => {
+    const index = sequence.indexOf(target)
+    if (index < 0) return
+    setErrors({})
+    setWarnings({})
+    setNameConfirmPending(false)
+    setServerMessage('')
+    setStatus('idle')
+    setEditingFromReview(true)
+    setStep(index + 1)
+    setPhase('questions')
+  }
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    const nextErrors = validateStep(TOTAL_STEPS, answers, dict)
+    const lastQuestion = sequence[totalSteps - 1] ?? 'extras'
+    const nextErrors = validateQuestion(lastQuestion, answers, dict, isRedesign)
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
       setPhase('questions')
-      setStep(TOTAL_STEPS)
+      setStep(totalSteps)
       return
     }
 
@@ -653,8 +956,12 @@ export function IntrospectBoard() {
     setServerMessage('')
 
     try {
+      const payload = withNormalizedWebsiteUrls({
+        ...answers,
+        variant: isRedesign ? 'redesign' : 'new-site',
+      })
       const formData = new FormData()
-      formData.append('answers', JSON.stringify(answers))
+      formData.append('answers', JSON.stringify(payload))
       formData.append('recommendation', JSON.stringify(rec))
       formData.append('locale', locale)
       if (logoFile) formData.append('logo', logoFile, logoFile.name)
@@ -675,7 +982,7 @@ export function IntrospectBoard() {
       }
 
       try {
-        localStorage.removeItem(STORAGE_KEY)
+        localStorage.removeItem(storageKey)
       } catch {
         /* ignore */
       }
@@ -690,43 +997,80 @@ export function IntrospectBoard() {
   }
 
   const progressValue =
-    phase === 'questions' ? (step / TOTAL_STEPS) * 100 : phase === 'review' ? 100 : 0
+    phase === 'questions' ? (step / totalSteps) * 100 : phase === 'review' ? 100 : 0
+
+  const wideQuestion =
+    questionId === 'keep-change' ||
+    questionId === 'visitor-actions' ||
+    questionId === 'design'
+  const compactQuestion =
+    wideQuestion || questionId === 'site-depth'
 
   const lockViewport = phase === 'welcome' || phase === 'success'
 
   const depthLabel =
     siteDepthOptions.find((o) => o.id === answers.siteDepth)?.title || dash
-  const feelLabels = answers.designFeelNoPreference
-    ? ui.noPreference
-    : answers.designFeels
-        .map((id) => designFeelOptions.find((o) => o.id === id)?.title || id)
-        .join(', ') || dash
-  const colorLabels = answers.colorPaletteFromLogo
-    ? ui.matchLogoColors
-    : answers.colorPaletteNoPreference
+  const feelLabels = answers.keepCurrentLook
+    ? ui.keepCurrentLook
+    : answers.designFeelNoPreference
       ? ui.noPreference
-      : answers.colorPalettes
-          .map((id) => colorPaletteOptions.find((o) => o.id === id)?.title || id)
+      : answers.designFeels
+          .map((id) => designFeelOptions.find((o) => o.id === id)?.title || id)
           .join(', ') || dash
+  const colorLabels = answers.keepCurrentLook
+    ? ui.keepCurrentLook
+    : answers.colorPaletteFromLogo
+      ? ui.matchLogoColors
+      : answers.colorPaletteNoPreference
+        ? ui.noPreference
+        : answers.colorPalettes
+            .map((id) => colorPaletteOptions.find((o) => o.id === id)?.title || id)
+            .join(', ') || dash
+  const successUi = isRedesign
+    ? {
+        ...ui,
+        successHeading: ui.successHeadingRedesign,
+        successHeadingRest: ui.successHeadingRestRedesign,
+        successNext1: ui.successNext1Redesign,
+        successClosing: ui.successClosingRedesign,
+      }
+    : ui
+  const designLocked = Boolean(
+    answers.keepCurrentLook || answers.designFeelNoPreference
+  )
+  const colorsLocked = Boolean(
+    answers.keepCurrentLook ||
+      answers.colorPaletteNoPreference ||
+      answers.colorPaletteFromLogo
+  )
 
   return (
     <section
       className={cn(
-        'relative bg-paper coastal-wash overflow-x-hidden max-lg:[contain:paint]',
-        // Desktop: welcome/success fit one screen. Mobile: content height only (no empty band).
-        lockViewport && 'lg:h-[calc(100svh-var(--spacing-12)-1.75rem)] lg:overflow-hidden'
+        // z-10 keeps this stacking context above IntrospectMorphWash (portaled
+        // z-[1]). max-lg contain:paint otherwise flattens the board behind the
+        // wash, so welcome copy vanishes while nav/footer stay visible.
+        'relative z-10 overflow-x-hidden bg-transparent',
+        !lockViewport && 'max-lg:[contain:paint]',
+        lockViewport &&
+          `${SITE_VIEWPORT_BELOW_NAV_CLASS} flex flex-col overflow-hidden`
       )}
     >
-      <div className="pointer-events-none absolute inset-0 coastal-grain opacity-60" aria-hidden />
+      <IntrospectMorphWash />
 
       <div
         className={cn(
-          'relative z-10 flex flex-col w-full mx-auto px-4 sm:px-6',
+          'relative z-10 flex min-h-0 flex-col w-full mx-auto px-4 sm:px-6',
           lockViewport
-            ? 'max-w-2xl justify-start gap-4 py-4 lg:h-full lg:justify-center'
+            ? cn(
+                'max-w-2xl min-h-0 flex-1 justify-start',
+                phase === 'welcome'
+                  ? 'gap-0 pt-3 pb-8 lg:pt-4 lg:pb-10'
+                  : 'gap-4 py-4 lg:justify-center'
+              )
             : 'pt-4 sm:pt-5 pb-5 sm:pb-8 gap-4',
           !lockViewport &&
-            (phase === 'questions' && step === 7 ? 'max-w-5xl' : 'max-w-2xl')
+            (phase === 'questions' && wideQuestion ? 'max-w-5xl' : 'max-w-2xl')
         )}
       >
         {(phase === 'questions' || phase === 'review') && (
@@ -735,11 +1079,11 @@ export function IntrospectBoard() {
               <span>
                 {phase === 'review'
                   ? ui.review
-                  : t(ui.stepOf, { step, total: TOTAL_STEPS })}
+                  : t(ui.stepOf, { step, total: totalSteps })}
               </span>
               <Link
                 href={href('/')}
-                className="text-primary-700 hover:underline underline-offset-2"
+                className="text-[oklch(42%_0.12_230)] hover:underline underline-offset-2"
               >
                 {ui.exit}
               </Link>
@@ -747,7 +1091,7 @@ export function IntrospectBoard() {
             <Progress
               value={progressValue}
               aria-label={ui.progressAria}
-              indicatorClassName="!bg-[oklch(58%_0.14_310)]"
+              indicatorClassName="!bg-[oklch(68%_0.15_230)]"
             />
           </div>
         )}
@@ -760,46 +1104,34 @@ export function IntrospectBoard() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35 }}
-              className="flex flex-col gap-4"
+              className="flex min-h-0 flex-1 flex-col h-full"
             >
-              <div className="text-center space-y-2">
-                <p className="text-xs font-semibold tracking-[0.14em] uppercase text-primary-600">
-                  {ui.welcomeEyebrow}
-                </p>
-                <h1 className="font-mi-gente text-2xl sm:text-3xl text-gray-900 leading-tight">
-                  {ui.welcomeHeading}
-                </h1>
-              </div>
-
-              <div className="rounded-xl border border-gray-200/80 bg-white/75 px-4 py-3.5 sm:px-5 space-y-2.5">
-                <p className="text-sm font-semibold text-gray-900">{ui.whatToExpect}</p>
-                <ol className="space-y-2 text-sm sm:text-[0.95rem] text-gray-700 leading-snug">
-                  <li className="flex gap-2.5">
-                    <span className="font-display text-lg text-primary-600 leading-none mt-0.5 shrink-0">1</span>
-                    <span>{ui.expect1}</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <span className="font-display text-lg text-primary-600 leading-none mt-0.5 shrink-0">2</span>
-                    <span>{ui.expect2}</span>
-                  </li>
-                  <li className="flex gap-2.5">
-                    <span className="font-display text-lg text-primary-600 leading-none mt-0.5 shrink-0">3</span>
-                    <span>{ui.expect3}</span>
-                  </li>
-                </ol>
-              </div>
-
-              <div className="flex justify-center">
-                <SpectrumFlipCta
-                  checkOnHover={false}
-                  className="rounded-full"
-                  onClick={() => {
-                    setPhase('questions')
-                    setStep(1)
-                  }}
-                >
-                  {ui.getStarted}
-                </SpectrumFlipCta>
+              <p className="shrink-0 text-center text-xs font-semibold tracking-[0.14em] uppercase text-[oklch(48%_0.12_230)]">
+                {ui.welcomeEyebrow}
+              </p>
+              <div className="flex flex-1 flex-col items-center justify-center gap-[clamp(2.75rem,9vh,5.5rem)] pb-10">
+                <WelcomeHeadline
+                  greeting={ui.welcomeGreeting}
+                  continueLine={
+                    isRedesign ? ui.redesignWelcomeContinue : ui.welcomeContinue
+                  }
+                  fullHeading={
+                    isRedesign ? ui.redesignWelcomeHeading : ui.welcomeHeading
+                  }
+                  skipAnimation={skipIntro}
+                />
+                <div>
+                  <SpectrumFlipCta
+                    checkOnHover={false}
+                    className="rounded-full"
+                    onClick={() => {
+                      setPhase('questions')
+                      setStep(1)
+                    }}
+                  >
+                    {ui.getStarted}
+                  </SpectrumFlipCta>
+                </div>
               </div>
             </motion.div>
           )}
@@ -818,10 +1150,10 @@ export function IntrospectBoard() {
               transition={{ duration: 0.28 }}
               className={cn(
                 'flex flex-1 flex-col',
-                step === 6 || step === 7 ? 'gap-2.5' : 'gap-4'
+                compactQuestion ? 'gap-2.5' : 'gap-4'
               )}
             >
-              {step === 1 && (
+              {questionId === 'about-you' && (
                 <StepBlock title={ui.step1Title}>
                   <Field
                     label={ui.nameLabel}
@@ -883,8 +1215,11 @@ export function IntrospectBoard() {
                 </StepBlock>
               )}
 
-              {step === 2 && (
-                <StepBlock title={ui.step2Title}>
+              {questionId === 'business' && (
+                <StepBlock
+                  title={ui.step2Title}
+                  subtitle={isRedesign ? ui.step2SubtitleRedesign : undefined}
+                >
                   <Field
                     label={ui.businessNameLabel}
                     error={errors.businessName}
@@ -911,41 +1246,162 @@ export function IntrospectBoard() {
                       placeholder={ui.aboutBusinessPlaceholder}
                     />
                   </Field>
-                  <Field
-                    label={ui.locationLabel}
-                    error={errors.location}
-                    htmlFor={`${formId}-loc`}
-                  >
-                    <input
-                      id={`${formId}-loc`}
-                      className={fieldClass(errors.location)}
-                      value={answers.location}
-                      onChange={update('location')}
-                      placeholder={ui.locationPlaceholder}
-                    />
-                  </Field>
+                  <div className="space-y-2.5">
+                    <p className="text-base font-semibold text-gray-900 tracking-tight">
+                      {ui.locationLabel}
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <SubField
+                        label={ui.locationCityLabel}
+                        htmlFor={`${formId}-city`}
+                        error={errors.city}
+                      >
+                        <LocationCombobox
+                          id={`${formId}-city`}
+                          value={answers.city}
+                          options={isUsLocation ? cityComboboxOptions : []}
+                          allowCustom
+                          openOnEmpty={isUsLocation && Boolean(usStateCode(answers.state))}
+                          placeholder={ui.locationCityPlaceholder}
+                          error={Boolean(errors.city)}
+                          emptyMessage={ui.locationNoMatches}
+                          onChange={(next, option) => {
+                            const cityName = option?.label ?? next
+                            const fromHint = option?.hint
+                            setAnswers((prev) => ({
+                              ...prev,
+                              city: cityName,
+                              state: fromHint
+                                ? matchUsState(fromHint)?.name ?? prev.state
+                                : prev.state,
+                            }))
+                            setErrors((prev) => ({
+                              ...prev,
+                              city:
+                                cityName.trim().length > 0
+                                  ? locationFieldErrors(
+                                      {
+                                        city: cityName,
+                                        state: fromHint
+                                          ? matchUsState(fromHint)?.name ?? answers.state
+                                          : answers.state,
+                                        country: answers.country,
+                                      },
+                                      dict.introspectValidation
+                                    ).city
+                                  : undefined,
+                            }))
+                          }}
+                        />
+                      </SubField>
+                      <SubField
+                        label={ui.locationStateLabel}
+                        htmlFor={`${formId}-state`}
+                        error={errors.state}
+                      >
+                        <LocationCombobox
+                          id={`${formId}-state`}
+                          value={answers.state}
+                          options={isUsLocation ? stateComboboxOptions : []}
+                          allowCustom={!isUsLocation}
+                          openOnEmpty={isUsLocation}
+                          placeholder={ui.locationStatePlaceholder}
+                          error={Boolean(errors.state)}
+                          emptyMessage={ui.locationNoMatches}
+                          maxResults={60}
+                          onChange={(next) => {
+                            const named = matchUsState(next)?.name ?? next
+                            setAnswers((prev) => ({ ...prev, state: named }))
+                            setErrors((prev) => ({
+                              ...prev,
+                              state: locationFieldErrors(
+                                {
+                                  city: answers.city,
+                                  state: named,
+                                  country: answers.country,
+                                },
+                                dict.introspectValidation
+                              ).state,
+                            }))
+                          }}
+                        />
+                      </SubField>
+                    </div>
+                    <SubField
+                      label={ui.locationCountryLabel}
+                      htmlFor={`${formId}-country`}
+                      error={errors.country}
+                    >
+                      <LocationCombobox
+                        id={`${formId}-country`}
+                        value={answers.country || DEFAULT_COUNTRY}
+                        options={countryComboboxOptions}
+                        openOnEmpty
+                        placeholder={ui.locationCountryLabel}
+                        error={Boolean(errors.country)}
+                        emptyMessage={ui.locationNoMatches}
+                        maxResults={300}
+                        onChange={(next) => {
+                          const code = isCountryCode(next) ? next : DEFAULT_COUNTRY
+                          setAnswers((prev) => ({
+                            ...prev,
+                            country: code,
+                          }))
+                          setErrors((prev) => ({
+                            ...prev,
+                            country: undefined,
+                            state: undefined,
+                          }))
+                        }}
+                      />
+                    </SubField>
+                  </div>
                 </StepBlock>
               )}
 
-              {step === 3 && (
-                <StepBlock title={ui.step3Title} subtitle={ui.step3Subtitle}>
-                  <ChoiceRow
-                    label={ui.hasOnlineLabel}
-                    error={errors.hasOnlinePresence}
-                    options={hasOnlineOptions}
-                    value={answers.hasOnlinePresence}
-                    onChange={(v) => setChoice('hasOnlinePresence', v as YesNoUnsure)}
-                  />
+              {questionId === 'online' && (
+                <StepBlock
+                  title={isRedesign ? ui.step3TitleRedesign : ui.step3Title}
+                  subtitle={isRedesign ? ui.step3SubtitleRedesign : ui.step3Subtitle}
+                >
+                  {!isRedesign && (
+                    <ChoiceRow
+                      label={ui.hasOnlineLabel}
+                      error={errors.hasOnlinePresence}
+                      options={hasOnlineOptions}
+                      value={answers.hasOnlinePresence}
+                      onChange={(v) => setChoice('hasOnlinePresence', v as YesNoUnsure)}
+                    />
+                  )}
                   <Field
-                    label={ui.websiteUrlLabel}
+                    label={
+                      isRedesign
+                        ? ui.websiteUrlLabelRedesign
+                        : answers.hasOnlinePresence === 'yes'
+                          ? ui.websiteUrlLabelHasSite
+                          : ui.websiteUrlLabel
+                    }
+                    error={errors.websiteUrl}
                     htmlFor={`${formId}-website`}
                   >
                     <input
                       id={`${formId}-website`}
-                      type="url"
-                      className={fieldClass()}
+                      type="text"
+                      inputMode="url"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      autoComplete="url"
+                      className={fieldClass(errors.websiteUrl)}
                       value={answers.websiteUrl}
                       onChange={update('websiteUrl')}
+                      onBlur={() => {
+                        setAnswers((prev) => {
+                          const next = normalizeWebsiteEntry(prev.websiteUrl)
+                          if (next === prev.websiteUrl) return prev
+                          return { ...prev, websiteUrl: next }
+                        })
+                      }}
                       placeholder={ui.websiteUrlPlaceholder}
                     />
                   </Field>
@@ -956,6 +1412,8 @@ export function IntrospectBoard() {
                     onChange={(links) => setLinkList('socialMediaLinks', links)}
                     addLabel={ui.addSocialLink}
                     inputPrefix={`${formId}-social`}
+                    placeholder={ui.linkPlaceholder}
+                    completeAsWebsite
                   />
                   <LinkListField
                     label={ui.admiredLabel}
@@ -964,12 +1422,17 @@ export function IntrospectBoard() {
                     onChange={(links) => setLinkList('admiredWebsiteLinks', links)}
                     addLabel={ui.addAdmiredSite}
                     inputPrefix={`${formId}-admire`}
+                    placeholder={ui.linkPlaceholder}
+                    completeAsWebsite
                   />
                 </StepBlock>
               )}
 
-              {step === 4 && (
-                <StepBlock title={ui.step4Title} subtitle={ui.step4Subtitle}>
+              {questionId === 'logo' && (
+                <StepBlock
+                  title={ui.step4Title}
+                  subtitle={isRedesign ? ui.step4SubtitleRedesign : ui.step4Subtitle}
+                >
                   <ChoiceRow
                     label={ui.hasLogoLabel}
                     error={errors.hasLogo}
@@ -1028,26 +1491,140 @@ export function IntrospectBoard() {
                 </StepBlock>
               )}
 
-              {step === 5 && (
-                <StepBlock title={ui.step5Title}>
-                  <LinkListField
-                    hint={ui.step5Hint}
-                    links={answers.visitorActions}
-                    onChange={(items) => setLinkList('visitorActions', items)}
-                    addLabel={ui.addAction}
-                    inputPrefix={`${formId}-actions`}
-                    inputType="text"
-                    placeholder={ui.actionPlaceholder}
-                    error={errors.visitorActions}
-                  />
+              {questionId === 'keep-change' && (
+                <StepBlock
+                  compact
+                  title={ui.keepChangeTitle}
+                  subtitle={ui.keepChangeSubtitle}
+                >
+                  <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
+                    <div>
+                      <h2 className="mb-3 font-mi-gente text-lg sm:text-xl text-gray-900 leading-tight text-center">
+                        {ui.keepHeading}
+                      </h2>
+                      <div className="flex flex-col items-start gap-1">
+                        {keepItemOptions.map((opt) => {
+                          const selected = answers.keepItems.includes(opt.id)
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              aria-pressed={selected}
+                              onClick={() => toggleKeepItem(opt.id)}
+                              className={cn(
+                                'w-fit max-w-full rounded-md px-2.5 py-1.5 text-left text-sm leading-snug text-gray-800',
+                                'transition-[background-color,font-weight,color] duration-200 ease-out',
+                                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-deep/35 focus-visible:ring-offset-1',
+                                selected
+                                  ? 'bg-sky-soft font-semibold text-gray-900'
+                                  : 'font-normal hover:bg-sky-soft/35'
+                              )}
+                            >
+                              {opt.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {errors.keepItems && (
+                        <p className="mt-2 text-sm text-error" role="alert">
+                          {errors.keepItems}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <h2 className="mb-3 font-mi-gente text-lg sm:text-xl text-gray-900 leading-tight text-center">
+                        {ui.changeHeading}
+                      </h2>
+                      <div className="flex flex-col items-start gap-1">
+                        {changePriorityOptions.map((opt) => {
+                          const selected = answers.changePriorities.includes(opt.id)
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              aria-pressed={selected}
+                              onClick={() => toggleChangePriority(opt.id)}
+                              className={cn(
+                                'w-fit max-w-full rounded-md px-2.5 py-1.5 text-left text-sm leading-snug text-gray-800',
+                                'transition-[background-color,font-weight,color] duration-200 ease-out',
+                                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-deep/35 focus-visible:ring-offset-1',
+                                selected
+                                  ? 'bg-sky-soft font-semibold text-gray-900'
+                                  : 'font-normal hover:bg-sky-soft/35'
+                              )}
+                            >
+                              {opt.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {errors.changePriorities && (
+                        <p className="mt-2 text-sm text-error" role="alert">
+                          {errors.changePriorities}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <Field
+                    label={ui.keepChangeNotesLabel}
+                    htmlFor={`${formId}-site-notes`}
+                  >
+                    <textarea
+                      id={`${formId}-site-notes`}
+                      className={textareaClass()}
+                      value={answers.currentSiteNotes}
+                      onChange={update('currentSiteNotes')}
+                      placeholder={ui.keepChangeNotesPlaceholder}
+                    />
+                  </Field>
                 </StepBlock>
               )}
 
-              {step === 6 && (
+              {questionId === 'visitor-actions' && (
+                <StepBlock
+                  compact
+                  title={isRedesign ? ui.step5TitleRedesign : ui.step5Title}
+                  subtitle={isRedesign ? ui.step5HintRedesign : ui.step5Hint}
+                >
+                  <fieldset>
+                    <legend className="sr-only">{ui.step5Title}</legend>
+                    <div className="grid grid-flow-col grid-cols-2 grid-rows-[repeat(20,auto)] justify-items-start gap-x-8 gap-y-0.5 sm:grid-cols-3 sm:grid-rows-[repeat(14,auto)] sm:gap-x-10 lg:grid-cols-4 lg:grid-rows-[repeat(10,auto)] lg:gap-x-12">
+                      {visitorActionOptions.map((opt) => {
+                        const selected = answers.visitorActions.includes(opt.id)
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={() => toggleVisitorAction(opt.id)}
+                            className={cn(
+                              'w-fit max-w-full rounded-md px-2.5 py-1.5 text-left text-sm leading-snug text-gray-800',
+                              'transition-[background-color,font-weight,color] duration-200 ease-out',
+                              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-deep/35 focus-visible:ring-offset-1',
+                              selected
+                                ? 'bg-sky-soft font-semibold text-gray-900'
+                                : 'font-normal hover:bg-sky-soft/35'
+                            )}
+                          >
+                            {opt.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </fieldset>
+                  {errors.visitorActions && (
+                    <p className="text-sm text-error" role="alert">
+                      {errors.visitorActions}
+                    </p>
+                  )}
+                </StepBlock>
+              )}
+
+              {questionId === 'site-depth' && (
                 <StepBlock
                   compact
                   title={ui.step6Title}
-                  subtitle={ui.step6Subtitle}
+                  subtitle={isRedesign ? ui.step6SubtitleRedesign : ui.step6Subtitle}
                 >
                   <div className="grid gap-2">
                     {siteDepthOptions.map((opt) => {
@@ -1080,7 +1657,7 @@ export function IntrospectBoard() {
                 </StepBlock>
               )}
 
-              {step === 7 && (
+              {questionId === 'design' && (
                 <StepBlock
                   compact
                   centered
@@ -1093,6 +1670,13 @@ export function IntrospectBoard() {
                         <h2 className="font-mi-gente text-lg sm:text-xl text-gray-900 leading-tight text-center">
                           {ui.designFeelHeading}
                         </h2>
+                        {isRedesign && (
+                          <SoftCheckbox
+                            checked={Boolean(answers.keepCurrentLook)}
+                            onChange={toggleKeepCurrentLook}
+                            label={ui.keepCurrentLook}
+                          />
+                        )}
                         <SoftCheckbox
                           checked={Boolean(answers.designFeelNoPreference)}
                           onChange={toggleDesignFeelNoPreference}
@@ -1102,9 +1686,9 @@ export function IntrospectBoard() {
                       <div
                         className={cn(
                           'grid grid-cols-2 gap-2 transition-opacity',
-                          answers.designFeelNoPreference && 'pointer-events-none opacity-40'
+                          designLocked && 'pointer-events-none opacity-40'
                         )}
-                        aria-disabled={Boolean(answers.designFeelNoPreference)}
+                        aria-disabled={designLocked}
                       >
                         {designFeelOptions.map((opt) => {
                           const selected = answers.designFeels.includes(opt.id)
@@ -1115,14 +1699,14 @@ export function IntrospectBoard() {
                               type="button"
                               onClick={() => toggleDesignFeel(opt.id)}
                               aria-pressed={selected}
-                              disabled={answers.designFeelNoPreference}
+                              disabled={designLocked}
                               title={opt.description}
                               className={cn(
                                 'flex h-full cursor-pointer items-start gap-2 rounded-md px-2.5 py-2 text-left transition-colors',
                                 selected
                                   ? 'text-gray-900 outline outline-1 outline-offset-2 outline-gray-800'
                                   : 'text-gray-600 outline outline-1 outline-transparent hover:outline-gray-300 hover:text-gray-900',
-                                answers.designFeelNoPreference && 'cursor-default'
+                                designLocked && 'cursor-default'
                               )}
                             >
                               <Icon
@@ -1170,17 +1754,12 @@ export function IntrospectBoard() {
                       <div
                         className={cn(
                           'grid grid-cols-2 gap-2 sm:grid-cols-3 transition-opacity',
-                          (answers.colorPaletteNoPreference || answers.colorPaletteFromLogo) &&
-                            'pointer-events-none opacity-40'
+                          colorsLocked && 'pointer-events-none opacity-40'
                         )}
-                        aria-disabled={Boolean(
-                          answers.colorPaletteNoPreference || answers.colorPaletteFromLogo
-                        )}
+                        aria-disabled={colorsLocked}
                       >
                         {colorPaletteOptions.map((opt) => {
                           const selected = answers.colorPalettes.includes(opt.id)
-                          const colorsLocked =
-                            answers.colorPaletteNoPreference || answers.colorPaletteFromLogo
                           return (
                             <button
                               key={opt.id}
@@ -1229,8 +1808,7 @@ export function IntrospectBoard() {
                         </p>
                       )}
 
-                      {!answers.colorPaletteNoPreference &&
-                        !answers.colorPaletteFromLogo &&
+                      {!colorsLocked &&
                         (answers.colorPalettes.includes('custom') ||
                           answers.colorPalettes.length > 0) && (
                           <div className="mt-3">
@@ -1266,7 +1844,7 @@ export function IntrospectBoard() {
                 </StepBlock>
               )}
 
-              {step === 8 && (
+              {questionId === 'avoid' && (
                 <StepBlock title={ui.step8Title}>
                   <textarea
                     id={`${formId}-avoid`}
@@ -1279,7 +1857,7 @@ export function IntrospectBoard() {
                 </StepBlock>
               )}
 
-              {step === 9 && (
+              {questionId === 'extras' && (
                 <StepBlock title={ui.step9Title}>
                   <textarea
                     id={`${formId}-extras`}
@@ -1287,7 +1865,9 @@ export function IntrospectBoard() {
                     className={textareaClass()}
                     value={answers.businessExtras}
                     onChange={update('businessExtras')}
-                    placeholder={ui.step9Placeholder}
+                    placeholder={
+                      isRedesign ? ui.step9PlaceholderRedesign : ui.step9Placeholder
+                    }
                   />
                 </StepBlock>
               )}
@@ -1301,8 +1881,8 @@ export function IntrospectBoard() {
               <div
                 className={cn(
                   'mt-auto flex items-center gap-3',
-                  step === 7 ? 'relative justify-center' : 'justify-between',
-                  step === 6 || step === 7 ? 'pt-1' : 'pt-2'
+                  questionId === 'design' ? 'relative justify-center' : 'justify-between',
+                  compactQuestion ? 'pt-1' : 'pt-2'
                 )}
               >
                 <button
@@ -1310,7 +1890,7 @@ export function IntrospectBoard() {
                   onClick={goBack}
                   className={cn(
                     'inline-flex h-11 items-center gap-1 rounded-md py-1.5 pl-1 pr-2 text-sm font-medium text-gray-700 hover:bg-sand/60 active:bg-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 cursor-pointer',
-                    step === 7 && 'absolute left-0'
+                    questionId === 'design' && 'absolute left-0'
                   )}
                 >
                   <svg
@@ -1334,13 +1914,15 @@ export function IntrospectBoard() {
                   isLoading={status === 'submitting'}
                   disabled={status === 'submitting' || !canContinue}
                   aria-disabled={status === 'submitting' || !canContinue}
-                  className="!bg-[oklch(58%_0.14_310)] hover:!bg-[oklch(50%_0.14_310)] focus-visible:!ring-[oklch(58%_0.14_310)/0.35]"
+                  className={skyButtonClass}
                 >
-                  {step === TOTAL_STEPS
-                    ? ui.continueToReview
-                    : nameConfirmPending && step === 1
-                      ? ui.yesContinue
-                      : ui.continue}
+                  {editingFromReview
+                    ? ui.reviewDone
+                    : step === totalSteps
+                      ? ui.continueToReview
+                      : nameConfirmPending && questionId === 'about-you'
+                        ? ui.yesContinue
+                        : ui.continue}
                 </Button>
               </div>
             </motion.form>
@@ -1364,29 +1946,46 @@ export function IntrospectBoard() {
               </div>
 
               <div className="space-y-4 text-sm">
-                <ReviewSection title={ui.reviewAboutYou}>
+                <ReviewSection
+                  title={ui.reviewAboutYou}
+                  editLabel={ui.reviewEdit}
+                  onEdit={() => editReviewSection('about-you')}
+                >
                   <ReviewRow label={ui.reviewName} value={answers.fullName || dash} />
                   <ReviewRow label={ui.reviewEmail} value={answers.email || dash} />
                   <ReviewRow label={ui.reviewPhone} value={answers.phone || dash} />
                 </ReviewSection>
 
-                <ReviewSection title={ui.reviewYourBusiness}>
+                <ReviewSection
+                  title={ui.reviewYourBusiness}
+                  editLabel={ui.reviewEdit}
+                  onEdit={() => editReviewSection('business')}
+                >
                   <ReviewRow
                     label={ui.reviewBusinessProject}
                     value={answers.businessName || dash}
                   />
-                  <ReviewRow label={ui.reviewLocation} value={answers.location || dash} />
+                  <ReviewRow
+                    label={ui.reviewLocation}
+                    value={formatLocation(answers, locale) || dash}
+                  />
                   <ReviewRow
                     label={ui.reviewWhatYouDo}
                     value={answers.aboutBusiness || dash}
                   />
                 </ReviewSection>
 
-                <ReviewSection title={ui.reviewOnlinePresence}>
-                  <ReviewRow
-                    label={ui.reviewAlreadyOnline}
-                    value={hasOnlineLabelFor(answers.hasOnlinePresence)}
-                  />
+                <ReviewSection
+                  title={isRedesign ? ui.reviewCurrentWebsite : ui.reviewOnlinePresence}
+                  editLabel={ui.reviewEdit}
+                  onEdit={() => editReviewSection('online')}
+                >
+                  {!isRedesign && (
+                    <ReviewRow
+                      label={ui.reviewAlreadyOnline}
+                      value={hasOnlineLabelFor(answers.hasOnlinePresence)}
+                    />
+                  )}
                   <ReviewRow
                     label={ui.reviewWebsite}
                     value={answers.websiteUrl.trim() || dash}
@@ -1401,7 +2000,11 @@ export function IntrospectBoard() {
                   />
                 </ReviewSection>
 
-                <ReviewSection title={ui.reviewLogoPhotos}>
+                <ReviewSection
+                  title={ui.reviewLogoPhotos}
+                  editLabel={ui.reviewEdit}
+                  onEdit={() => editReviewSection('logo')}
+                >
                   <ReviewRow label={ui.reviewHasLogo} value={yesNoLabel(answers.hasLogo)} />
                   {answers.hasLogo === 'yes' && (
                     <ReviewRow
@@ -1429,18 +2032,57 @@ export function IntrospectBoard() {
                   />
                 </ReviewSection>
 
-                <ReviewSection title={ui.reviewVisitorsShouldDo}>
+                {isRedesign && (
+                  <ReviewSection
+                    title={ui.reviewKeepChange}
+                    editLabel={ui.reviewEdit}
+                    onEdit={() => editReviewSection('keep-change')}
+                  >
+                    <ReviewRow
+                      label={ui.reviewKeep}
+                      value={formatKeepItemLabels(answers.keepItems, dict) || dash}
+                    />
+                    <ReviewRow
+                      label={ui.reviewChange}
+                      value={
+                        formatChangePriorityLabels(answers.changePriorities, dict) || dash
+                      }
+                    />
+                    {answers.currentSiteNotes.trim() && (
+                      <ReviewRow
+                        label={ui.reviewCurrentSiteNotes}
+                        value={answers.currentSiteNotes.trim()}
+                      />
+                    )}
+                  </ReviewSection>
+                )}
+
+                <ReviewSection
+                  title={ui.reviewVisitorsShouldDo}
+                  editLabel={ui.reviewEdit}
+                  onEdit={() => editReviewSection('visitor-actions')}
+                >
                   <ReviewRow
                     label={ui.reviewActions}
-                    value={listOrDash(answers.visitorActions)}
+                    value={
+                      formatVisitorActionLabels(answers.visitorActions, dict) || dash
+                    }
                   />
                 </ReviewSection>
 
-                <ReviewSection title={ui.reviewSiteScope}>
+                <ReviewSection
+                  title={ui.reviewSiteScope}
+                  editLabel={ui.reviewEdit}
+                  onEdit={() => editReviewSection('site-depth')}
+                >
                   <ReviewRow label={ui.reviewHowDeveloped} value={depthLabel} />
                 </ReviewSection>
 
-                <ReviewSection title={ui.reviewDesignColors}>
+                <ReviewSection
+                  title={ui.reviewDesignColors}
+                  editLabel={ui.reviewEdit}
+                  onEdit={() => editReviewSection('design')}
+                >
                   <ReviewRow label={ui.reviewDesignFeel} value={feelLabels} />
                   <ReviewRow label={ui.reviewColors} value={colorLabels} />
                   {answers.colorNotes.trim() && (
@@ -1451,14 +2093,22 @@ export function IntrospectBoard() {
                   )}
                 </ReviewSection>
 
-                <ReviewSection title={ui.reviewSteerClear}>
+                <ReviewSection
+                  title={ui.reviewSteerClear}
+                  editLabel={ui.reviewEdit}
+                  onEdit={() => editReviewSection('avoid')}
+                >
                   <ReviewRow
                     label={ui.reviewAvoid}
                     value={answers.designAvoidances.trim() || dash}
                   />
                 </ReviewSection>
 
-                <ReviewSection title={ui.reviewAnythingElse}>
+                <ReviewSection
+                  title={ui.reviewAnythingElse}
+                  editLabel={ui.reviewEdit}
+                  onEdit={() => editReviewSection('extras')}
+                >
                   <ReviewRow
                     label={ui.reviewNotes}
                     value={answers.businessExtras.trim() || dash}
@@ -1498,7 +2148,7 @@ export function IntrospectBoard() {
                   type="submit"
                   isLoading={status === 'submitting'}
                   disabled={status === 'submitting'}
-                  className="!bg-[oklch(58%_0.14_310)] hover:!bg-[oklch(50%_0.14_310)] focus-visible:!ring-[oklch(58%_0.14_310)/0.35]"
+                  className={skyButtonClass}
                 >
                   {ui.submitIntrospect}
                 </Button>
@@ -1507,53 +2157,9 @@ export function IntrospectBoard() {
           )}
 
           {phase === 'success' && (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="flex flex-col gap-5 py-2"
-            >
-              <div className="text-center space-y-2.5">
-                <p className="text-xs font-semibold tracking-[0.14em] uppercase text-primary-600">
-                  {ui.successEyebrow}
-                </p>
-                <h1 className="font-mi-gente text-2xl sm:text-3xl text-gray-900 leading-tight">
-                  {ui.successHeading}
-                </h1>
-              </div>
-
-              <div className="rounded-xl border border-gray-200/80 bg-white/80 px-4 py-4 sm:px-5 space-y-3">
-                <p className="text-lg sm:text-xl font-bold text-gray-900 text-center">
-                  {ui.successNextHeading}
-                </p>
-                <ol className="space-y-2.5 text-sm sm:text-[0.95rem] text-gray-700 leading-snug list-decimal list-inside">
-                  <li>{ui.successNext1}</li>
-                  <li>{ui.successNext2}</li>
-                  <li>{ui.successNext3}</li>
-                  <li>{ui.successNext4}</li>
-                </ol>
-                <p className="text-sm text-gray-600 leading-snug pt-2 border-t border-gray-100">
-                  {ui.successFootnote}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-center pt-1">
-                <Link
-                  href={href('/')}
-                  aria-label={ui.successHomeAria}
-                  className="inline-flex shrink-0 rounded-md outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
-                >
-                  <Image
-                    src="/logo-mark.png"
-                    alt="Applicreations"
-                    width={44}
-                    height={44}
-                    className="h-11 w-11 object-contain"
-                  />
-                </Link>
-              </div>
-            </motion.div>
+            <div key="success" className="flex min-h-0 flex-1 flex-col h-full">
+              <IntrospectSuccess ui={successUi} homeHref={href('/')} />
+            </div>
           )}
         </AnimatePresence>
       </div>
@@ -1561,7 +2167,7 @@ export function IntrospectBoard() {
   )
 }
 
-/** Soft purple checkbox — matches Introspect progress / Continue accents */
+/** Soft sky checkbox — matches Introspect Start / Continue accents */
 function SoftCheckbox({
   checked,
   onChange,
@@ -1584,10 +2190,10 @@ function SoftCheckbox({
           aria-hidden
           className={cn(
             'pointer-events-none flex h-4 w-4 items-center justify-center rounded-[5px] border transition-colors',
-            'peer-focus-visible:ring-2 peer-focus-visible:ring-[oklch(58%_0.14_310)/0.35] peer-focus-visible:ring-offset-1',
+            'peer-focus-visible:ring-2 peer-focus-visible:ring-[oklch(68%_0.15_230)/0.45] peer-focus-visible:ring-offset-1',
             checked
-              ? 'border-[oklch(58%_0.14_310)] bg-[oklch(58%_0.14_310)]'
-              : 'border-gray-300 bg-white/85 peer-hover:border-[oklch(58%_0.10_310)]'
+              ? 'border-[oklch(68%_0.15_230)] bg-[oklch(68%_0.15_230)]'
+              : 'border-gray-300 bg-white/85 peer-hover:border-[oklch(62%_0.12_230)]'
           )}
         >
           {checked ? (
@@ -1645,12 +2251,32 @@ function StepBlock({
   )
 }
 
-function ReviewSection({ title, children }: { title: string; children: ReactNode }) {
+function ReviewSection({
+  title,
+  editLabel,
+  onEdit,
+  children,
+}: {
+  title: string
+  editLabel: string
+  onEdit: () => void
+  children: ReactNode
+}) {
   return (
     <section className="space-y-2 border-t border-gray-200/80 pt-3 first:border-t-0 first:pt-0">
-      <h2 className="text-sm font-semibold tracking-tight text-primary-800">
-        {title}
-      </h2>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="!font-sans text-sm font-bold tracking-tight text-gray-900">
+          {title}
+        </h2>
+        <button
+          type="button"
+          onClick={onEdit}
+          aria-label={`${editLabel}: ${title}`}
+          className="shrink-0 rounded-sm text-sm font-medium text-[oklch(42%_0.12_230)] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 cursor-pointer"
+        >
+          {editLabel}
+        </button>
+      </div>
       <dl className="space-y-2">{children}</dl>
     </section>
   )
@@ -1672,8 +2298,9 @@ function LinkListField({
   onChange,
   addLabel,
   inputPrefix,
-  placeholder = 'https://...',
-  inputType = 'url',
+  placeholder,
+  inputType = 'text',
+  completeAsWebsite = false,
   error,
 }: {
   label?: string
@@ -1683,7 +2310,8 @@ function LinkListField({
   addLabel: string
   inputPrefix: string
   placeholder?: string
-  inputType?: 'url' | 'text'
+  inputType?: 'text'
+  completeAsWebsite?: boolean
   error?: string
 }) {
   const { dict } = useLocale()
@@ -1692,6 +2320,13 @@ function LinkListField({
     const next = [...links]
     next[index] = value
     onChange(next)
+  }
+
+  const completeLink = (index: number, value: string) => {
+    if (!completeAsWebsite) return
+    const nextValue = normalizeWebsiteEntry(value)
+    if (nextValue === value) return
+    updateLink(index, nextValue)
   }
 
   const removeLink = (index: number) => {
@@ -1720,9 +2355,15 @@ function LinkListField({
             <input
               id={`${inputPrefix}-${index}`}
               type={inputType}
+              inputMode={completeAsWebsite ? 'url' : undefined}
+              autoCapitalize={completeAsWebsite ? 'none' : undefined}
+              autoCorrect={completeAsWebsite ? 'off' : undefined}
+              spellCheck={completeAsWebsite ? false : undefined}
+              autoComplete={completeAsWebsite ? 'url' : undefined}
               className={fieldClass(index === 0 ? error : undefined)}
               value={link}
               onChange={(e) => updateLink(index, e.target.value)}
+              onBlur={(e) => completeLink(index, e.target.value)}
               placeholder={placeholder}
             />
             {links.length > 1 ? (
@@ -1741,10 +2382,36 @@ function LinkListField({
       <button
         type="button"
         onClick={() => onChange([...links, ''])}
-        className="inline-flex items-center gap-1 pt-0.5 text-sm font-semibold text-[oklch(43%_0.12_280)] hover:text-[oklch(36%_0.12_280)] transition-colors cursor-pointer"
+        className="inline-flex items-center gap-1 pt-0.5 text-sm font-semibold text-[oklch(42%_0.12_230)] hover:text-[oklch(36%_0.12_230)] transition-colors cursor-pointer"
       >
         <span aria-hidden>+</span> {addLabel}
       </button>
+      {error ? (
+        <p className="text-sm text-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
+function SubField({
+  label,
+  htmlFor,
+  error,
+  children,
+}: {
+  label: string
+  htmlFor: string
+  error?: string
+  children: ReactNode
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-800">
+        {label}
+      </label>
+      {children}
       {error ? (
         <p className="text-sm text-error" role="alert">
           {error}
@@ -1891,11 +2558,11 @@ function AssetUploadField({
         className={cn(
           'flex w-full items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-3.5',
           'text-sm font-medium text-gray-700 transition-colors cursor-pointer',
-          'border-gray-300 bg-white/70 hover:border-[oklch(58%_0.13_280)] hover:bg-[oklch(96%_0.04_280/0.55)]',
+          'border-gray-300 bg-white/70 hover:border-[oklch(62%_0.12_230)] hover:bg-[oklch(96%_0.04_230/0.55)]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1'
         )}
       >
-        <Upload className="h-4 w-4 shrink-0 text-[oklch(43%_0.12_280)]" aria-hidden />
+        <Upload className="h-4 w-4 shrink-0 text-[oklch(42%_0.12_230)]" aria-hidden />
         {multiple
           ? files.length > 0
             ? dict.introspectUi.addMorePictures

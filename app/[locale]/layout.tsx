@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { LocaleProvider } from '@/components/i18n/LocaleProvider'
 import { LocaleTransitionGuard } from '@/components/i18n/LocaleTransitionGuard'
 import { Navigation } from '@/components/ui/Navigation'
+import { RouteCover } from '@/components/ui/RouteCover'
 import { SiteFooter } from '@/components/ui/SiteFooter'
 import { isLocale, locales, type Locale } from '@/lib/i18n/config'
 import { getDictionary } from '@/lib/i18n/get-dictionary'
@@ -42,6 +43,7 @@ export default async function LocaleLayout({
   return (
     <LocaleProvider locale={raw} dictionary={dictionary}>
       <LocaleTransitionGuard />
+      <RouteCover />
       <Navigation />
       <div className="site-page">
         {children}

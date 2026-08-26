@@ -6,12 +6,14 @@ import { en } from '@/lib/i18n/dictionaries/en'
 import {
   aboutBusinessError,
   businessNameError,
-  emptyAnswers,
   formatAnswersForEmail,
   formatClientIntrospectEmail,
   locationError,
+  mergeDraftAnswers,
   phoneDigits,
   recommendPlan,
+  websiteUrlRequiredError,
+  withNormalizedWebsiteUrls,
   type IntrospectAnswers,
 } from '@/lib/introspect'
 import { getPlans } from '@/lib/pricing'
@@ -122,13 +124,14 @@ export async function POST(request: Request) {
   const dict = getDictionary(locale)
   const messages = dict.api.introspect
 
-  const answers: IntrospectAnswers = {
-    ...emptyAnswers,
-    ...body.answers,
-    photoFileNames: Array.isArray(body.answers?.photoFileNames)
-      ? body.answers.photoFileNames
-      : [],
-  }
+  const answers: IntrospectAnswers = withNormalizedWebsiteUrls(
+    mergeDraftAnswers({
+      ...body.answers,
+      photoFileNames: Array.isArray(body.answers?.photoFileNames)
+        ? body.answers.photoFileNames
+        : [],
+    })
+  )
 
   if (uploads.length > 0) {
     const logoUpload = uploads.find((u) => u.field === 'logo')
@@ -161,9 +164,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: aboutErr }, { status: 400 })
   }
 
-  const locErr = locationError(answers.location, dict.introspectValidation)
+  const locErr = locationError(answers, dict.introspectValidation)
   if (locErr) {
     return NextResponse.json({ message: locErr }, { status: 400 })
+  }
+
+  const isRedesign = answers.variant === 'redesign'
+  if (isRedesign) {
+    const urlErr = websiteUrlRequiredError(
+      answers.websiteUrl,
+      messages.websiteUrlRequired
+    )
+    if (urlErr) {
+      return NextResponse.json({ message: urlErr }, { status: 400 })
+    }
+    if (answers.keepItems.length === 0 || answers.changePriorities.length === 0) {
+      return NextResponse.json({ message: messages.keepChangeRequired }, { status: 400 })
+    }
   }
 
   const recommendation = recommendPlan(answers, dict)
@@ -181,7 +198,10 @@ export async function POST(request: Request) {
   const businessName = answers.businessName.trim() || answers.fullName.trim()
   const ownerCopy = en.api.introspect
   const notifyTo = getNotifyTo()
-  const ownerSubject = ownerCopy.ownerEmailSubject
+  const ownerSubject = (isRedesign
+    ? ownerCopy.ownerEmailSubjectRedesign
+    : ownerCopy.ownerEmailSubject
+  )
     .replace('{business}', businessName)
     .replace('{plan}', planName)
 
@@ -210,8 +230,11 @@ export async function POST(request: Request) {
       html: brandedEmailHtml({
         brandName: en.brand.name,
         tagline: en.landing.tagline,
-        title: ownerCopy.ownerEmailTitle,
-        intro: ownerCopy.ownerEmailIntro.replace('{business}', businessName),
+        title: isRedesign ? ownerCopy.ownerEmailTitleRedesign : ownerCopy.ownerEmailTitle,
+        intro: (isRedesign
+          ? ownerCopy.ownerEmailIntroRedesign
+          : ownerCopy.ownerEmailIntro
+        ).replace('{business}', businessName),
         preformatted: ownerSummary,
         footer: 'Reply to this email to respond to the sender.',
       }),
@@ -243,6 +266,7 @@ export async function POST(request: Request) {
     recommendation,
     uploads,
     locale,
+    variant: answers.variant,
     clientEmailId: clientResult.id,
     ownerEmailId: ownerResult.id,
     receivedAt: new Date().toISOString(),

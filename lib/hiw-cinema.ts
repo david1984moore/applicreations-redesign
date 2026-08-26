@@ -7,6 +7,8 @@
  */
 
 let playedThisLoad = false
+/** Skip cinema AND recap stagger — resting three points + Get Started. */
+let staticFinaleThisLoad = false
 
 const LEGACY_SESSION_KEY = 'applicreations:hiw-cinema-played'
 
@@ -26,4 +28,15 @@ export function hasPlayedHiwCinema(): boolean {
 export function markHiwCinemaPlayed() {
   playedThisLoad = true
   dropLegacySessionFlag()
+}
+
+/** After Introspect success: land on the resting finale, no cinema. */
+export function requestStaticHiwFinale() {
+  playedThisLoad = true
+  staticFinaleThisLoad = true
+  dropLegacySessionFlag()
+}
+
+export function shouldUseStaticHiwFinale(): boolean {
+  return staticFinaleThisLoad
 }

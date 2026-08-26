@@ -4,6 +4,37 @@ import { useLocale } from '@/components/i18n/LocaleProvider'
 import { SpectrumFlipCta } from '@/components/ui/SpectrumFlipCta'
 import { cn } from '@/lib/utils'
 
+/** Typographic footnote mark — Georgia * reads as an asterisk, not a star. */
+export function FootnoteAsterisk({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        'mr-px text-[0.95em] font-normal leading-none text-primary-700 [font-family:Georgia,Times,serif]',
+        className
+      )}
+      aria-hidden
+    >
+      *
+    </span>
+  )
+}
+
+/** Darker sky-blue quotes, a step larger than the prompt text. */
+function SkyQuote({ mark }: { mark: '“' | '”' }) {
+  return (
+    <span
+      className={cn(
+        'inline-block not-italic font-bold leading-none text-[oklch(46%_0.14_230)]',
+        '[font-family:Georgia,Times,serif] text-[1.45em]',
+        mark === '“' ? 'mr-0.5 translate-y-[0.04em]' : 'ml-0.5 translate-y-[0.04em]'
+      )}
+      aria-hidden
+    >
+      {mark}
+    </span>
+  )
+}
+
 /** Quiet Introspect prompt for people who already have a site — not a full section. */
 export function RedesignPrompt({
   className,
@@ -12,44 +43,42 @@ export function RedesignPrompt({
   className?: string
   compact?: boolean
 }) {
-  const { dict, t, href } = useLocale()
+  const { dict, href } = useLocale()
   const p = dict.pricingPage
 
   return (
     <div
       className={cn(
-        'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4',
+        compact
+          ? 'flex w-full flex-col items-center gap-2 text-center sm:flex-row sm:items-center sm:justify-center sm:gap-3 sm:text-left'
+          : 'flex flex-col items-center gap-3 py-4 text-center sm:flex-row sm:items-center sm:justify-center sm:gap-7 sm:py-5 sm:text-left',
         className
       )}
     >
       <div className="min-w-0">
         <p
           className={cn(
-            'italic text-gray-800 leading-snug',
+            'font-medium italic text-gray-800 leading-snug',
             compact ? 'text-sm sm:text-base' : 'text-base'
           )}
         >
+          <SkyQuote mark="“" />
           {p.redesignPrompt}
+          <SkyQuote mark="”" />
         </p>
         <p
           className={cn(
-            'mt-0.5 text-gray-600 leading-snug',
+            'mt-0.5 pl-3 text-gray-600 leading-snug sm:pl-4',
             compact ? 'text-xs sm:text-sm' : 'text-sm'
           )}
         >
-          <span
-            className="mr-1 inline-block translate-y-[0.08em] text-[1.15rem] font-bold leading-none text-primary-700"
-            aria-hidden
-          >
-            *
-          </span>
-          {t(p.redesignHint, { choice: dict.introspectUi.hasOnlineYes })}
+          {p.redesignHint}
         </p>
       </div>
       <SpectrumFlipCta
-        href={href('/introspect')}
+        href={href('/redesign')}
         size="sm"
-        className="shrink-0 self-start sm:self-center"
+        className="shrink-0 self-center"
       >
         {p.redesignCta}
       </SpectrumFlipCta>

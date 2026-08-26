@@ -173,7 +173,7 @@ export function HiwFormSketch({ playing }: HiwFormSketchProps) {
 
   return (
     <div
-      className="origin-center"
+      className="mx-auto w-fit max-w-full origin-center"
       style={{
         transform: 'perspective(900px) rotateY(-8deg) rotateX(4deg)',
         transformStyle: 'preserve-3d',

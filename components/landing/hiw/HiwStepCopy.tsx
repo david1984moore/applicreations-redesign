@@ -120,12 +120,12 @@ const PREVIEW_LEAVE = {
   y: { duration: PREVIEW_CAPTION_OUT_S, ease: FLOAT_EASE },
 } as const
 
-/** “…we get to work” — fade while still rising, never toward the laptop. */
+/** “…we get to work” — soft dissolve while barely still rising. */
 const BUILD_LEAVE = {
-  opacity: { duration: 0.58, ease: EXIT_EASE },
-  scale: { duration: 0.58, ease: EXIT_EASE },
-  x: { duration: 0.7, ease: FLOAT_EASE },
-  y: { duration: 0.86, ease: FLOAT_EASE },
+  opacity: { duration: 0.62, ease: EXIT_EASE },
+  scale: { duration: 0.62, ease: EXIT_EASE },
+  x: { duration: 0.62, ease: FLOAT_EASE },
+  y: { duration: 0.78, ease: FLOAT_EASE },
 } as const
 
 /** Descent that holds pace and slowly picks up — never eases to a stop. */
@@ -165,7 +165,49 @@ function screensDropTransition(duration: number, fadeDelay: number) {
   }
 }
 
-const SCREENS_LEAVE = sinkLeaveTransition(0.46)
+/** Rise, then down — still moving at the peak so the line never parks. */
+const SCREENS_UP_EASE = [0.25, 0.08, 0.4, 0.75] as const
+const SCREENS_DOWN_EASE = [0.3, 0.13, 0.58, 1] as const
+/** One arc for “And you're in business!” — fade finishes before the screens sink. */
+const SCREENS_ARC_S = 5.4
+const SCREENS_ARC_Y = [16, -34, 42] as const
+const SCREENS_ARC_Y_PHONE = [10, -18, 28] as const
+
+function screensArcAnimate(phone: boolean) {
+  return {
+    opacity: [0, 1, 1, 0],
+    x: 0,
+    y: phone ? [...SCREENS_ARC_Y_PHONE] : [...SCREENS_ARC_Y],
+    scale: 1,
+  }
+}
+
+function screensArcTransition(delayMs: number | undefined) {
+  const delay = (delayMs ?? 0) / 1000
+  return {
+    opacity: {
+      duration: SCREENS_ARC_S,
+      times: [0, 0.07, 0.7, 1],
+      ease: [ENTER_EASE, [0, 0, 1, 1] as const, SINK_FADE_EASE],
+      delay,
+    },
+    scale: { duration: 0.48, ease: ENTER_EASE, delay },
+    x: { duration: SCREENS_ARC_S, ease: FLOAT_EASE, delay },
+    y: {
+      duration: SCREENS_ARC_S,
+      times: [0, 0.32, 1],
+      ease: [SCREENS_UP_EASE, SCREENS_DOWN_EASE],
+      delay,
+    },
+  }
+}
+
+const SCREENS_LEAVE = {
+  opacity: { duration: 0.5, ease: EXIT_EASE },
+  scale: { duration: 0.5, ease: EXIT_EASE },
+  x: { duration: 0.5, ease: FLOAT_EASE },
+  y: { duration: 0.8, ease: SCREENS_DOWN_EASE },
+} as const
 
 type HiwStepCopyProps = {
   n: string
@@ -193,6 +235,7 @@ export type HiwCaptionPlacement =
   | 'form'
   | 'build'
   | 'preview'
+  | 'works'
   | 'phone'
   | 'review'
   | 'revise'
@@ -209,6 +252,7 @@ const PHONE_SKETCH_SLOT: Record<HiwCaptionPlacement, string> = {
   build:
     'absolute right-[1%] bottom-[5.85rem] w-[5.1rem] origin-bottom-right text-right',
   preview: 'absolute inset-x-3 top-1 origin-top text-center',
+  works: 'absolute inset-x-3 top-1 origin-top text-center',
   phone:
     'absolute top-[38%] left-[calc(50%+3.05rem)] w-[min(7.25rem,calc(50%-3.35rem))] origin-left text-left',
   review: 'absolute inset-x-4 top-[12%] origin-top text-center',
@@ -236,6 +280,8 @@ export type HiwCaptionContent = {
   suffix?: string
   suffixDelayMs?: number
   suffixBreak?: boolean
+  /** Default true — house line. Punchline wants “…that”. */
+  suffixSpace?: boolean
   ellipsis?: boolean
   ellipsisDelayMs?: number
   /** Hold at `initial` this long before the enter transition. */
@@ -284,10 +330,10 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   build: {
     seat: 'stage',
     slot: 'absolute right-[1.5%] bottom-[5.35rem] w-[min(8.5rem,23%)] origin-bottom-right text-right sm:right-[1.75%] sm:bottom-[5.55rem] lg:right-[1.25%] lg:bottom-[5.7rem]',
-    initial: { opacity: 0, y: 12, scale: 0.98 },
-    animate: { opacity: 1, y: -20, scale: 1 },
-    exit: { opacity: 0, y: -38, scale: 1 },
-    leave: { opacity: 0, y: -38, scale: 1 },
+    initial: { opacity: 0, y: 10, scale: 0.99 },
+    animate: { opacity: 1, y: -14, scale: 1 },
+    exit: { opacity: 0, y: -18, scale: 1 },
+    leave: { opacity: 0, y: -18, scale: 1 },
     transition: floatTransition(6.4),
     exitTransition: BUILD_LEAVE,
   },
@@ -299,6 +345,21 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
     exit: { opacity: 0, x: 28, y: -6, scale: 1.01 },
     leave: { opacity: 0, x: 28, y: -6, scale: 1.01 },
     transition: floatTransition(12),
+    exitTransition: PREVIEW_LEAVE,
+  },
+  works: {
+    seat: 'stage',
+    slot: 'absolute left-[4%] top-[calc(min(84cqw,36rem)*176/252+2rem)] w-[min(16rem,52%)] origin-left whitespace-nowrap text-left sm:left-[5%]',
+    initial: { opacity: 0, x: 16, y: 2, scale: 0.99 },
+    animate: { opacity: 1, x: 16, y: -4, scale: 1 },
+    exit: { opacity: 0, x: 28, y: -8, scale: 1.01 },
+    leave: { opacity: 0, x: 28, y: -8, scale: 1.01 },
+    transition: {
+      opacity: { duration: 0.18, ease: ENTER_EASE },
+      scale: { duration: 0.28, ease: ENTER_EASE },
+      x: { duration: 8, ease: FLOAT_EASE },
+      y: { duration: 8, ease: FLOAT_EASE },
+    },
     exitTransition: PREVIEW_LEAVE,
   },
   phone: {
@@ -363,7 +424,7 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   },
   andFinally: {
     seat: 'stage',
-    slot: 'absolute left-0 right-0 bottom-[calc(100cqw*178/492+6rem)] mx-auto w-max origin-bottom whitespace-nowrap text-center',
+    slot: 'absolute left-0 right-0 bottom-[calc(100cqw*178/492+6rem)] mx-auto w-max max-w-[min(22rem,92%)] origin-bottom text-center',
     initial: { opacity: 0, y: 6, scale: 1 },
     animate: { opacity: 1, y: 0, scale: 1.14 },
     exit: { opacity: 0, y: -8, scale: 1.18 },
@@ -394,12 +455,10 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   screens: {
     seat: 'stage',
     slot: 'absolute left-0 right-0 top-[1.7rem] mx-auto w-[min(92%,20.5rem)] origin-bottom text-center sm:top-[1.85rem] lg:top-[2rem]',
-    initial: { opacity: 0, y: 8, scale: 0.99 },
-    animate: { opacity: 1, y: -6, scale: 1 },
-    /** Same destination as leave — one continuous drop, never a rest pose. */
-    preSink: { opacity: 1, y: 280, scale: 0.82 },
-    exit: { opacity: 0, y: 280, scale: 0.82 },
-    leave: { opacity: 0, y: 280, scale: 0.82 },
+    initial: { opacity: 0, y: 16, scale: 0.99 },
+    animate: { opacity: 1, y: -34, scale: 1 },
+    exit: { opacity: 0, y: 42, scale: 1 },
+    leave: { opacity: 0, y: 42, scale: 1 },
     transition: floatTransition(1.8, ENTER_EASE),
     exitTransition: SCREENS_LEAVE,
   },
@@ -409,10 +468,14 @@ const PREFIX_IN = { duration: 0.34, ease: ENTER_EASE } as const
 /** Stagger between ellipsis dots — synced with HowItWorksStage caption timing. */
 export const ELLIPSIS_DOT_MS = 210
 export const ELLIPSIS_TAIL_MS = ELLIPSIS_DOT_MS * 2
-/** House beat: dots first, then “and then” after the last dot has landed. */
+/** House beat: trailing dots after the phrase has landed. */
 export const HOUSE_ELLIPSIS_DELAY_MS = 50
 export const HOUSE_AND_THEN_DELAY_MS =
   HOUSE_ELLIPSIS_DELAY_MS + ELLIPSIS_TAIL_MS + 240
+/** Punchline: dots land, then “that actually works”. */
+export const WORKS_ELLIPSIS_DELAY_MS = 120
+export const WORKS_SUFFIX_DELAY_MS =
+  WORKS_ELLIPSIS_DELAY_MS + ELLIPSIS_TAIL_MS + 480 + 200
 const ELLIPSIS_IN = { duration: 0.48, ease: [0.16, 1, 0.32, 1] as const }
 
 function withEnterDelay(
@@ -489,6 +552,7 @@ type HiwCaptionProps = {
   suffix?: string
   suffixDelayMs?: number
   suffixBreak?: boolean
+  suffixSpace?: boolean
   ellipsis?: boolean
   ellipsisDelayMs?: number
   enterDelayMs?: number
@@ -508,6 +572,7 @@ export function HiwCaption({
   suffix,
   suffixDelayMs = 1680,
   suffixBreak = false,
+  suffixSpace = true,
   ellipsis = false,
   ellipsisDelayMs = 880,
   enterDelayMs,
@@ -526,28 +591,30 @@ export function HiwCaption({
       ? PHONE_SKETCH_SLOT[placement]
       : style.slot
   const phoneBeside = phoneStage && placement === 'phone'
-  /** Build line keeps its authored rise on phone — other lines stay planted. */
-  const riseOnPhone = placement === 'build'
-  const restPose =
-    phoneStage && !riseOnPhone
-      ? { opacity: 1, x: 0, y: 0, scale: style.animate.scale }
-      : style.animate
-  const leavePose =
-    phoneStage && !riseOnPhone
-      ? { opacity: 0, x: 0, y: -6, scale: 1 }
-      : style.leave
-  const exitPose =
-    phoneStage && !riseOnPhone
-      ? { opacity: 0, x: 0, y: -6, scale: 1 }
-      : style.exit
-  const dropPose = phoneStage
-    ? { opacity: 0, x: 0, y: style.leave.y ?? 12, scale: 1 }
+  /** Build + go-live punchline keep their authored rise on phone. */
+  const riseOnPhone = placement === 'build' || placement === 'screens'
+  const plantOnPhone = phoneStage && !riseOnPhone
+  const restPose = plantOnPhone
+    ? { opacity: 1, x: 0, y: 0, scale: style.animate.scale }
+    : style.animate
+  const leavePose = plantOnPhone
+    ? { opacity: 0, x: 0, y: 0, scale: 1 }
     : style.leave
-  const leaveTransition = leaveMs
-    ? sinkLeaveTransition(leaveMs / 1000)
-    : style.exitTransition
-      ?? (phoneStage && !riseOnPhone ? PHONE_LEAVE : LEAVE_TRANSITION)
+  const exitPose = plantOnPhone
+    ? { opacity: 0, x: 0, y: 0, scale: 1 }
+    : style.exit
+  const dropPose = phoneStage
+    ? { opacity: 0, x: 0, y: 20, scale: 1 }
+    : style.leave
+  const leaveTransition =
+    placement === 'screens'
+      ? style.exitTransition ?? SCREENS_LEAVE
+      : leaveMs
+        ? sinkLeaveTransition(leaveMs / 1000)
+        : style.exitTransition
+          ?? (phoneStage && !riseOnPhone ? PHONE_LEAVE : LEAVE_TRANSITION)
   const screensDrop = Boolean(style.preSink && (preSink || leaving))
+  const screensArc = placement === 'screens' && !leaving && !screensDrop
   const fadeDelayS = Math.max(0, (preSinkMs ?? 2100) / 1000)
   const dropTransition = screensDropTransition(SCREENS_DROP_S, fadeDelayS)
   const step3Caption =
@@ -560,12 +627,12 @@ export function HiwCaption({
     phoneStage
       ? placement === 'andFinally'
         ? { ...PHONE_ENTER, scale: style.transition.scale }
-        : riseOnPhone || step3Caption
+        : riseOnPhone || step3Caption || placement === 'works'
           ? style.transition
           : PHONE_ENTER
       : style.transition,
     enterDelayMs,
-    leaving || screensDrop,
+    leaving || screensDrop || screensArc,
   )
 
   return (
@@ -579,26 +646,38 @@ export function HiwCaption({
           placement === 'andFinally' ||
           placement === 'build' ||
           placement === 'preview' ||
-          placement === 'switch') &&
+          placement === 'works' ||
+          placement === 'switch' ||
+          placement === 'screens') &&
           'hiw-blurb-over',
         phoneStage && 'max-lg:whitespace-normal',
       )}
       initial={
         phoneStage && !riseOnPhone
-          ? { opacity: 0, x: phoneBeside ? -10 : 0, y: phoneBeside ? 0 : 8, scale: 1 }
+          ? { opacity: 0, x: phoneBeside ? -10 : 0, y: phoneBeside ? 0 : 0, scale: 1 }
           : style.initial
       }
-      animate={screensDrop ? dropPose : leaving ? leavePose : restPose}
+      animate={
+        screensArc
+          ? screensArcAnimate(phoneStage)
+          : screensDrop
+            ? dropPose
+            : leaving
+              ? leavePose
+              : restPose
+      }
       exit={{
         ...exitPose,
         transition: screensDrop ? dropTransition : leaveTransition,
       }}
       transition={
-        screensDrop
-          ? dropTransition
-          : leaving
-            ? leaveTransition
-            : enterTransition
+        screensArc
+          ? screensArcTransition(enterDelayMs)
+          : screensDrop
+            ? dropTransition
+            : leaving
+              ? leaveTransition
+              : enterTransition
       }
       transformTemplate={keepLayer}
     >
@@ -609,7 +688,7 @@ export function HiwCaption({
             ? 'text-[1.12rem] leading-[1.28] sm:text-[1.2rem]'
             : placement === 'screens' || placement === 'switch'
               ? 'text-[1.15rem] leading-[1.32] tracking-[0.012em] sm:text-[1.25rem]'
-              : placement === 'form' || placement === 'preview' || heading
+              : placement === 'form' || placement === 'preview' || placement === 'works' || heading
                 ? 'text-[1.0625rem] sm:text-[1.18rem]'
                 : 'text-[1.0625rem] sm:text-[1.15rem]',
           placement === 'form' && !phoneStage && 'sm:whitespace-nowrap',
@@ -638,7 +717,7 @@ export function HiwCaption({
           : null}
         {suffix ? (
           <RevealSpan delayMs={suffixDelayMs} leaving={leaving}>
-            {suffixBreak ? <br /> : '\u00a0'}
+            {suffixBreak ? <br /> : suffixSpace ? '\u00a0' : null}
             {suffix}
           </RevealSpan>
         ) : null}

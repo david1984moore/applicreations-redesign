@@ -10,6 +10,8 @@ import { stripLocale } from '@/lib/i18n/paths'
 import { cn } from '@/lib/utils'
 
 const SCROLL_IDLE_MS = 1100
+/** Cinematic chrome (video players, fullscreen viewers): hide after ~2s of no pointer motion. */
+const CURSOR_IDLE_MS = 2000
 const AT_TOP_PX = 8
 
 function pageScrollY() {
@@ -95,6 +97,76 @@ function useSubpageNavVisibility(enabled: boolean, resetKey: string) {
   return { visible, hold, release }
 }
 
+function useCursorIdleNavVisibility(enabled: boolean, resetKey: string, frozen = false) {
+  const [visible, setVisible] = useState(true)
+  const heldRef = useRef(false)
+  const timerRef = useRef<number | null>(null)
+  const enabledRef = useRef(enabled)
+  enabledRef.current = enabled
+
+  const clearTimer = () => {
+    if (timerRef.current != null) {
+      window.clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  const scheduleHide = () => {
+    clearTimer()
+    if (!enabledRef.current || heldRef.current) return
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null
+      if (!heldRef.current && enabledRef.current) setVisible(false)
+    }, CURSOR_IDLE_MS)
+  }
+
+  useEffect(() => {
+    heldRef.current = false
+    if (frozen) return
+    setVisible(true)
+    clearTimer()
+  }, [resetKey, frozen])
+
+  useEffect(() => {
+    if (!enabled) {
+      setVisible(true)
+      clearTimer()
+      return
+    }
+    if (frozen) {
+      clearTimer()
+      return
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerType && event.pointerType !== 'mouse') return
+      setVisible(true)
+      scheduleHide()
+    }
+
+    scheduleHide()
+    window.addEventListener('pointermove', onPointerMove, { capture: true, passive: true })
+
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove, true)
+      clearTimer()
+    }
+  }, [enabled, resetKey, frozen])
+
+  const hold = () => {
+    heldRef.current = true
+    setVisible(true)
+    clearTimer()
+  }
+
+  const release = () => {
+    heldRef.current = false
+    scheduleHide()
+  }
+
+  return { visible, hold, release }
+}
+
 /**
  * Keep in sync with spacer + page scroll offsets.
  * In this design system h-12 = --spacing-12 = 6rem (not Tailwind’s default 3rem).
@@ -110,8 +182,27 @@ export const SITE_VIEWPORT_BELOW_NAV_CLASS =
 export function Navigation() {
   const pathname = usePathname()
   const { dict, href } = useLocale()
-  const onHome = stripLocale(pathname || '/') === '/'
-  const { visible, hold, release } = useSubpageNavVisibility(!onHome, pathname || '/')
+  const barePath = stripLocale(pathname || '/')
+  const onHome = barePath === '/'
+  const onIntrospect = barePath === '/introspect' || barePath === '/redesign'
+  const [successLock, setSuccessLock] = useState(false)
+
+  useEffect(() => {
+    if (!onIntrospect) {
+      setSuccessLock(false)
+      return
+    }
+    const root = document.documentElement
+    const sync = () => setSuccessLock(root.dataset.introspect === 'success')
+    sync()
+    const observer = new MutationObserver(sync)
+    observer.observe(root, { attributes: true, attributeFilter: ['data-introspect'] })
+    return () => observer.disconnect()
+  }, [onIntrospect])
+
+  const scrollNav = useSubpageNavVisibility(!onHome && !onIntrospect, pathname || '/')
+  const idleNav = useCursorIdleNavVisibility(onIntrospect, pathname || '/', successLock)
+  const { visible, hold, release } = onIntrospect ? idleNav : scrollNav
 
   // Landing uses its own brand chrome — no global nav
   if (onHome) return null
@@ -128,7 +219,7 @@ export function Navigation() {
           }
         }}
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 bg-paper/85 backdrop-blur-md',
+          'site-nav fixed top-0 left-0 right-0 z-50 bg-paper/85 backdrop-blur-md',
           'transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
           visible
             ? 'translate-y-0 opacity-100'

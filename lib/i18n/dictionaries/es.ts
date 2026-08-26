@@ -15,6 +15,9 @@ export const es: Dictionary = {
     introspectTitle: 'Introspección — Applicreations',
     introspectDescription:
       'Un cuestionario corto sobre tu negocio para que podamos crear una vista previa de tu sitio web a la medida.',
+    redesignTitle: 'Introspección Rediseño — Applicreations',
+    redesignDescription:
+      'Un cuestionario corto sobre tu sitio actual para que podamos diseñar una vista previa del rediseño.',
     pricingTitle: 'Precios — Applicreations',
     pricingDescription:
       'Precios simples para sitios web a la medida — paquetes de pago único más hosting y soporte desde $19 al mes.',
@@ -51,9 +54,10 @@ export const es: Dictionary = {
       },
       livePreview: {
         label: 'Sitio demo',
-        detail: 'Tienes un sitio demo personalizado...',
+        detail: 'Tienes un sitio demo personalizado',
         building: '...nos ponemos a trabajar',
         buildingPreview: '...nos ponemos a trabajar',
+        actuallyWorks: 'que de verdad funciona',
         phoneSuffix: 'Incluso en tu teléfono',
       },
       workingWebsite: {
@@ -64,8 +68,8 @@ export const es: Dictionary = {
         revise: 'Hacemos revisiones',
         justRight: 'Ajustando',
         justRightTune: 'Afinando',
-        justRightFinally: 'y entonces',
-        goLive: 'el sitio web está en vivo.',
+        justRightFinally: 'cuando todo se ve bien...',
+        goLive: 'salimos en vivo...',
         suffix: '¡Y ya estás en el negocio!',
       },
     },
@@ -86,9 +90,9 @@ export const es: Dictionary = {
     eyebrow: 'Nosotros',
     name: 'David Moore',
     role: 'Fundador, Applicreations',
-    p1: 'Crecí dibujando con distintos medios — lápiz, pluma y tinta, carboncillo, pasteles y acuarela. Con el tiempo trabajé como chef, expresando mi lado creativo a través del sabor y la presentación de los ingredientes en el plato.',
-    p2: 'Mientras aprendía por mi cuenta diseño web y software desde 2021, en el camino noté que muchos pequeños negocios locales batallan para presentarse con dignidad en línea — o terminan con sitios genéricos de Wix, GoDaddy, Squarespace y similares. Cada vez más, en un mundo enfocado más en las máquinas que en las personas, me sentí atraído al desarrollo web que pone a las personas primero — construir exactamente lo que cada cliente quiere, en sus términos. Así que comencé Applicreations en 2025.',
-    p3: 'Los constructores de sitios genéricos suelen ser rápidos, pero pueden hacerte sentir como un número más. En Applicreations no hay plantillas genéricas — cada proyecto es original y hecho a la medida de lo que realmente quieres. Cada negocio tiene una identidad distinta, y eso merece una presencia en línea respetable. Ayudo a las personas a echar raíces digitales únicas. Espero poder ayudarte a echar las tuyas.',
+    p1: 'Llené muchos cuadernos de bocetos de pequeño — lápiz, tinta, carboncillo, acuarela. Más tarde, como chef, encontré un nuevo lienzo en el sabor y la presentación.',
+    p2: 'Al enseñarme por mi cuenta diseño web y software en 2021, vi con qué frecuencia los pequeños negocios terminaban con sitios genéricos y de plantilla que no reflejaban quiénes eran. Quería construir algo distinto — trabajo moldeado por completo alrededor de las necesidades de cada cliente. Applicreations fue el resultado, lanzado en 2025.',
+    p3: 'Los creadores de plantillas son rápidos y cada vez más automatizados, pero pueden hacerte sentir como un número. Applicreations no funciona así — cada proyecto es original, construido alrededor de tu negocio y de lo que lo hace distinto. Ayudo a echar raíces digitales únicas, y me encantaría ayudarte a echar las tuyas.',
   },
   contact: {
     eyebrow: 'Contacto',
@@ -219,15 +223,13 @@ export const es: Dictionary = {
     startingPriceNote:
       'Este precio es un punto de partida. Después de que tu sitio web esté construido y en línea, cualquier trabajo, función o servicio adicional que solicites será estimado por Applicreations antes de comenzar ese trabajo.',
     highlightsAria: 'Puntos destacados de {name}',
-    exampleTotal:
-      'Ejemplo: Basic ({basicPrice}) + Basic ({supportPrice}) — elige ambos para ver un total simple.',
     hostingSupportHeading: 'Hosting y Soporte',
     hostingSupportLead:
       'Cuidado mensual que mantiene tu sitio en línea — elige la rapidez de respuesta que te convenga.',
     hostingWhoFor: 'Para quién es',
     mixMatchHeading: 'Combina y estima',
-    redesignPrompt: '"Ya tengo un sitio web, solo necesito rediseñarlo."',
-    redesignHint: 'Asegúrate de seleccionar "{choice}" al completar el formulario.',
+    redesignPrompt: 'Tengo un sitio web, solo necesito una actualización.',
+    redesignHint: 'Empezaremos desde tu sitio actual',
     redesignCta: 'Empezar el rediseño',
     mixMatchLead:
       'Elige un paquete de sitio web y un plan de hosting para ver el total.',
@@ -248,6 +250,9 @@ export const es: Dictionary = {
     goingLiveStep2BulletPlan:
       'Añade un plan de hosting y soporte para que publiquemos tu sitio, lo mantengamos en línea y resolvamos los problemas técnicos.',
     goingLiveStep2CancellationHeading: 'Cancelación',
+    goingLiveStep2CancelBuildHeading: 'Construcción del sitio',
+    goingLiveStep2BulletCancelBuild:
+      'La vista previa / sitio de demostración es gratuita. El primer pago es un anticipo no reembolsable. Si cancelas después de que haya comenzado la construcción de tu sitio, te transferiremos todos los datos en su estado actual.',
     goingLiveStep2BulletCancel:
       'Puedes cancelar el hosting y el soporte en cualquier momento. Antes de que podamos transferir los datos de tu sitio, es obligatorio que tengas tu propia cuenta de Render configurada y activa. Cuando cancelas, tú asumes el trabajo técnico que nosotros manejamos mientras estás con nosotros — incluyendo:',
     goingLiveStep2CancelItems: [
@@ -388,10 +393,10 @@ export const es: Dictionary = {
     // Welcome
     welcomeEyebrow: 'Introspección',
     welcomeHeading: 'Bienvenido — conozcamos tu proyecto',
-    whatToExpect: 'Qué esperar',
-    expect1: 'Responde unas cuantas preguntas.',
-    expect2: 'En dos días, recibe un sitio web de vista previa funcionando.',
-    expect3: 'Pruébalo durante 24 horas. ¿Te gusta lo que ves? Hablamos de negocio.',
+    welcomeGreeting: 'Bienvenido',
+    welcomeContinue: 'Conozcamos tu proyecto',
+    redesignWelcomeContinue: 'Veamos tu sitio actual',
+    redesignWelcomeHeading: 'Bienvenido — veamos tu sitio actual',
     getStarted: 'Comenzar',
     // Step 1
     step1Title: 'Primero, un poco sobre ti',
@@ -407,20 +412,32 @@ export const es: Dictionary = {
     yesContinue: 'Sí, continuar',
     // Step 2
     step2Title: 'Cuéntanos sobre tu negocio o proyecto',
+    step2SubtitleRedesign:
+      'Aunque el sitio actual ya lo diga — cuéntalo con tus propias palabras.',
     businessNameLabel: 'Nombre de tu negocio o proyecto',
     businessNamePlaceholder: 'Café de Joe',
     aboutBusinessLabel: '¿Qué hace o qué ofrece?',
     aboutBusinessPlaceholder: 'Un café de barrio que sirve desayuno, almuerzo y café',
     locationLabel: '¿Dónde están ubicados?',
-    locationPlaceholder: 'Ciudad, pueblo o zona que atiendes',
+    locationCityLabel: 'Ciudad',
+    locationCityPlaceholder: 'Ciudad o pueblo',
+    locationStateLabel: 'Estado',
+    locationStatePlaceholder: 'Estado o región',
+    locationCountryLabel: 'País',
+    locationNoMatches: 'Sin coincidencias',
     // Step 3
     step3Title: 'Tu presencia en línea hoy',
     step3Subtitle: 'No pasa nada si todavía no tienes un sitio web.',
+    step3TitleRedesign: 'Tu sitio web actual',
+    step3SubtitleRedesign: 'Empezaremos desde el sitio en vivo y luego decidiremos qué conservar.',
     hasOnlineLabel: '¿Ya tienes un sitio web o páginas en línea?',
     hasOnlineYes: 'Tengo un sitio web',
     chooseOne: 'Por favor elige una opción',
     websiteUrlLabel: 'Enlace a tu sitio web actual (si tienes)',
-    websiteUrlPlaceholder: 'https://tusitioweb.com',
+    websiteUrlLabelHasSite: 'Enlace a tu sitio web actual',
+    websiteUrlLabelRedesign: 'Enlace al sitio que quieres rediseñar',
+    websiteUrlRequired: 'Por favor escribe la dirección del sitio que quieres rediseñar',
+    websiteUrlPlaceholder: 'tusitioweb.com',
     socialLinksLabel: 'Enlaces a tus redes sociales (si tienes)',
     socialLinksHint: 'Facebook, Instagram, LinkedIn y similares — un enlace por casilla.',
     addSocialLink: 'Agregar otro enlace de redes',
@@ -428,12 +445,13 @@ export const es: Dictionary = {
     admiredHint:
       'No es obligatorio, pero nos ayuda a entender mejor tus preferencias de diseño.',
     addAdmiredSite: 'Agregar otro sitio',
-    linkPlaceholder: 'https://...',
+    linkPlaceholder: 'tusitio.com',
     removeItem: 'Quitar',
     removeItemAria: 'Quitar elemento',
     // Step 4
     step4Title: 'Logo y fotos',
     step4Subtitle: 'Trabajamos con lo que tengas — o te ayudamos a resolver las fotos después.',
+    step4SubtitleRedesign: 'También vamos a revisar lo que ya está en tu sitio.',
     hasLogoLabel: '¿Ya tienes un logo?',
     uploadLogoLabel: 'Sube tu logo (opcional)',
     uploadLogoHint: 'PNG, JPG, WebP o SVG — hasta 5 MB.',
@@ -451,17 +469,27 @@ export const es: Dictionary = {
     removeFileAria: 'Quitar {name}',
     uploadSecurityNotice:
       'Subir archivos es opcional. Los archivos están protegidos por el cifrado a nivel de infraestructura de Google (AES-256 en reposo, TLS en tránsito). Applicreations mantiene el acceso a la carpeta restringido únicamente a Applicreations, y los archivos se eliminan de la carpeta compartida dentro de los 30 días posteriores a la finalización del proyecto.',
+    keepChangeTitle: '¿Qué debemos conservar — y qué tiene que cambiar?',
+    keepChangeSubtitle:
+      'Elige todas las que apliquen. Podemos afinarlo cuando revisemos tu sitio.',
+    keepHeading: '¿Qué debemos conservar?',
+    changeHeading: '¿Qué es lo que más necesita cambiar?',
+    keepItemsError: 'Elige al menos una cosa para conservar — o empezar de cero',
+    changePrioritiesError: 'Elige al menos una cosa que necesita cambiar',
+    keepChangeNotesLabel: '¿Algo específico del sitio actual que debamos saber?',
+    keepChangeNotesPlaceholder:
+      'Opcional — páginas que importan, cosas que no funcionan, o detalles que debamos notar…',
     // Step 5
     step5Title: '¿Qué debería poder hacer la gente en tu sitio web?',
-    step5Hint:
-      'Ejemplos: llamarte, ver un menú, agendar una visita, comprar algo, revisar eventos.',
-    addAction: 'Agregar otra acción',
-    actionPlaceholder: 'Ver nuestro horario',
-    visitorActionsError: 'Por favor escribe al menos una cosa que la gente debería poder hacer',
+    step5Hint: 'Elige todas las que apliquen — las que quieras.',
+    step5TitleRedesign: 'En el sitio nuevo, ¿qué debería poder hacer la gente?',
+    step5HintRedesign: 'Incluye lo que tu sitio actual ya hace, y también lo que quieras agregar.',
+    visitorActionsError: 'Por favor elige al menos una cosa que la gente debería poder hacer',
     // Step 6
     step6Title: '¿Qué tan desarrollado debería ser?',
     step6Subtitle:
       'Elige la opción más cercana. Podemos afinarla cuando revisemos tus respuestas.',
+    step6SubtitleRedesign: 'Piensa en el sitio nuevo, no en cuántas páginas tienes ahora.',
     siteDepthError: 'Por favor elige qué tan completo quieres el sitio',
     // Step 7
     step7Title: 'Estilo de diseño y colores',
@@ -470,6 +498,7 @@ export const es: Dictionary = {
     colorsHeading: 'Colores',
     noPreference: 'Sin preferencia — ustedes deciden',
     matchLogoColors: 'Usar los colores de mi logo',
+    keepCurrentLook: 'Conservar el look de mi sitio actual',
     designFeelsError: 'Elige al menos un estilo de diseño, o marca sin preferencia',
     colorPalettesError:
       'Elige al menos una dirección de color, usa los colores de tu logo, o marca sin preferencia',
@@ -487,6 +516,8 @@ export const es: Dictionary = {
     step9Title: '¿Hay algo más sobre tu negocio que debamos saber?',
     step9Aria: 'Algo más sobre tu negocio',
     step9Placeholder: 'Opcional — horarios, temporadas, socios, cosas imprescindibles…',
+    step9PlaceholderRedesign:
+      'Opcional — imprescindibles del sitio actual, páginas que importan, o algo que no debamos pasar por alto…',
     // Buttons
     continue: 'Continuar',
     continueToReview: 'Continuar a la revisión',
@@ -494,6 +525,8 @@ export const es: Dictionary = {
     // Review
     reviewHeading: 'Revisa tus respuestas',
     reviewSubtitle: 'Revisa todo lo de abajo y envíalo cuando se vea bien.',
+    reviewEdit: 'Editar',
+    reviewDone: 'Listo',
     reviewAboutYou: 'Sobre ti',
     reviewName: 'Nombre',
     reviewEmail: 'Correo',
@@ -503,8 +536,13 @@ export const es: Dictionary = {
     reviewLocation: 'Ubicación',
     reviewWhatYouDo: 'A qué te dedicas',
     reviewOnlinePresence: 'Presencia en línea',
+    reviewCurrentWebsite: 'Sitio actual',
     reviewAlreadyOnline: '¿Ya en línea?',
     reviewWebsite: 'Sitio web',
+    reviewKeepChange: 'Conservar o cambiar',
+    reviewKeep: 'Conservar',
+    reviewChange: 'Cambiar',
+    reviewCurrentSiteNotes: 'Notas sobre el sitio actual',
     reviewSocialLinks: 'Redes sociales',
     reviewSitesAdmire: 'Sitios que admiras',
     reviewLogoPhotos: 'Logo y fotos',
@@ -527,19 +565,20 @@ export const es: Dictionary = {
     reviewNotes: 'Notas',
     // Success
     successEyebrow: 'Todo listo',
+    successThanks: 'Gracias',
     successHeading: 'Gracias — recibimos tus respuestas de la Introspección',
+    successHeadingRest: '— recibimos tus respuestas de la Introspección',
+    successHeadingRedesign: 'Gracias — recibimos tus respuestas del rediseño',
+    successHeadingRestRedesign: '— recibimos tus respuestas del rediseño',
     successNextHeading: 'Qué sigue…',
     successNext1:
-      'Applicreations ya comenzó a trabajar en tu sitio web de vista previa gratis.',
+      'En dos días o menos, se envía por correo un enlace al sitio de demostración.',
+    successNext1Redesign:
+      'En dos días o menos, se envía por correo un enlace a la demostración rediseñada.',
     successNext2:
-      'Recibirás un enlace al sitio web de vista previa gratis por correo en menos de 72 horas.',
-    successNext3:
-      'Explora tu sitio web de vista previa durante 3 días. Luego selecciona comenzar mi sitio web real o detener el proyecto.',
-    successNext4:
-      'Si seleccionas comenzar mi sitio web real, Applicreations te contactará para confirmar el alcance final del proyecto.',
-    successFootnote:
-      '*Por favor usa los botones en tu correo para que sepamos cómo proceder.',
-    successHomeAria: 'Inicio de Applicreations',
+      'Cuando recibas el sitio de demostración por correo, tendrás 24 horas para probarlo.',
+    successClosing: 'Gracias por usar la Introspección.',
+    successClosingRedesign: 'Gracias por usar la Introspección.',
     // Errors
     errorGeneric: 'Algo salió mal. Por favor intenta de nuevo.',
     errorTryEmail:
@@ -552,8 +591,10 @@ export const es: Dictionary = {
     businessName: 'Por favor escribe el nombre de tu negocio o proyecto',
     aboutBusinessEmpty: 'Por favor cuéntanos qué hace tu negocio o proyecto',
     aboutBusinessShort: 'Por favor agrega un poco más — una oración corta nos ayuda a empezar',
-    locationEmpty: 'Por favor dinos dónde están ubicados',
-    locationShort: 'Por favor escribe un lugar real — ciudad, pueblo o zona que atiendes',
+    locationCityEmpty: 'Por favor escribe una ciudad o pueblo',
+    locationCityShort: 'Por favor escribe una ciudad o pueblo real',
+    locationStateEmpty: 'Por favor escribe un estado o región',
+    locationCountryEmpty: 'Por favor elige un país',
     nameHardShort: 'Por favor escribe tu nombre',
     nameHardLetters: 'Por favor escribe un nombre real (letras, no solo números o símbolos)',
     nameSoftWarning: 'Oye — ¿seguro que ese es tu nombre? Solo para confirmar.',
@@ -576,6 +617,48 @@ export const es: Dictionary = {
         description:
           'Varias páginas más cosas con las que la gente (o tú) interactúa — como pedidos, reservaciones, cuentas o herramientas para actualizar el sitio. Las funciones a la medida construidas alrededor de cómo trabajas también entran aquí.',
       },
+    },
+    visitorActions: {
+      'call-you': 'Llamarte',
+      'email-you': 'Enviarte un correo',
+      'see-hours': 'Ver tu horario',
+      'find-you': 'Encontrar dónde estás',
+      'get-directions': 'Obtener indicaciones',
+      'see-photos': 'Ver fotos',
+      'read-about-you': 'Leer sobre ti',
+      'see-a-menu': 'Ver un menú',
+      'see-prices': 'Ver precios',
+      'see-what-you-offer': 'Ver lo que ofreces',
+      'see-events': 'Ver próximos eventos',
+      'see-a-calendar': 'Ver un calendario',
+      'browse-a-gallery': 'Recorrer una galería',
+      'watch-a-video': 'Ver un video',
+      listen: 'Escuchar música o audio',
+      'read-updates': 'Leer noticias o novedades',
+      'read-stories': 'Leer historias',
+      'meet-the-people': 'Conocer a las personas',
+      'see-a-portfolio': 'Ver un portafolio',
+      'download-a-file': 'Descargar un archivo',
+      'ask-a-question': 'Hacer una pregunta',
+      'fill-out-a-form': 'Llenar un formulario',
+      'join-email-list': 'Unirse a una lista de correo',
+      'leave-a-review': 'Dejar una reseña',
+      rsvp: 'Confirmar asistencia',
+      volunteer: 'Apuntarse a ayudar',
+      share: 'Compartir con amigos',
+      'book-a-visit': 'Agendar una visita',
+      'make-a-reservation': 'Hacer una reservación',
+      'schedule-an-appointment': 'Programar una cita',
+      'request-a-quote': 'Pedir una cotización',
+      donate: 'Hacer una donación',
+      'buy-something': 'Comprar algo',
+      'place-an-order': 'Hacer un pedido',
+      'pay-online': 'Pagar en línea',
+      'create-an-account': 'Crear una cuenta',
+      apply: 'Postularse a algo',
+      'search-the-site': 'Buscar en el sitio',
+      chat: 'Chatear contigo',
+      'sign-up-for-a-class': 'Inscribirse a una clase',
     },
     designFeels: {
       'clean-simple': {
@@ -623,6 +706,25 @@ export const es: Dictionary = {
       'deep-jewel': { title: 'Tonos joya profundos' },
       custom: { title: 'Tengo los míos' },
     },
+    keepItems: {
+      logo: 'Mi logo',
+      colors: 'Mis colores',
+      photos: 'Mis fotos',
+      words: 'Las palabras / cómo describo el negocio',
+      pages: 'Las mismas páginas (Inicio, Nosotros y similares)',
+      contact: 'Cómo me contactan',
+      'start-fresh': 'Nada — empezar de cero',
+    },
+    changePriorities: {
+      'looks-old': 'Se ve viejo o no se parece a mi negocio',
+      'hard-on-phone': 'Es difícil de usar en el celular',
+      'hard-to-find': 'La gente no encuentra lo que necesita',
+      'easier-to-update': 'Quiero que sea más fácil de actualizar',
+      'new-things': 'Quiero cosas nuevas que ahora no puede hacer',
+      'words-off': 'Las palabras no suenan como nosotros',
+      'hard-to-search': 'La gente no nos encuentra cuando busca',
+      'slow-or-broken': 'Está lento o hay cosas que no funcionan',
+    },
     recommend: {
       choseOnPricing: 'El cliente ya eligió {name} en la página de precios.',
       pro:
@@ -664,6 +766,12 @@ export const es: Dictionary = {
       anythingElse: 'Algo más sobre el negocio',
       noPreference: 'Sin preferencia — ustedes deciden',
       matchLogo: 'Usar los colores de mi logo',
+      keepCurrentLook: 'Conservar el look de mi sitio actual',
+      keepItems: 'Qué conservar',
+      changePriorities: 'Qué necesita cambiar',
+      currentSiteNotes: 'Notas sobre el sitio actual',
+      flow: 'Flujo',
+      flowRedesign: 'Rediseño',
       notAnswered: '(sin responder)',
       none: '(ninguno)',
     },
@@ -1406,12 +1514,17 @@ export const es: Dictionary = {
       clientEmailSubject: 'Recibimos tus respuestas de la Introspección',
       clientEmailTitle: 'Gracias — recibimos tu Introspección',
       clientEmailIntro:
-        'Abajo está todo lo que compartiste en la Introspección. Revisaremos tus respuestas y te contactaremos pronto.',
+        'Estamos construyendo una demo de tu sitio a partir de tus respuestas. Revisa tu bandeja de entrada y la carpeta de spam para el enlace de vista previa. Abajo está una copia de todo lo que compartiste.',
+      clientEmailSubjectRedesign: 'Recibimos tus respuestas del rediseño',
+      clientEmailTitleRedesign: 'Gracias — recibimos tu Introspección de rediseño',
+      clientEmailIntroRedesign:
+        'Estamos construyendo una demo de tu nuevo sitio a partir de estas respuestas. Revisa tu bandeja de entrada y la carpeta de spam para el enlace de vista previa. Abajo está una copia de todo lo que compartiste.',
       clientEmailRecommendedLabel: 'Paquete sugerido',
       clientEmailPricingLabel: 'Tu selección de precios',
       clientEmailSectionRecommendation: 'Nuestra sugerencia',
       clientEmailSectionContact: 'Tú y tu negocio',
       clientEmailSectionOnline: 'Presencia en línea',
+      clientEmailSectionKeepChange: 'Conservar o cambiar',
       clientEmailSectionAssets: 'Logo y fotos',
       clientEmailSectionDirection: 'Dirección del sitio',
       clientEmailSignoff: '— Applicreations',
@@ -1421,6 +1534,11 @@ export const es: Dictionary = {
       ownerEmailSubject: 'Introspección: {business} — {plan}',
       ownerEmailTitle: 'Nueva Introspección',
       ownerEmailIntro: 'Llegó un cuestionario nuevo para {business}.',
+      ownerEmailSubjectRedesign: 'Introspección rediseño: {business} — {plan}',
+      ownerEmailTitleRedesign: 'Nueva Introspección de rediseño',
+      ownerEmailIntroRedesign: 'Llegó un cuestionario de rediseño para {business}.',
+      websiteUrlRequired: 'Por favor escribe la dirección del sitio que quieres rediseñar.',
+      keepChangeRequired: 'Por favor dinos qué conservar y qué necesita cambiar.',
     },
     pricingSelection: {
       invalidBody: 'Solicitud inválida.',

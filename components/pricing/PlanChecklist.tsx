@@ -103,9 +103,12 @@ function LandingChecklist({
       {items.slice(0, CHECKLIST_MAX_ROWS).map((item) => (
         <li
           key={item}
-          className="flex min-w-0 items-center gap-1.5 text-[0.75rem] leading-none text-gray-900 lg:h-[1.125rem] sm:text-[0.8125rem]"
+          className="flex min-w-0 items-center gap-2.5 text-[0.75rem] leading-none text-gray-900 lg:h-[1.125rem] sm:text-[0.8125rem]"
         >
-          <IncludedMark className="h-3 w-3" />
+          <IncludedMark
+            className="size-[0.72rem] text-[oklch(74%_0.24_146)]"
+            strokeWidth={6}
+          />
           <span className="min-w-0 text-left">{item}</span>
         </li>
       ))}

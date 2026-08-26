@@ -25,7 +25,7 @@ import { PlanFeatureRevealProvider } from '@/components/pricing/PlanChecklist'
 import { PlanFullDetails } from '@/components/pricing/PlanFullDetails'
 import { PlanTierCard } from '@/components/pricing/PlanTierCard'
 import { PricingComparisonMatrix } from '@/components/pricing/PricingComparisonMatrix'
-import { RedesignPrompt } from '@/components/pricing/RedesignPrompt'
+import { FootnoteAsterisk, RedesignPrompt } from '@/components/pricing/RedesignPrompt'
 import { SelectToggle } from '@/components/pricing/SelectToggle'
 import { SelectionSummary } from '@/components/pricing/SelectionSummary'
 import { SupportTierIcon } from '@/components/pricing/SupportTierIcon'
@@ -194,15 +194,10 @@ export default function PricingPageClient() {
               </div>
               </PlanFeatureRevealProvider>
               <p className="mt-2 shrink-0 text-xs text-gray-500 leading-snug">
-                <span
-                  className="mr-1 inline-block translate-y-[0.08em] text-[1.15rem] font-bold leading-none text-primary-700"
-                  aria-hidden
-                >
-                  *
-                </span>
+                <FootnoteAsterisk />
                 {p.startingPriceNote}
               </p>
-              <RedesignPrompt className="mt-4" />
+              <RedesignPrompt className="mt-2 mb-1" />
             </section>
 
             <section
@@ -216,12 +211,6 @@ export default function PricingPageClient() {
                   selectedPlanId={selectedPlanId}
                 />
               </div>
-              <p className="mt-2.5 text-xs text-gray-500 leading-snug">
-                {t(p.exampleTotal, {
-                  basicPrice: plans[0]?.priceLabel ?? '',
-                  supportPrice: supportPlans[0]?.priceLabel ?? '',
-                })}
-              </p>
             </section>
 
             <section
@@ -478,43 +467,14 @@ export default function PricingPageClient() {
                   {p.goingLiveStep2CancellationHeading}
                 </h2>
 
-                {/* Cancel anytime — responsibilities you take over */}
-                <div className="rounded-xl border border-[oklch(88%_0.035_195)] bg-white overflow-hidden">
-                  <div className="border-b border-[oklch(90%_0.03_195)] bg-[oklch(97%_0.015_195)] px-3.5 py-2.5 sm:px-4">
-                    <p className="text-sm text-gray-700 leading-snug">
-                      <LinkRenderText text={p.goingLiveStep2BulletCancel} />
-                    </p>
-                  </div>
-
-                  <ul className="grid sm:grid-cols-2 gap-px bg-[oklch(92%_0.02_195)]">
-                    {p.goingLiveStep2CancelItems.map((item, index) => {
-                      const [plain, tech] = item.split(' — ')
-                      const Icon = CANCEL_ITEM_ICONS[index] ?? Server
-                      return (
-                        <li
-                          key={item}
-                          className="flex gap-2.5 bg-white px-3.5 py-2.5 sm:px-4"
-                        >
-                          <span
-                            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[oklch(96%_0.025_195)] text-[oklch(42%_0.1_195)]"
-                            aria-hidden
-                          >
-                            <Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
-                          </span>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 leading-snug">
-                              <LinkRenderText text={plain ?? item} />
-                            </p>
-                            {tech ? (
-                              <p className="mt-0.5 text-xs text-gray-500 leading-snug">
-                                <LinkRenderText text={tech} />
-                              </p>
-                            ) : null}
-                          </div>
-                        </li>
-                      )
-                    })}
-                  </ul>
+                {/* Website-build cancellation */}
+                <div className="rounded-xl border border-[oklch(88%_0.035_195)] bg-[oklch(97%_0.015_195)] px-3.5 py-2.5 sm:px-4">
+                  <p className="text-sm font-medium text-gray-900 leading-snug">
+                    {p.goingLiveStep2CancelBuildHeading}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-700 leading-snug">
+                    {p.goingLiveStep2BulletCancelBuild}
+                  </p>
                 </div>
 
                 {/* Build & hand off — one-time alternative */}
@@ -633,6 +593,45 @@ export default function PricingPageClient() {
                       </motion.div>
                     ) : null}
                   </AnimatePresence>
+                </div>
+
+                {/* Responsibilities you take over — under build & hand off */}
+                <div className="rounded-xl border border-[oklch(88%_0.035_195)] bg-white overflow-hidden">
+                  <div className="border-b border-[oklch(90%_0.03_195)] bg-[oklch(97%_0.015_195)] px-3.5 py-2.5 sm:px-4">
+                    <p className="text-sm text-gray-700 leading-snug">
+                      <LinkRenderText text={p.goingLiveStep2BulletCancel} />
+                    </p>
+                  </div>
+
+                  <ul className="grid sm:grid-cols-2 gap-px bg-[oklch(92%_0.02_195)]">
+                    {p.goingLiveStep2CancelItems.map((item, index) => {
+                      const [plain, tech] = item.split(' — ')
+                      const Icon = CANCEL_ITEM_ICONS[index] ?? Server
+                      return (
+                        <li
+                          key={item}
+                          className="flex gap-2.5 bg-white px-3.5 py-2.5 sm:px-4"
+                        >
+                          <span
+                            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[oklch(96%_0.025_195)] text-[oklch(42%_0.1_195)]"
+                            aria-hidden
+                          >
+                            <Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 leading-snug">
+                              <LinkRenderText text={plain ?? item} />
+                            </p>
+                            {tech ? (
+                              <p className="mt-0.5 text-xs text-gray-500 leading-snug">
+                                <LinkRenderText text={tech} />
+                              </p>
+                            ) : null}
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
                 </div>
 
                 <BuildHandoffConfirmDialog

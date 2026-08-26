@@ -1,6 +1,6 @@
 import { LocaleAwareLoading } from '@/components/i18n/LocaleAwareLoading'
 
-export default function IntrospectLoading() {
+export default function RedesignLoading() {
   return (
     <LocaleAwareLoading>
       <main>

@@ -168,7 +168,9 @@ export function BrandNavLinks({
         {items.map(({ href, label, icon: Icon, match }) => {
           const active =
             variant === 'subpage' &&
-            (barePath === match || barePath.startsWith(`${match}/`))
+            (barePath === match ||
+              barePath.startsWith(`${match}/`) ||
+              (match === '/introspect' && barePath === '/redesign'))
 
           const linkClass =
             variant === 'landing'
