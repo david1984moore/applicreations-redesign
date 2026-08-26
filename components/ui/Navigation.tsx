@@ -167,23 +167,24 @@ function useCursorIdleNavVisibility(enabled: boolean, resetKey: string, frozen =
   return { visible, hold, release }
 }
 
-/** Matches Tailwind `lg` (1024px). Introspect mobile keeps the nav pinned. */
-function useIsMaxLg() {
-  const [matches, setMatches] = useState(() =>
-    typeof window !== 'undefined'
-      ? window.matchMedia('(max-width: 1023px)').matches
-      : false
-  )
+/**
+ * Cursor-idle hide is desktop-mouse only. Default false so SSR / phones /
+ * iPads never start the hide timer (the old max-lg hook hydrated as desktop).
+ */
+function useDesktopCursorNav() {
+  const [desktopCursor, setDesktopCursor] = useState(false)
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023px)')
-    const sync = () => setMatches(mq.matches)
+    const mq = window.matchMedia(
+      '(min-width: 1024px) and (hover: hover) and (pointer: fine)'
+    )
+    const sync = () => setDesktopCursor(mq.matches)
     sync()
     mq.addEventListener('change', sync)
     return () => mq.removeEventListener('change', sync)
   }, [])
 
-  return matches
+  return desktopCursor
 }
 
 /**
@@ -219,16 +220,16 @@ export function Navigation() {
     return () => observer.disconnect()
   }, [onIntrospect])
 
-  const isMaxLg = useIsMaxLg()
-  // Mobile Introspect: no cursor to revive chrome — keep the bar pinned.
+  const desktopCursor = useDesktopCursorNav()
+  // Touch / narrow viewports have no cursor to revive chrome — keep the bar pinned.
   const scrollNav = useSubpageNavVisibility(!onHome && !onIntrospect, pathname || '/')
   const idleNav = useCursorIdleNavVisibility(
-    onIntrospect && !isMaxLg,
+    onIntrospect && desktopCursor,
     pathname || '/',
     successLock
   )
   const { visible, hold, release } = onIntrospect ? idleNav : scrollNav
-  const navVisible = onIntrospect && isMaxLg ? true : visible
+  const navVisible = onIntrospect && !desktopCursor ? true : visible
 
   // Landing uses its own brand chrome — no global nav
   if (onHome) return null
@@ -249,7 +250,7 @@ export function Navigation() {
           'transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
           navVisible
             ? 'translate-y-0 opacity-100'
-            : '-translate-y-full opacity-0 pointer-events-none'
+            : '-translate-y-full opacity-0 pointer-events-none max-lg:!translate-y-0 max-lg:!opacity-100 max-lg:!pointer-events-auto'
         )}
       >
         <nav className="max-w-[90rem] mx-auto px-2 sm:px-6 lg:px-8">

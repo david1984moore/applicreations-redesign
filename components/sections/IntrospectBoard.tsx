@@ -4,8 +4,10 @@ import {
   type ChangeEvent,
   type FormEvent,
   type ReactNode,
+  type RefObject,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -225,6 +227,52 @@ function listOrDash(items: string[]): string {
   return cleaned.length > 0 ? cleaned.join(', ') : '—'
 }
 
+/** Instant jump — ignore `html { scroll-behavior: smooth }` so a new step
+ *  never eases in from the previous screen's scroll offset. */
+function scrollIntrospectScreenToTop(board?: HTMLElement | null) {
+  const html = document.documentElement
+  const prev = html.style.scrollBehavior
+  html.style.scrollBehavior = 'auto'
+  window.scrollTo(0, 0)
+  html.scrollTop = 0
+  document.body.scrollTop = 0
+  const page = document.querySelector('.site-page')
+  if (page instanceof HTMLElement) page.scrollTop = 0
+  if (board) board.scrollTop = 0
+  html.style.scrollBehavior = prev
+}
+
+function blurActiveField() {
+  const el = document.activeElement
+  if (el instanceof HTMLElement && el !== document.body) el.blur()
+}
+
+/** Runs when a step mounts (after AnimatePresence `wait`), so the incoming
+ *  screen paints at the top instead of inheriting the last scroll position. */
+function ResetScrollOnMount({
+  boardRef,
+}: {
+  boardRef: RefObject<HTMLElement | null>
+}) {
+  useLayoutEffect(() => {
+    let cancelled = false
+    blurActiveField()
+    const run = () => {
+      if (!cancelled) scrollIntrospectScreenToTop(boardRef.current)
+    }
+    run()
+    const raf = requestAnimationFrame(() => {
+      run()
+      requestAnimationFrame(run)
+    })
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(raf)
+    }
+  }, [boardRef])
+  return null
+}
+
 function fieldClass(error?: string, warning?: string) {
   return cn(
     'flex h-11 w-full rounded-md border bg-white px-3.5 py-2 text-base text-gray-900 placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1',
@@ -398,6 +446,7 @@ export function IntrospectBoard({
   const [skipSiteDepth, setSkipSiteDepth] = useState(false)
   /** Jumping to one question from Review — Continue/Back return there. */
   const [editingFromReview, setEditingFromReview] = useState(false)
+  const boardRef = useRef<HTMLElement>(null)
 
   const countryComboboxOptions = useMemo(
     () => countryOptions(locale).map((c) => ({ value: c.code, label: c.name })),
@@ -880,6 +929,7 @@ export function IntrospectBoard({
     setWarnings({})
     setNameConfirmPending(false)
     setAnswers((prev) => withNormalizedWebsiteUrls(prev))
+    blurActiveField()
     if (editingFromReview) {
       setEditingFromReview(false)
       setPhase('review')
@@ -903,6 +953,7 @@ export function IntrospectBoard({
     setNameConfirmPending(false)
     setServerMessage('')
     setStatus('idle')
+    blurActiveField()
     if (editingFromReview) {
       setEditingFromReview(false)
       setPhase('review')
@@ -936,6 +987,7 @@ export function IntrospectBoard({
     setNameConfirmPending(false)
     setServerMessage('')
     setStatus('idle')
+    blurActiveField()
     setEditingFromReview(true)
     setStep(index + 1)
     setPhase('questions')
@@ -1048,6 +1100,7 @@ export function IntrospectBoard({
 
   return (
     <section
+      ref={boardRef}
       className={cn(
         // z-10 keeps this stacking context above IntrospectMorphWash (portaled
         // z-[1]). max-lg contain:paint otherwise flattens the board behind the
@@ -1108,6 +1161,7 @@ export function IntrospectBoard({
               transition={{ duration: 0.35 }}
               className="flex min-h-0 flex-1 flex-col h-full"
             >
+              <ResetScrollOnMount boardRef={boardRef} />
               <p className="shrink-0 text-center text-xs font-semibold tracking-[0.14em] uppercase text-[oklch(48%_0.12_230)]">
                 {ui.welcomeEyebrow}
               </p>
@@ -1127,6 +1181,7 @@ export function IntrospectBoard({
                     checkOnHover={false}
                     className="rounded-full"
                     onClick={() => {
+                      blurActiveField()
                       setPhase('questions')
                       setStep(1)
                     }}
@@ -1155,6 +1210,7 @@ export function IntrospectBoard({
                 compactQuestion ? 'gap-2.5' : 'gap-4'
               )}
             >
+              <ResetScrollOnMount boardRef={boardRef} />
               {questionId === 'about-you' && (
                 <StepBlock title={ui.step1Title}>
                   <Field
@@ -1940,6 +1996,7 @@ export function IntrospectBoard({
               transition={{ duration: 0.28 }}
               className="flex flex-1 flex-col gap-4"
             >
+              <ResetScrollOnMount boardRef={boardRef} />
               <div className="space-y-1">
                 <h1 className="font-mi-gente text-2xl text-gray-900 leading-tight">
                   {ui.reviewHeading}
@@ -2160,6 +2217,7 @@ export function IntrospectBoard({
 
           {phase === 'success' && (
             <div key="success" className="flex min-h-0 flex-1 flex-col h-full">
+              <ResetScrollOnMount boardRef={boardRef} />
               <IntrospectSuccess ui={successUi} homeHref={href('/')} />
             </div>
           )}

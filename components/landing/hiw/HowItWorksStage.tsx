@@ -11,9 +11,12 @@ import {
   type ReactNode,
 } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import Link from 'next/link'
 import { ClipboardList, Eye, Globe2, type LucideIcon } from 'lucide-react'
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import {
+  ELLIPSIS_DOT_MS,
+  ELLIPSIS_TAIL_MS,
   HiwCaption,
   HiwStepCopy,
   SCREENS_CAPTION_IN_DELAY_MS,
@@ -47,12 +50,13 @@ const EASE = [0.22, 1, 0.36, 1] as const
 const SMOOTH_EASE = [0.4, 0, 0.2, 1] as const
 const EXIT_EASE = [0.36, 0, 0.52, 0.22] as const
 const FADE_EASE = [0.4, 0, 0.7, 1] as const
-/** Screens drift down with the caption — keep moving, never ease to a stop. */
-const SINK_EASE = [0.28, 0.06, 0.82, 0.52] as const
-const SINK_FADE_EASE = [0.42, 0, 0.48, 1] as const
-/** Start the sink, then fade while they are still traveling. */
-const SCREENS_ART_FADE_DELAY_S = 0.42
-const SINK_Y = 240
+/** Screens rush toward the viewer — accelerate, never ease to a stop. */
+const SINK_EASE = [0.42, 0.04, 0.82, 0.12] as const
+const SINK_FADE_EASE = [0.38, 0, 0.55, 1] as const
+/** Fade starts almost immediately so the approach stays visible, then gone. */
+const SCREENS_ART_FADE_DELAY_S = 0.06
+const SINK_SCALE = 1.78
+const SINK_SCALE_PHONE = 1.48
 /** Fast rise from the vanishing point, soft land — graceful, not a snap. */
 const CTA_GROW_EASE = [0.12, 0.84, 0.14, 1] as const
 /** Arrive still moving — never ease to a stop at the readable pose. */
@@ -65,6 +69,11 @@ const FINALE_AWAY_EASE = [0.45, 0.0, 0.88, 0.06] as const
 const FINALE_LINGER_FADE_EASE = [0.45, 0, 0.75, 0.4] as const
 /** Whip the fade once the line starts leaving. */
 const FINALE_AWAY_FADE_EASE = [0.42, 0.02, 0.86, 0.06] as const
+/** Staggered dots on the finale line — land just before the away whip. */
+const FINALE_ELLIPSIS_IN = { duration: 0.52, ease: [0.16, 1, 0.32, 1] as const }
+const FINALE_ELLIPSIS_IN_MS = 520
+const FINALE_ELLIPSIS_WINDOW_MS =
+  ELLIPSIS_TAIL_MS + FINALE_ELLIPSIS_IN_MS + 80
 
 function keepLayer(_latest: unknown, generated: string) {
   return generated.includes('translateZ') ? generated : `${generated} translateZ(0)`
@@ -157,16 +166,16 @@ const DESKTOP_MS = {
   step3Finally: 3200,
   /** Flip, zap, hold the go-live line — then dissolve the man first. */
   step3Switch: 2600,
-  /** Screens + “And you're in business!” — rest long enough to read. */
-  step3Screens: 7200,
+  /** Shop serve + screens + “And you're in business!” — hold until the dissolve/rush. */
+  step3Screens: 8400,
   /** Caption keeps drifting this long before opacity starts falling. */
   step3CaptionFloat: 2400,
   glow: 2200,
   /** Short rest after the live screens — fade while the line still has air. */
   step3Glow: 80,
   exit: 1100,
-  /** Screens drift down while fading, then the finale takes the stage. */
-  step3Exit: 2500,
+  /** Screens rush toward the viewer, then the finale takes the stage. */
+  step3Exit: 1080,
   /** Headline comes from the viewer, lingers close enough to read, then recedes. */
   finaleIn: 1100,
   /** Stay near the viewer — still drifting and fading, not parked. */
@@ -420,6 +429,17 @@ function finaleHeadlineTravelMs(t: IntroTimings) {
   return t.finaleIn + t.finaleHeadlineHold + t.finaleTextOut
 }
 
+function finaleEllipsisDelayMs(t: IntroTimings) {
+  return Math.max(
+    0,
+    t.finaleIn + t.finaleHeadlineHold - FINALE_ELLIPSIS_WINDOW_MS,
+  )
+}
+
+function finaleLine(rest: string) {
+  return `3 ${rest}`
+}
+
 function captionForStep(
   step: 1 | 2 | 3,
   previewBeat: PreviewBeat,
@@ -563,10 +583,12 @@ function FinaleRecap({
   recap,
   timings,
   instant,
+  href,
 }: {
   recap: readonly { n: string; label: string }[]
   timings: IntroTimings
   instant: boolean
+  href?: string
 }) {
   const listRef = useRef<HTMLUListElement>(null)
   const [fromX, setFromX] = useState<number | null>(null)
@@ -589,68 +611,126 @@ function FinaleRecap({
       ref={listRef}
       className="relative flex w-max max-w-full flex-col items-start gap-2.5 sm:gap-3 lg:gap-2"
     >
-      {recap.map((step, index) => (
-        <motion.li
-          key={step.n}
-          className="flex items-center gap-3 antialiased [backface-visibility:hidden]"
-          initial={
-            instant
-              ? false
-              : { opacity: 0, x: fromX ?? 160 }
-          }
-          animate={{ opacity: ready ? 1 : 0, x: ready ? 0 : fromX ?? 160 }}
-          transition={{
-            duration: ready ? pointsIn : 0,
-            delay: ready && !instant ? index * pointsStagger : 0,
-            ease: SMOOTH_EASE,
-          }}
-          transformTemplate={keepLayer}
-        >
-          <motion.span
-            className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center"
-            initial={instant ? false : { scale: 0.35 }}
-            animate={{ scale: 1 }}
-            transition={
-              instant
-                ? { duration: 0 }
-                : {
-                    type: 'spring',
-                    stiffness: 460,
-                    damping: 16,
-                    delay: index * pointsStagger + 0.06,
-                  }
-            }
-          >
-            <span
-              className="absolute inset-0 rounded-full bg-[oklch(46%_0.16_250)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_3px_8px_oklch(32%_0.12_250/0.38)] ring-2 ring-white/75"
-              aria-hidden
-            />
-            <RecapDigit
-              n={step.n}
-              readyMs={
+      {recap.map((step, index) => {
+        const row = (
+          <>
+            <motion.span
+              className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center"
+              initial={instant ? false : { scale: 0.35 }}
+              animate={{ scale: 1 }}
+              transition={
                 instant
-                  ? 0
-                  : timings.finalePointsStagger * index + timings.finalePointsIn
+                  ? { duration: 0 }
+                  : {
+                      type: 'spring',
+                      stiffness: 460,
+                      damping: 16,
+                      delay: index * pointsStagger + 0.06,
+                    }
               }
-            />
-          </motion.span>
-          <span className="font-display text-lg font-semibold leading-none tracking-tight text-gray-900 whitespace-nowrap sm:text-xl lg:text-white">
-            {step.label}
-          </span>
-        </motion.li>
-      ))}
+            >
+              <span
+                className="absolute inset-0 rounded-full bg-[oklch(46%_0.16_250)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_3px_8px_oklch(32%_0.12_250/0.38)] ring-2 ring-white/75"
+                aria-hidden
+              />
+              <RecapDigit
+                n={step.n}
+                readyMs={
+                  instant
+                    ? 0
+                    : timings.finalePointsStagger * index + timings.finalePointsIn
+                }
+              />
+            </motion.span>
+            <span className="font-display text-lg font-semibold leading-none tracking-tight text-gray-900 whitespace-nowrap sm:text-xl lg:text-white">
+              {step.label}
+            </span>
+          </>
+        )
+
+        return (
+          <motion.li
+            key={step.n}
+            className={cn(
+              'antialiased [backface-visibility:hidden]',
+              !href && 'flex items-center gap-3'
+            )}
+            initial={
+              instant
+                ? false
+                : { opacity: 0, x: fromX ?? 160 }
+            }
+            animate={{ opacity: ready ? 1 : 0, x: ready ? 0 : fromX ?? 160 }}
+            transition={{
+              duration: ready ? pointsIn : 0,
+              delay: ready && !instant ? index * pointsStagger : 0,
+              ease: SMOOTH_EASE,
+            }}
+            transformTemplate={keepLayer}
+          >
+            {href ? (
+              <Link
+                href={href}
+                className="pointer-events-auto flex cursor-pointer items-center gap-3 text-inherit no-underline hover:no-underline focus-visible:no-underline"
+              >
+                {row}
+              </Link>
+            ) : (
+              row
+            )}
+          </motion.li>
+        )
+      })}
     </ul>
   )
 }
 
+function FinaleEllipsisDot({
+  delayMs,
+  instant,
+}: {
+  delayMs: number
+  instant: boolean
+}) {
+  return (
+    <motion.span
+      className="inline-block origin-bottom"
+      initial={instant ? false : { opacity: 0, y: 5, scale: 0.32 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={
+        instant
+          ? { duration: 0 }
+          : { ...FINALE_ELLIPSIS_IN, delay: delayMs / 1000 }
+      }
+    >
+      .
+    </motion.span>
+  )
+}
+
 /** Intro “3” — same face, weight, and cyan / purple as the opening numeral. */
-function FinaleHeadlineMark({ rest }: { rest: string }) {
+function FinaleHeadlineMark({
+  rest,
+  ellipsisDelayMs = 0,
+  instant = false,
+}: {
+  rest: string
+  ellipsisDelayMs?: number
+  instant?: boolean
+}) {
   return (
     <span className="max-w-[22rem] text-center sm:max-w-[24rem]">
       <span className="mr-[0.12em] inline-block origin-center align-[-0.18em] font-display text-[1.95em] font-semibold leading-none text-[oklch(68%_0.15_230)] lg:text-[oklch(58%_0.14_310)]">
         3
       </span>{' '}
       {rest}
+      {[0, 1, 2].map((index) => (
+        <FinaleEllipsisDot
+          key={index}
+          delayMs={ellipsisDelayMs + index * ELLIPSIS_DOT_MS}
+          instant={instant}
+        />
+      ))}
     </span>
   )
 }
@@ -679,7 +759,10 @@ function FinalePhoneHeightLock({
             </div>
             <div className="relative z-10 flex min-h-[5.25rem] w-full items-center justify-center">
               <span className="invisible font-display max-w-[22rem] px-1 text-center text-2xl leading-[1.28] tracking-tight sm:max-w-[24rem] sm:text-3xl">
-                <FinaleHeadlineMark rest={threeStepsRest} />
+                <FinaleHeadlineMark
+                  rest={threeStepsRest}
+                  instant
+                />
               </span>
             </div>
           </div>
@@ -729,6 +812,7 @@ function FinaleCinema({
   const arriveAt = timings.finaleIn / headlineTravelMs
   const lingerAt =
     (timings.finaleIn + timings.finaleHeadlineHold) / headlineTravelMs
+  const ellipsisDelayMs = finaleEllipsisDelayMs(timings)
   // Lock the fly path to the viewport at finale start. Swapping desktop ↔
   // phone keyframes mid-flight (or after) retriggers the whole sequence.
   const headlinePhoneRef = useRef(phoneStage)
@@ -904,7 +988,12 @@ function FinaleCinema({
         >
           <div className="pointer-events-none relative z-10 isolate mb-5 flex w-max justify-center [transform-style:flat] sm:mb-6 lg:absolute lg:bottom-full lg:left-1/2 lg:mb-0 lg:pb-5 lg:-translate-x-1/2">
             {showPoints ? (
-              <FinaleRecap recap={recap} timings={timings} instant={instant} />
+              <FinaleRecap
+                recap={recap}
+                timings={timings}
+                instant={instant}
+                href={ctaHref}
+              />
             ) : (
               <div className="invisible lg:hidden" aria-hidden>
                 <FinaleRecap recap={recap} timings={timings} instant />
@@ -923,7 +1012,10 @@ function FinaleCinema({
             aria-hidden
             className="invisible font-display max-w-[22rem] px-1 text-center text-2xl leading-[1.28] tracking-tight sm:max-w-[24rem] sm:text-3xl lg:text-[1.7rem] lg:leading-[1.25]"
           >
-            <FinaleHeadlineMark rest={threeStepsRest} />
+            <FinaleHeadlineMark
+              rest={threeStepsRest}
+              instant
+            />
           </span>
 
           <AnimatePresence>
@@ -1029,7 +1121,11 @@ function FinaleCinema({
                 aria-hidden={showCta || undefined}
                 aria-label={showCta ? undefined : threeSteps}
               >
-                <FinaleHeadlineMark rest={threeStepsRest} />
+                <FinaleHeadlineMark
+                  rest={threeStepsRest}
+                  ellipsisDelayMs={ellipsisDelayMs}
+                  instant={instant}
+                />
               </motion.h2>
             ) : null}
           </AnimatePresence>
@@ -1507,6 +1603,25 @@ export function HowItWorksStage({
       setPhase({ name: 'step', step: 3, pose: 'play' })
       return
     }
+    if (hiwDebug === 'shop') {
+      const scale = hiwViewportScale()
+      const t = {
+        ...scaleTimings(scale),
+        step3Review: 0,
+        step3CaptionGap: 0,
+        step3Revise: 0,
+        step3House: 0,
+        step3Adjust: 0,
+        step3Tune: 0,
+        step3Finally: 0,
+        step3Switch: 0,
+        step3Screens: 120000,
+      }
+      setTimings({ ...t, step3Play: t.step3Screens })
+      setReviewBeat('screens')
+      setPhase({ name: 'step', step: 3, pose: 'play' })
+      return
+    }
     if (hiwDebug === 'screens') {
       const scale = hiwViewportScale()
       const t = scaleTimings(scale)
@@ -1646,6 +1761,7 @@ export function HowItWorksStage({
         }
       : {}
   const overlapping = Boolean(phase.name === 'step' && phase.outgoing)
+  const finaleThreeSteps = finaleLine(dict.landing.threeStepsRest)
 
   const liveRegion =
     phase.name === 'intro'
@@ -1659,11 +1775,11 @@ export function HowItWorksStage({
               dict.landing.getFreePreview
             }`
           : phase.name === 'finale' && phase.beat === 'points'
-            ? `${dict.landing.threeSteps}. ${recapSteps
+            ? `${finaleThreeSteps}. ${recapSteps
                 .map((step) => step.label)
                 .join('. ')}`
             : phase.name === 'finale'
-              ? dict.landing.threeSteps
+              ? finaleThreeSteps
               : ''
 
   const showIntro =
@@ -1734,7 +1850,7 @@ export function HowItWorksStage({
             <FinaleCinema
               key="finale"
               beat={phase.beat}
-              threeSteps={dict.landing.threeSteps}
+              threeSteps={finaleThreeSteps}
               threeStepsRest={dict.landing.threeStepsRest}
               recap={recapSteps}
               ctaLabel={dict.landing.getFreePreview}
@@ -2092,19 +2208,19 @@ function StepScene({
         {showArt ? (
           <motion.div
             key="art"
-            className="relative mt-2 flex w-full flex-col items-center justify-center will-change-transform [backface-visibility:hidden] sm:mt-3 lg:mt-5"
+            className="relative mt-2 flex w-full origin-center flex-col items-center justify-center will-change-transform [backface-visibility:hidden] sm:mt-3 lg:mt-5"
             initial={{ opacity: 0, x: SLIDE.artIn }}
             animate={{
               opacity: leaving || sinking ? 0 : 1,
               x: sinking ? 0 : leaving ? (formExit ? SLIDE.formOut : SLIDE.artIn) : 0,
-              y: sinking ? (phoneStage ? 56 : SINK_Y) : 0,
-              scale: sinking ? (phoneStage ? 0.96 : 0.82) : 1,
+              y: 0,
+              scale: sinking ? (phoneStage ? SINK_SCALE_PHONE : SINK_SCALE) : 1,
             }}
             exit={{
               opacity: 0,
               x: sinking ? 0 : formExit ? SLIDE.formOut : SLIDE.artIn,
-              y: sinking ? (phoneStage ? 56 : SINK_Y) : 0,
-              scale: sinking ? (phoneStage ? 0.96 : 0.82) : 1,
+              y: 0,
+              scale: sinking ? (phoneStage ? SINK_SCALE_PHONE : SINK_SCALE) : 1,
             }}
             transition={{
               duration: artDuration,

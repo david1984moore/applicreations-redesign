@@ -277,6 +277,10 @@ html[data-introspect] .site-nav {
 /* Introspect scroll phases: cream pin + soft fade under the nav bottom edge
    so question/review content dissolves before it reaches the links (desktop +
    mobile). Links stay visually open (no frosted glass). */
+html[data-introspect='scroll'] {
+  overflow-anchor: none;
+}
+
 html[data-introspect='scroll'] .site-nav {
   background: oklch(99.2% 0.006 85);
 }
@@ -302,6 +306,16 @@ html[data-introspect='scroll'] .site-nav::after {
 @media (max-width: 1023px) {
   html[data-introspect] .site-nav {
     background: oklch(99.2% 0.006 85);
+  }
+}
+
+/* Hard pin: never slide the Introspect nav off-screen on phones or any
+   touch / no-hover device (iPad at 1024px+ still counts as mobile here). */
+@media (max-width: 1023px), (hover: none) {
+  html[data-introspect] .site-nav {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
   }
 }
 

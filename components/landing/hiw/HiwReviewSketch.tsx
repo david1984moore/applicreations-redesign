@@ -5,6 +5,7 @@ import { animate, motion } from 'framer-motion'
 import { C } from '@/components/pricing/ExampleScreenRotator'
 import { Backdrop, Rocks, Worker } from '@/components/landing/hiw/HiwConstructionSketch'
 import { HiwWorkingWebsiteSketch } from '@/components/landing/hiw/HiwDeviceSketch'
+import { HiwShopSketch } from '@/components/landing/hiw/HiwShopSketch'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const CROSS = { duration: 1.05, ease: EASE }
@@ -42,6 +43,9 @@ const PANT_D = 'oklch(24% 0.06 252)'
 const BOOT = 'oklch(22% 0.04 250)'
 const SKIN = 'oklch(82% 0.06 55)'
 const SKIN_D = 'oklch(74% 0.055 52)'
+/** Same as shop-owner Maya in HiwShopSketch. */
+const OWNER_SKIN = 'oklch(66% 0.09 52)'
+const OWNER_SKIN_D = 'oklch(58% 0.08 50)'
 const WOOD = 'oklch(62% 0.08 62)'
 const WOOD_D = 'oklch(48% 0.07 55)'
 const WOOD_L = 'oklch(70% 0.07 68)'
@@ -237,7 +241,7 @@ export function HiwStep3Cinema({
   ])
 
   return (
-    <div className="relative isolate w-full min-h-[13.75rem] overflow-visible sm:min-h-[16rem] lg:min-h-[18.5rem]">
+    <div className="relative isolate w-full min-h-[15.25rem] overflow-visible sm:min-h-[18.25rem] lg:min-h-[21rem]">
       {showReview ? (
         <motion.div
           className="absolute inset-0 flex items-end justify-center max-lg:items-start"
@@ -282,18 +286,25 @@ export function HiwStep3Cinema({
 
       {showScreens ? (
         <motion.div
-          className="absolute inset-0 flex items-start justify-center overflow-visible pt-1 sm:pt-3"
+          className="absolute inset-0 z-[1] flex flex-col items-center justify-end overflow-visible"
           initial={{ opacity: 0 }}
           animate={{ opacity: screensOn ? 1 : 0 }}
           transition={screensOn ? SCREENS_IN : SCREENS_CROSS}
           aria-hidden
         >
           {screensReady ? (
-            <HiwWorkingWebsiteSketch
-              playing={playing && screensOn}
-              duration={screensMs}
-              entrance="fade"
-            />
+            <div className="flex w-full flex-col items-center justify-end gap-7 pt-5 sm:gap-8 sm:pt-6 lg:gap-9 lg:pt-7">
+              <HiwShopSketch
+                playing={playing && screensOn}
+                duration={screensMs}
+              />
+              <HiwWorkingWebsiteSketch
+                playing={playing && screensOn}
+                duration={screensMs}
+                entrance="fade"
+                size="compact"
+              />
+            </div>
           ) : null}
         </motion.div>
       ) : null}
@@ -1459,7 +1470,7 @@ function ClientWoman({ talking, point }: { talking: boolean; point: PointAt }) {
           r1={2.4}
           r2={2.05}
           r3={1.8}
-          fill={C.skin}
+          fill={OWNER_SKIN}
           sleeve={3.6}
           sleeveFill={BLOUSE}
         />
@@ -1480,7 +1491,7 @@ function ClientWoman({ talking, point }: { talking: boolean; point: PointAt }) {
         />
         <ellipse cx="-7.4" cy="-24.6" rx="3.2" ry="2.8" fill={BLOUSE} />
         <ellipse cx="8.0" cy="-24.4" rx="3.2" ry="2.8" fill={BLOUSE} />
-        <ellipse cx="1" cy="-28.2" rx="2.15" ry="2.4" fill={C.skin} />
+        <ellipse cx="1" cy="-28.2" rx="2.15" ry="2.4" fill={OWNER_SKIN} />
         <JointedArm
           x={8.0}
           y={-24.4}
@@ -1491,7 +1502,7 @@ function ClientWoman({ talking, point }: { talking: boolean; point: PointAt }) {
           r1={2.5}
           r2={2.15}
           r3={1.9}
-          fill={C.skin}
+          fill={OWNER_SKIN}
           cap={BLOUSE}
           sleeve={3.8}
           sleeveFill={BLOUSE}
@@ -1499,7 +1510,8 @@ function ClientWoman({ talking, point }: { talking: boolean; point: PointAt }) {
           hand
         />
         <motion.g animate={{ rotate: talking ? -3 : 0, y: talking ? -0.5 : 0 }} transition={SOFT}>
-          <circle cx="1" cy="-31.4" r="6.2" fill={C.skin} />
+          <circle cx="1" cy="-31.4" r="6.2" fill={OWNER_SKIN} />
+          <ellipse cx="3.8" cy="-29.8" rx="2.4" ry="2.1" fill={OWNER_SKIN_D} />
           <WomanHair cx={1} cy={-31.4} />
           <ellipse cx="3.6" cy="-31.8" rx="1.05" ry="1.3" fill={C.ink} />
           <path d="M2.6 -28.6 Q3.8 -27.8 5 -28.7" fill="none" stroke={C.lip} strokeWidth="0.7" />
@@ -1525,7 +1537,7 @@ function SitClient({ x, talking }: { x: number; talking: boolean }) {
           r1={2.45}
           r2={2.1}
           r3={1.85}
-          fill={C.skin}
+          fill={OWNER_SKIN}
           sleeve={3.4}
           sleeveFill={BLOUSE}
         />
@@ -1549,7 +1561,7 @@ function SitClient({ x, talking }: { x: number; talking: boolean }) {
         />
         <ellipse cx="-7.2" cy="-13.2" rx="3.15" ry="2.7" fill={BLOUSE} />
         <ellipse cx="8.0" cy="-13.0" rx="3.15" ry="2.7" fill={BLOUSE} />
-        <ellipse cx="1.2" cy="-17.2" rx="2.1" ry="2.2" fill={C.skin} />
+        <ellipse cx="1.2" cy="-17.2" rx="2.1" ry="2.2" fill={OWNER_SKIN} />
         <JointedArm
           x={8.0}
           y={-13.0}
@@ -1560,13 +1572,14 @@ function SitClient({ x, talking }: { x: number; talking: boolean }) {
           r1={2.55}
           r2={2.2}
           r3={1.95}
-          fill={C.skin}
+          fill={OWNER_SKIN}
           cap={BLOUSE}
           sleeve={3.6}
           sleeveFill={BLOUSE}
         />
         <motion.g animate={{ rotate: talking ? -4 : 0, y: talking ? -0.6 : 0 }} transition={SOFT}>
-          <circle cx="1.2" cy="-21.8" r="6.2" fill={C.skin} />
+          <circle cx="1.2" cy="-21.8" r="6.2" fill={OWNER_SKIN} />
+          <ellipse cx="4" cy="-20.2" rx="2.4" ry="2.1" fill={OWNER_SKIN_D} />
           <WomanHair cx={1.2} cy={-21.8} />
           <ellipse cx="4.2" cy="-22.2" rx="1.05" ry="1.3" fill={C.ink} />
           <path d="M3.2 -19 Q4.4 -18.2 5.6 -19.1" fill="none" stroke={C.lip} strokeWidth="0.75" />

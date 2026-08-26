@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
@@ -51,8 +52,230 @@ export function PlanFeatureRevealProvider({
   )
 }
 
-/** Landing glance list — keep the first three highlights. */
+/** Landing glance list — always three rows so the pricing card never resizes. */
 const CHECKLIST_MAX_ROWS = 3
+const CHECKLIST_ROW =
+  'flex min-w-0 items-center gap-2.5 overflow-visible text-[0.75rem] leading-[1.125rem] text-gray-900 h-[1.125rem] sm:text-[0.8125rem]'
+const FLIP_FACE =
+  'absolute inset-0 flex min-w-0 items-center gap-2.5 [backface-visibility:hidden]'
+
+/** Filled board sits, then row 2 flips; later waves wait longer. */
+const INITIAL_HOLD_MS = 3200
+const HOLD_MS = 8500
+const FLIP_HALF_S = 0.28
+const FLIP_MS = FLIP_HALF_S * 2 * 1000
+const COLUMN_STAGGER_MS: Record<string, number> = {
+  starter: 0,
+  basic: 260,
+  business: 520,
+  pro: 780,
+}
+const MAX_COLUMN_STAGGER_MS = 780
+
+type VisualRow = 1 | 2 | 3
+type RowTicks = Record<VisualRow, number>
+
+const LandingCycleContext = createContext<{
+  tick: RowTicks
+} | null>(null)
+
+/** Shared clocks so row 2 (then row 3) flip together across all four packages. */
+export function LandingFeatureCycleProvider({ children }: { children: ReactNode }) {
+  const prefersReducedMotion = useReducedMotion()
+  const [tick, setTick] = useState<RowTicks>({ 1: 0, 2: 0, 3: 0 })
+
+  useEffect(() => {
+    if (prefersReducedMotion) return
+
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout>
+
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => {
+        timer = setTimeout(resolve, ms)
+      })
+
+    const flipRow = async (row: VisualRow) => {
+      if (cancelled) return
+      setTick((current) => ({ ...current, [row]: current[row] + 1 }))
+      await wait(FLIP_MS + MAX_COLUMN_STAGGER_MS + 60)
+    }
+
+    const run = async () => {
+      await wait(INITIAL_HOLD_MS)
+      while (!cancelled) {
+        await flipRow(2)
+        if (cancelled) return
+        await wait(HOLD_MS)
+        if (cancelled) return
+        await flipRow(3)
+        if (cancelled) return
+        await wait(HOLD_MS)
+      }
+    }
+
+    void run()
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [prefersReducedMotion])
+
+  const value = useMemo(() => ({ tick }), [tick])
+  return (
+    <LandingCycleContext.Provider value={value}>{children}</LandingCycleContext.Provider>
+  )
+}
+
+function CheckLabel({
+  text,
+  emphasis = false,
+  sizer = false,
+}: {
+  text: string
+  emphasis?: boolean
+  sizer?: boolean
+}) {
+  return (
+    <>
+      <IncludedMark
+        className="size-[0.72rem] text-[oklch(74%_0.24_146)]"
+        strokeWidth={6}
+      />
+      <span
+        className={cn(
+          'inline-block overflow-visible pb-px text-left leading-[1.125rem] whitespace-nowrap',
+          !sizer && 'min-w-0',
+          emphasis ? 'font-semibold' : 'font-normal'
+        )}
+      >
+        {text}
+      </span>
+    </>
+  )
+}
+
+function dealToSlots(items: string[], slotCount: number): string[][] {
+  const slots = Array.from({ length: slotCount }, () => [] as string[])
+  items.forEach((item, i) => slots[i % slotCount].push(item))
+  return slots
+}
+
+function RotatingCheckSlot({
+  items,
+  visualRow,
+  staggerMs,
+  staticFallback,
+}: {
+  items: string[]
+  visualRow: VisualRow
+  staggerMs: number
+  staticFallback: boolean
+}) {
+  const cycle = useContext(LandingCycleContext)
+  const tick = cycle?.tick[visualRow] ?? 0
+  const [rest, setRest] = useState(items[0] ?? '')
+  const [flip, setFlip] = useState<{ from: string; to: string } | null>(null)
+  const [incoming, setIncoming] = useState(false)
+  const tickRef = useRef(tick)
+  const restRef = useRef(rest)
+  const itemsRef = useRef(items)
+  restRef.current = rest
+  itemsRef.current = items
+
+  useEffect(() => {
+    if (staticFallback || itemsRef.current.length <= 1) return
+    if (tick === tickRef.current) return
+    const list = itemsRef.current
+    const next = list[tick % list.length]
+    const from = restRef.current
+    if (!next || next === from) {
+      tickRef.current = tick
+      if (next) setRest(next)
+      return
+    }
+
+    const timer = setTimeout(() => {
+      tickRef.current = tick
+      setIncoming(false)
+      setFlip({ from, to: next })
+    }, staggerMs)
+    return () => clearTimeout(timer)
+  }, [staticFallback, staggerMs, tick])
+
+  useEffect(() => {
+    if (!flip) return
+    const timer = setTimeout(() => {
+      setRest(flip.to)
+      setFlip(null)
+      setIncoming(false)
+    }, FLIP_MS + 80)
+    return () => clearTimeout(timer)
+  }, [flip])
+
+  const finishFlip = () => {
+    setFlip((current) => {
+      if (current) setRest(current.to)
+      return null
+    })
+    setIncoming(false)
+  }
+
+  if (!items[0]) return <li className={CHECKLIST_ROW} aria-hidden />
+
+  if (staticFallback || items.length === 1 || !cycle) {
+    return (
+      <li className={CHECKLIST_ROW}>
+        <CheckLabel text={items[0]} />
+      </li>
+    )
+  }
+
+  if (flip) {
+    return (
+      <li className={cn(CHECKLIST_ROW, 'relative w-full overflow-hidden')}>
+        <div className="absolute inset-0" style={{ perspective: 220 }}>
+          {!incoming ? (
+            <motion.div
+              aria-hidden
+              className={FLIP_FACE}
+              initial={{ rotateX: 0 }}
+              animate={{ rotateX: 90 }}
+              transition={{
+                duration: FLIP_HALF_S,
+                ease: [0.55, 0.06, 0.9, 0.19],
+              }}
+              style={{ transformOrigin: '50% 100%' }}
+              onAnimationComplete={() => setIncoming(true)}
+            >
+              <CheckLabel text={flip.from} />
+            </motion.div>
+          ) : (
+            <motion.div
+              className={FLIP_FACE}
+              initial={{ rotateX: -95 }}
+              animate={{ rotateX: 0 }}
+              transition={{
+                duration: FLIP_HALF_S,
+                ease: [0.16, 0.72, 0.28, 1],
+              }}
+              style={{ transformOrigin: '50% 0%' }}
+              onAnimationComplete={finishFlip}
+            >
+              <CheckLabel text={flip.to} />
+            </motion.div>
+          )}
+        </div>
+      </li>
+    )
+  }
+
+  return (
+    <li className={CHECKLIST_ROW}>
+      <CheckLabel text={rest} />
+    </li>
+  )
+}
 
 /** Sequential fade: out → brief blank → in. Fast enough to scan. */
 const REVEAL_OUT_S = 0.11
@@ -88,31 +311,68 @@ function DetailBody({ item }: { item: PlanChecklistItem }) {
 
 function LandingChecklist({
   items,
+  planId,
   className,
 }: {
   items: string[]
+  planId?: string
   className?: string
 }) {
+  const prefersReducedMotion = useReducedMotion()
+  const pinPageCount = planId !== 'pro'
+  const pinned = pinPageCount ? items[0] : undefined
+  const rotating = useMemo(
+    () => (pinPageCount ? items.slice(1) : items),
+    [items, pinPageCount]
+  )
+  const slotCount = pinned ? CHECKLIST_MAX_ROWS - 1 : CHECKLIST_MAX_ROWS
+  const slots = useMemo(
+    () => dealToSlots(rotating, slotCount),
+    [rotating, slotCount]
+  )
+  const freeze = Boolean(prefersReducedMotion)
+
+  if (items.length === 0) return null
+
+  const sizerItems = pinned ? [pinned, ...rotating] : rotating
+
   return (
-    <ul
+    <div
       className={cn(
-        'mx-auto flex w-max max-w-full flex-col gap-1 lg:gap-[0.35rem]',
+        'mx-auto grid max-w-full grid-cols-[max-content] justify-center',
         className
       )}
     >
-      {items.slice(0, CHECKLIST_MAX_ROWS).map((item) => (
-        <li
-          key={item}
-          className="flex min-w-0 items-center gap-2.5 text-[0.75rem] leading-none text-gray-900 lg:h-[1.125rem] sm:text-[0.8125rem]"
-        >
-          <IncludedMark
-            className="size-[0.72rem] text-[oklch(74%_0.24_146)]"
-            strokeWidth={6}
-          />
-          <span className="min-w-0 text-left">{item}</span>
-        </li>
-      ))}
-    </ul>
+      <div aria-hidden className="h-0 w-max overflow-visible">
+        {sizerItems.map((item) => (
+          <div key={item} className={cn(CHECKLIST_ROW, 'invisible')}>
+            <CheckLabel text={item} emphasis={item === pinned} sizer />
+          </div>
+        ))}
+      </div>
+      <ul
+        className="flex w-full min-w-0 flex-col gap-1 lg:gap-[0.35rem]"
+        aria-label={items.join(', ')}
+      >
+        {pinned ? (
+          <li className={CHECKLIST_ROW}>
+            <CheckLabel text={pinned} emphasis />
+          </li>
+        ) : null}
+        {slots.map((slotItems, slotIndex) => {
+          const visualRow = (pinned ? 2 + slotIndex : 1 + slotIndex) as VisualRow
+          return (
+            <RotatingCheckSlot
+              key={`slot-${slotIndex}`}
+              items={slotItems}
+              visualRow={visualRow}
+              staggerMs={COLUMN_STAGGER_MS[planId ?? ''] ?? 0}
+              staticFallback={freeze}
+            />
+          )
+        })}
+      </ul>
+    </div>
   )
 }
 
@@ -307,5 +567,7 @@ export function PlanChecklist({
       />
     )
   }
-  return <LandingChecklist items={items} className={className} />
+  return (
+    <LandingChecklist items={items} planId={planId} className={className} />
+  )
 }

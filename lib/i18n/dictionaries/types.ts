@@ -211,7 +211,7 @@ export type Dictionary = {
     hostingFrom: string
     howItWorks: string
     threeSteps: string
-    /** Finale line after the intro “3” — English starts at “simple”. */
+    /** Finale line after the intro “3” — English “steps”. */
     threeStepsRest: string
     beginIntrospect: string
     getFreePreview: string
@@ -383,9 +383,9 @@ export type Dictionary = {
     hostingSupportLead: string
     hostingWhoFor: string
     mixMatchHeading: string
-    /** Quiet prompt under the mix-and-match preview — not a full section. */
+    /** Existing-site path under pricing — `{em}` is replaced by redesignPromptEmphasis. */
     redesignPrompt: string
-    redesignHint: string
+    redesignPromptEmphasis: string
     redesignCta: string
     mixMatchLead: string
     /** Mobile — same sentence, “tap” instead of “click”. */

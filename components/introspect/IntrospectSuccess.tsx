@@ -11,6 +11,7 @@ import { coverRoute } from '@/lib/route-cover'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const FADE_EASE = [0.33, 0, 0.2, 1] as const
+const DRIFT_EASE = [0.16, 1, 0.3, 1] as const
 
 const skyButtonClass =
   '!bg-[oklch(68%_0.15_230)] hover:!bg-[oklch(62%_0.14_230)] focus-visible:!ring-[oklch(68%_0.15_230)/0.45]'
@@ -118,6 +119,7 @@ export function IntrospectSuccess({
         {(scene === 'thanks' || scene === 'heading') && (
           <motion.div
             key="heading"
+            layout
             className="text-center"
             initial={false}
             animate={{ opacity: 1 }}
@@ -125,6 +127,7 @@ export function IntrospectSuccess({
               opacity: 0,
               transition: { duration: T.headingOut / 1000, ease: FADE_EASE },
             }}
+            transition={{ layout: { duration: T.restFade / 1000, ease: DRIFT_EASE } }}
           >
             <h1 className="relative font-mi-gente text-2xl text-gray-900 leading-tight">
               <motion.span
@@ -142,7 +145,52 @@ export function IntrospectSuccess({
                 {ui.successEyebrow}
               </motion.span>
               <span className="sr-only">{ui.successHeading}</span>
-              <span className="relative mx-auto block w-max max-w-full" aria-hidden>
+
+              {/* Mobile: Thanks stays centered, drifts up; rest fades in below. */}
+              <span
+                className="relative mx-auto flex w-full max-w-[20rem] flex-col items-center lg:hidden"
+                aria-hidden
+              >
+                <motion.span
+                  className="whitespace-nowrap"
+                  initial={instant ? false : { opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: T.thanksIn / 1000,
+                    ease: EASE,
+                  }}
+                >
+                  {ui.successThanks}
+                </motion.span>
+                <motion.span
+                  className="overflow-hidden"
+                  initial={false}
+                  animate={
+                    scene === 'heading'
+                      ? { opacity: 1, height: 'auto', marginTop: 10 }
+                      : { opacity: 0, height: 0, marginTop: 0 }
+                  }
+                  transition={{ duration: T.restFade / 1000, ease: FADE_EASE }}
+                >
+                  <motion.span
+                    className="block max-w-[20rem] text-pretty text-center leading-snug"
+                    initial={false}
+                    animate={{
+                      opacity: scene === 'heading' ? 1 : 0,
+                      y: scene === 'heading' ? 0 : 12,
+                    }}
+                    transition={{ duration: T.restFade / 1000, ease: DRIFT_EASE }}
+                  >
+                    {ui.successHeadingRest}
+                  </motion.span>
+                </motion.span>
+              </span>
+
+              {/* Desktop: Thanks slides left; rest joins the same line. */}
+              <span
+                className="relative mx-auto hidden w-max max-w-full lg:block"
+                aria-hidden
+              >
                 <span className="invisible inline-flex items-baseline gap-x-[0.4em] whitespace-nowrap">
                   <span>{ui.successThanks}</span>
                   <span>{ui.successHeadingRest}</span>

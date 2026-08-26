@@ -43,7 +43,7 @@ export const es: Dictionary = {
     hostingFrom: '*Hosting y soporte desde {price}',
     howItWorks: 'Cómo funciona',
     threeSteps: 'Tres pasos simples para tener tu sitio web…',
-    threeStepsRest: 'pasos simples para tener tu sitio web…',
+    threeStepsRest: 'pasos',
     beginIntrospect: 'Comenzar la Introspección',
     getFreePreview: 'Comenzar',
     seeMore: 'Ver más',
@@ -55,9 +55,9 @@ export const es: Dictionary = {
       livePreview: {
         label: 'Sitio demo',
         detail: 'Tienes un sitio demo personalizado',
-        building: '...nos ponemos a trabajar',
-        buildingPreview: '...nos ponemos a trabajar',
-        actuallyWorks: 'que de verdad funciona',
+        building: 'nos ponemos a trabajar',
+        buildingPreview: 'nos ponemos a trabajar',
+        actuallyWorks: 'que de verdad funciona!',
         phoneSuffix: 'Incluso en tu teléfono',
       },
       workingWebsite: {
@@ -69,7 +69,7 @@ export const es: Dictionary = {
         justRight: 'Ajustando',
         justRightTune: 'Afinando',
         justRightFinally: 'cuando todo se ve bien...',
-        goLive: 'salimos en vivo...',
+        goLive: 'salimos en vivo',
         suffix: '¡Y ya estás en el negocio!',
       },
     },
@@ -228,8 +228,8 @@ export const es: Dictionary = {
       'Cuidado mensual que mantiene tu sitio en línea — elige la rapidez de respuesta que te convenga.',
     hostingWhoFor: 'Para quién es',
     mixMatchHeading: 'Combina y estima',
-    redesignPrompt: 'Tengo un sitio web, solo necesito una actualización.',
-    redesignHint: 'Empezaremos desde tu sitio actual',
+    redesignPrompt: 'Tengo un sitio web — solo necesito {em}.',
+    redesignPromptEmphasis: 'rediseñarlo',
     redesignCta: 'Empezar el rediseño',
     mixMatchLead:
       'Elige un paquete de sitio web y un plan de hosting para ver el total.',
@@ -513,7 +513,7 @@ export const es: Dictionary = {
     step8Placeholder:
       'Opcional — estilos que no te gustan, tonos que no encajan, o looks que no van contigo…',
     // Step 9
-    step9Title: '¿Hay algo más sobre tu negocio que debamos saber?',
+    step9Title: '¿Hay algo más sobre tu proyecto que debamos saber?',
     step9Aria: 'Algo más sobre tu negocio',
     step9Placeholder: 'Opcional — horarios, temporadas, socios, cosas imprescindibles…',
     step9PlaceholderRedesign:
@@ -1111,8 +1111,13 @@ export const es: Dictionary = {
             ],
           },
         ],
-        features: ['1 página', 'Diseño original', 'SEO en la página'],
-        checklist: ['1 página'],
+        features: ['1 página', 'SEO en la página', 'Responsivo'],
+        checklist: [
+          '1 página',
+          'SEO en la página',
+          'Responsivo',
+          'Velocidad y seguridad',
+        ],
         included: [
           {
             icon: 'one-page',
@@ -1208,7 +1213,12 @@ export const es: Dictionary = {
           },
         ],
         features: ['1–2 páginas', 'Conteo de visitas'],
-        checklist: ['1–2 páginas', 'Conteo de visitas'],
+        checklist: [
+          '1–2 páginas',
+          'Conteo de visitas',
+          'SEO en la página',
+          'Responsivo',
+        ],
         included: [
           {
             icon: 'speed-security',
@@ -1281,7 +1291,13 @@ export const es: Dictionary = {
           },
         ],
         features: ['3–5 páginas', 'Visibilidad en búsqueda'],
-        checklist: ['3–5 páginas', 'Visibilidad'],
+        checklist: [
+          '3–5 páginas',
+          'Visibilidad',
+          'Marketing de marca',
+          '2 rondas de revisión',
+          'Conteo de visitas',
+        ],
         included: [
           {
             icon: 'speed-security',
@@ -1377,6 +1393,9 @@ export const es: Dictionary = {
           'Página de administración',
           'Funciones extra',
           'Búsqueda en el sitio',
+          'Recorrido',
+          'Construcción prioritaria',
+          '3 rondas de revisión',
         ],
         included: [
           {

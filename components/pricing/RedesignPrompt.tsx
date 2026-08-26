@@ -19,14 +19,14 @@ export function FootnoteAsterisk({ className }: { className?: string }) {
   )
 }
 
-/** Darker sky-blue quotes, a step larger than the prompt text. */
+/** Simple quotes in the same sans as the line — not decorative serif. */
 function SkyQuote({ mark }: { mark: '“' | '”' }) {
   return (
     <span
       className={cn(
-        'inline-block not-italic font-bold leading-none text-[oklch(46%_0.14_230)]',
-        '[font-family:Georgia,Times,serif] text-[1.45em]',
-        mark === '“' ? 'mr-0.5 translate-y-[0.04em]' : 'ml-0.5 translate-y-[0.04em]'
+        'inline-block font-medium leading-none text-primary-500',
+        'text-[1.12em]',
+        mark === '“' ? 'mr-px' : 'ml-px'
       )}
       aria-hidden
     >
@@ -35,7 +35,23 @@ function SkyQuote({ mark }: { mark: '“' | '”' }) {
   )
 }
 
-/** Quiet Introspect prompt for people who already have a site — not a full section. */
+function PromptWithEmphasis({
+  template,
+  emphasis,
+}: {
+  template: string
+  emphasis: string
+}) {
+  const parts = template.split('{em}')
+  if (parts.length !== 2) return <>{template}</>
+  return (
+    <>
+      {parts[0]}<span className="font-bold text-primary-800">{emphasis}</span>{parts[1]}
+    </>
+  )
+}
+
+/** Existing-site path under pricing — same footprint as the line + CTA. */
 export function RedesignPrompt({
   className,
   compact = false,
@@ -55,30 +71,23 @@ export function RedesignPrompt({
         className
       )}
     >
-      <div className="min-w-0">
-        <p
-          className={cn(
-            'font-medium italic text-gray-800 leading-snug',
-            compact ? 'text-sm sm:text-base' : 'text-base'
-          )}
-        >
-          <SkyQuote mark="“" />
-          {p.redesignPrompt}
-          <SkyQuote mark="”" />
-        </p>
-        <p
-          className={cn(
-            'mt-0.5 pl-3 text-gray-600 leading-snug sm:pl-4',
-            compact ? 'text-xs sm:text-sm' : 'text-sm'
-          )}
-        >
-          {p.redesignHint}
-        </p>
-      </div>
+      <p
+        className={cn(
+          'min-w-0 font-medium text-gray-800 leading-snug',
+          compact ? 'text-sm sm:text-base' : 'text-base'
+        )}
+      >
+        <SkyQuote mark="“" />
+        <PromptWithEmphasis
+          template={p.redesignPrompt}
+          emphasis={p.redesignPromptEmphasis}
+        />
+        <SkyQuote mark="”" />
+      </p>
       <SpectrumFlipCta
         href={href('/redesign')}
         size="sm"
-        className="shrink-0 self-center"
+        className="shrink-0"
       >
         {p.redesignCta}
       </SpectrumFlipCta>

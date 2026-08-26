@@ -141,11 +141,16 @@ function useKeepMounted(active: boolean, holdMs: number) {
   return active || held
 }
 
+/** Inner screen overlay is 228×124. Aim at the pill, not the bar’s geometric center —
+ *  a down-right cursor on y=8.5 reads as the bottom-right corner of a 7-tall pill. */
+const SCREEN_OVERLAY_H = 124
+const NAV_PILL_CY = (6.2 / SCREEN_OVERLAY_H) * 100
+
 function navCursor(count: number, index: number) {
   const w = count >= 6 ? 13 : count >= 5 ? 15 : 18
   const gap = count >= 6 ? 5 : 6
   const cx = 12 + index * (w + gap) + w / 2
-  return { x: (cx / PAGE_W) * 100, y: 7.2 }
+  return { x: (cx / PAGE_W) * 100, y: NAV_PILL_CY }
 }
 
 function pageCursor(x: number, y: number, scroll = 0) {
@@ -711,49 +716,43 @@ function ScreenViewport({
   )
 }
 
-function PointerCursor({
-  x,
-  y,
-  click,
-}: {
-  x: number
-  y: number
-  click: boolean
-}) {
+const CURSOR_ACT_S = 0.4
+const CURSOR_GLIDE_S = 2.2
+/** Swap to the hand once the pointer is over the control, before travel ends. */
+const CURSOR_HOVER_AT = 0.55
+const CURSOR_MARK =
+  'h-3 w-3 drop-shadow-[0_0.5px_0.5px_oklch(20%_0.02_45/0.45)]'
+
+function ArrowMark() {
   return (
-    <motion.div
-      className="pointer-events-none absolute z-[5] h-5 w-5"
-      initial={{ left: `${x}%`, top: `${y}%`, opacity: 0, scale: 1 }}
-      animate={{
-        left: `${x}%`,
-        top: `${y}%`,
-        opacity: 1,
-        scale: click ? 0.82 : 1,
-      }}
-      transition={{
-        left: { duration: 1.05, ease: EASE },
-        top: { duration: 1.05, ease: EASE },
-        opacity: { duration: 0.28 },
-        scale: { duration: 0.14, ease: EASE },
-      }}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        className="h-5 w-5 -translate-x-[2px] -translate-y-[2px] drop-shadow-[0_1px_1px_oklch(20%_0.02_45/0.45)]"
-      >
-        <path
-          d="M4.6 3.1 6.2 20.5 11.1 15.3 15.6 23.1 18.3 21.7 13.7 13.8 20.8 13.3Z"
-          fill="white"
-          stroke="oklch(22% 0.02 45)"
-          strokeWidth="1.35"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </motion.div>
+    <svg viewBox="0 0 24 24" className={`${CURSOR_MARK} -translate-x-[2.3px] -translate-y-[1.55px]`}>
+      <path
+        d="M4.6 3.1 6.2 20.5 11.1 15.3 15.6 23.1 18.3 21.7 13.7 13.8 20.8 13.3Z"
+        fill="white"
+        stroke="oklch(22% 0.02 45)"
+        strokeWidth="1.35"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
 
-function HandCursor({
+function HandMark() {
+  return (
+    <svg viewBox="0 0 24 24" className={`${CURSOR_MARK} -translate-x-[5.5px] -translate-y-[1.1px]`}>
+      <path
+        d="M9.2 13.4V4.15c0-1.05.82-1.9 1.88-1.9 1.05 0 1.87.85 1.87 1.9V11.2h.35V6.7c0-1 .78-1.82 1.8-1.82 1 0 1.8.82 1.8 1.82v6.05h.28V8.85c0-.95.76-1.72 1.72-1.72.96 0 1.73.77 1.73 1.72V16.4c0 2.55-1.7 4.35-4.55 4.35h-2.7c-1.7 0-3.05-.7-3.85-2.05L7.1 15.4c-.48-.7-.32-1.65.38-2.14.7-.48 1.62-.32 2.1.38l.62.92v-.16Z"
+        fill="white"
+        stroke="oklch(22% 0.02 45)"
+        strokeWidth="1.35"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+function SketchCursor({
   x,
   y,
   click,
@@ -764,17 +763,28 @@ function HandCursor({
   click: boolean
   intent?: 'glide' | 'act'
 }) {
-  const travel = intent === 'act' ? 0.82 : 2.2
+  const [over, setOver] = useState(false)
+  const travel = intent === 'act' ? CURSOR_ACT_S : CURSOR_GLIDE_S
   const ease = intent === 'act' ? EASE : ([0.4, 0.02, 0.2, 1] as const)
+
+  useEffect(() => {
+    setOver(false)
+    if (intent !== 'act') return
+    const id = window.setTimeout(() => setOver(true), travel * CURSOR_HOVER_AT * 1000)
+    return () => window.clearTimeout(id)
+  }, [x, y, intent, travel])
+
+  const hand = over || click
+
   return (
     <motion.div
-      className="pointer-events-none absolute z-[6] h-7 w-7"
+      className="pointer-events-none absolute z-[6] h-0 w-0 origin-top-left"
       initial={{ left: `${x}%`, top: `${y}%`, opacity: 0, scale: 1 }}
       animate={{
         left: `${x}%`,
-        top: click ? `calc(${y}% + 3px)` : `${y}%`,
+        top: click ? `calc(${y}% + 1px)` : `${y}%`,
         opacity: 1,
-        scale: click ? 0.84 : 1,
+        scale: click ? 0.86 : 1,
       }}
       transition={{
         left: { duration: travel, ease },
@@ -783,19 +793,22 @@ function HandCursor({
         scale: { duration: click ? 0.14 : 0.22, ease: EASE },
       }}
     >
-      <svg
-        viewBox="0 0 24 24"
-        className="h-7 w-7 -translate-x-[4px] -translate-y-[1px] drop-shadow-[0_1px_1px_oklch(20%_0.02_45/0.45)]"
+      <motion.div
+        className="absolute left-0 top-0"
+        initial={false}
+        animate={{ opacity: hand ? 0 : 1 }}
+        transition={{ duration: 0.12, ease: EASE }}
       >
-        <path
-          d="M9.2 13.4V4.15c0-1.05.82-1.9 1.88-1.9 1.05 0 1.87.85 1.87 1.9V11.2h.35V6.7c0-1 .78-1.82 1.8-1.82 1 0 1.8.82 1.8 1.82v6.05h.28V8.85c0-.95.76-1.72 1.72-1.72.96 0 1.73.77 1.73 1.72V16.4c0 2.55-1.7 4.35-4.55 4.35h-2.7c-1.7 0-3.05-.7-3.85-2.05L7.1 15.4c-.48-.7-.32-1.65.38-2.14.7-.48 1.62-.32 2.1.38l.62.92v-.16Z"
-          fill="white"
-          stroke="oklch(22% 0.02 45)"
-          strokeWidth="1.35"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-      </svg>
+        <ArrowMark />
+      </motion.div>
+      <motion.div
+        className="absolute left-0 top-0"
+        initial={false}
+        animate={{ opacity: hand ? 1 : 0 }}
+        transition={{ duration: 0.12, ease: EASE }}
+      >
+        <HandMark />
+      </motion.div>
     </motion.div>
   )
 }
@@ -816,7 +829,6 @@ function LaptopChrome({
   scrollDuration,
   scrollEase,
   cursor,
-  cursorKind = 'hand',
   finish = 'live',
   card = null,
   cablePort,
@@ -831,7 +843,6 @@ function LaptopChrome({
   scrollDuration?: number
   scrollEase?: ScrollEase
   cursor?: CursorPose | null
-  cursorKind?: 'arrow' | 'hand'
   finish?: SiteFinish
   card?: ScreenCard | null
   cablePort?: boolean
@@ -952,16 +963,12 @@ function LaptopChrome({
         />
         {children}
         {cursor ? (
-          cursorKind === 'hand' ? (
-            <HandCursor
-              x={cursor.x}
-              y={cursor.y}
-              click={cursor.click}
-              intent={cursor.intent}
-            />
-          ) : (
-            <PointerCursor x={cursor.x} y={cursor.y} click={cursor.click} />
-          )
+          <SketchCursor
+            x={cursor.x}
+            y={cursor.y}
+            click={cursor.click}
+            intent={cursor.intent}
+          />
         ) : null}
       </div>
     </div>
@@ -1582,7 +1589,6 @@ export function HiwLivePreviewSketch({
                 scrollDuration={scrollDuration}
                 scrollEase={scrollEase}
                 cursor={grown && laptopOn ? cursor : null}
-                cursorKind="hand"
                 finish="preview"
                 card={laptopOn ? card : null}
                 cablePort={wireOn}
@@ -1727,8 +1733,10 @@ export function HiwWorkingWebsiteSketch({
   playing,
   duration,
   entrance = 'land',
-}: SketchProps & { entrance?: 'land' | 'fade' }) {
+  size = 'live',
+}: SketchProps & { entrance?: 'land' | 'fade'; size?: 'live' | 'compact' }) {
   const fadeIn = entrance === 'fade'
+  const compact = size === 'compact'
   const land = {
     duration: fadeIn ? 1.48 : 0.92,
     ease: fadeIn ? ([0.4, 0, 0.2, 1] as const) : LAND,
@@ -1838,22 +1846,26 @@ export function HiwWorkingWebsiteSketch({
     <div
       className={
         fadeIn
-          ? 'flex flex-col items-center'
+          ? compact
+            ? 'mt-0 flex flex-col items-center'
+            : 'flex flex-col items-center'
           : 'flex -translate-y-2 flex-col items-center sm:-translate-y-3 lg:-translate-y-5'
       }
     >
-      <div className={`flex items-end justify-center ${fadeIn ? 'gap-2.5 sm:gap-4' : 'gap-2 sm:gap-3'}`}>
+      <div className={`flex items-end justify-center ${compact ? 'gap-3 sm:gap-4 lg:gap-5' : fadeIn ? 'gap-2.5 sm:gap-4' : 'gap-2 sm:gap-3'}`}>
         <motion.div
           className={
-            fadeIn
-              ? 'relative w-[9.25rem] origin-bottom sm:w-[14.25rem] lg:w-[15.75rem]'
-              : 'relative w-[10.25rem] origin-bottom sm:w-[16rem] lg:w-[18rem]'
+            compact
+              ? 'relative w-[5.55rem] origin-bottom sm:w-[7.7rem] lg:w-[8.45rem]'
+              : fadeIn
+                ? 'relative w-[9.25rem] origin-bottom sm:w-[14.25rem] lg:w-[15.75rem]'
+                : 'relative w-[10.25rem] origin-bottom sm:w-[16rem] lg:w-[18rem]'
           }
           initial={fadeIn ? { opacity: 0, y: 8 } : { x: -96, y: -34, scale: 0.56, opacity: 0 }}
           animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
           transition={{ ...land, delay: fadeIn ? 0.1 : 0 }}
         >
-          <PerspectiveShell rotateY={fadeIn ? 16 : 12} rotateX={fadeIn ? 3 : 5}>
+          <PerspectiveShell rotateY={compact ? 14 : fadeIn ? 16 : 12} rotateX={compact ? 4 : fadeIn ? 3 : 5}>
             <LaptopChrome
               scene={laptopScene}
               scroll={laptopScroll}
@@ -1870,15 +1882,17 @@ export function HiwWorkingWebsiteSketch({
         </motion.div>
         <motion.div
           className={
-            fadeIn
-              ? 'relative w-[4.35rem] origin-bottom sm:w-[6.75rem] lg:w-[7.35rem]'
-              : 'relative w-[5rem] origin-bottom sm:w-[7.75rem] lg:w-[8.5rem]'
+            compact
+              ? 'relative w-[2.55rem] origin-bottom sm:w-[3.55rem] lg:w-[3.9rem]'
+              : fadeIn
+                ? 'relative w-[4.35rem] origin-bottom sm:w-[6.75rem] lg:w-[7.35rem]'
+                : 'relative w-[5rem] origin-bottom sm:w-[7.75rem] lg:w-[8.5rem]'
           }
           initial={fadeIn ? { opacity: 0, y: 10 } : { x: 96, y: -30, scale: 0.56, opacity: 0 }}
-          animate={{ x: 0, y: fadeIn ? 6 : 2, scale: 1, opacity: 1 }}
+          animate={{ x: 0, y: fadeIn || compact ? 5 : 2, scale: 1, opacity: 1 }}
           transition={{ ...land, delay: fadeIn ? 0.24 : 0.06 }}
         >
-          <PerspectiveShell rotateY={fadeIn ? -24 : -13} rotateX={fadeIn ? 8 : 5}>
+          <PerspectiveShell rotateY={compact ? -20 : fadeIn ? -24 : -13} rotateX={compact ? 7 : fadeIn ? 8 : 5}>
             <PhoneChrome
               scene={phoneScene}
               scroll={phoneWander.scroll}
@@ -1895,15 +1909,17 @@ export function HiwWorkingWebsiteSketch({
       </div>
       <motion.div
         className={
-          fadeIn
-            ? 'relative z-0 mt-2 w-[6.15rem] origin-bottom sm:mt-3 sm:w-[9.25rem] lg:w-[10.25rem]'
-            : 'relative z-0 -mt-1 w-[6.75rem] origin-bottom sm:mt-0 sm:w-[10.25rem] lg:w-[11.25rem]'
+            compact
+            ? 'relative z-0 mt-2.5 w-[3.7rem] origin-bottom sm:mt-3 sm:w-[5.25rem] lg:w-[5.75rem]'
+            : fadeIn
+              ? 'relative z-0 mt-2 w-[6.15rem] origin-bottom sm:mt-3 sm:w-[9.25rem] lg:w-[10.25rem]'
+              : 'relative z-0 -mt-1 w-[6.75rem] origin-bottom sm:mt-0 sm:w-[10.25rem] lg:w-[11.25rem]'
         }
         initial={fadeIn ? { opacity: 0, y: 9 } : { y: -22, scale: 0.5, opacity: 0 }}
-        animate={{ y: fadeIn ? 0 : -8, scale: 1, opacity: 1 }}
+        animate={{ y: fadeIn || compact ? 0 : -8, scale: 1, opacity: 1 }}
         transition={{ ...land, delay: fadeIn ? 0.38 : 0.1 }}
       >
-        <PerspectiveShell rotateY={fadeIn ? 2 : 8} rotateX={fadeIn ? 12 : 7}>
+        <PerspectiveShell rotateY={compact ? 3 : fadeIn ? 2 : 8} rotateX={compact ? 10 : fadeIn ? 12 : 7}>
           <TabletChrome
             scene={tabletScene}
             navCount={LIVE_SCENES.length}

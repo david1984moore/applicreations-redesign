@@ -128,16 +128,14 @@ const BUILD_LEAVE = {
   y: { duration: 0.78, ease: FLOAT_EASE },
 } as const
 
-/** Descent that holds pace and slowly picks up — never eases to a stop. */
-const DRIFT_EASE = [0.28, 0.06, 0.82, 0.52] as const
-/** Accelerate into the drop, then vanish. */
-const SINK_EASE = [0.52, 0.02, 0.88, 0.08] as const
+/** Accelerate toward the viewer, then vanish. */
+const RUSH_EASE = [0.42, 0.04, 0.82, 0.12] as const
 /** Slow dissolve while the line is still drifting. */
 const SINK_FADE_EASE = [0.42, 0, 0.48, 1] as const
 /** Shared screens + go-live fade — long enough to read the drift. */
 export const SCREENS_SINK_FADE_S = 1.2
-/** Fixed travel time so earlier fades do not speed up the drop. */
-const SCREENS_DROP_S = 4.6
+/** Fixed travel time so earlier fades do not speed up the rush. */
+const SCREENS_DROP_S = 1.15
 
 function sinkLeaveTransition(duration: number) {
   return {
@@ -146,32 +144,33 @@ function sinkLeaveTransition(duration: number) {
       ease: SINK_FADE_EASE,
       delay: 0.02,
     },
-    scale: { duration, ease: SINK_EASE },
-    x: { duration, ease: SINK_EASE },
-    y: { duration, ease: SINK_EASE },
+    scale: { duration, ease: RUSH_EASE },
+    x: { duration, ease: RUSH_EASE },
+    y: { duration, ease: RUSH_EASE },
   }
 }
 
 function screensDropTransition(duration: number, fadeDelay: number) {
+  const delay = Math.min(Math.max(0, fadeDelay), duration * 0.12)
   return {
     opacity: {
-      duration: SCREENS_SINK_FADE_S,
+      duration: duration * 0.78,
       ease: SINK_FADE_EASE,
-      delay: fadeDelay,
+      delay,
     },
-    scale: { duration, ease: DRIFT_EASE },
-    x: { duration, ease: DRIFT_EASE },
-    y: { duration, ease: DRIFT_EASE },
+    scale: { duration, ease: RUSH_EASE },
+    x: { duration, ease: RUSH_EASE },
+    y: { duration, ease: RUSH_EASE },
   }
 }
 
-/** Rise, then down — still moving at the peak so the line never parks. */
+/** Rise, then hold — fade finishes in place so the screens can rush forward. */
 const SCREENS_UP_EASE = [0.25, 0.08, 0.4, 0.75] as const
-const SCREENS_DOWN_EASE = [0.3, 0.13, 0.58, 1] as const
-/** One arc for “And you're in business!” — fade finishes before the screens sink. */
+const SCREENS_HOLD_EASE = [0.3, 0.13, 0.58, 1] as const
+/** One arc for “And you're in business!” — fade finishes before the screens rush. */
 const SCREENS_ARC_S = 5.4
-const SCREENS_ARC_Y = [16, -34, 42] as const
-const SCREENS_ARC_Y_PHONE = [10, -18, 28] as const
+const SCREENS_ARC_Y = [2, -40, -26] as const
+const SCREENS_ARC_Y_PHONE = [0, -24, -16] as const
 
 function screensArcAnimate(phone: boolean) {
   return {
@@ -196,17 +195,17 @@ function screensArcTransition(delayMs: number | undefined) {
     y: {
       duration: SCREENS_ARC_S,
       times: [0, 0.32, 1],
-      ease: [SCREENS_UP_EASE, SCREENS_DOWN_EASE],
+      ease: [SCREENS_UP_EASE, SCREENS_HOLD_EASE],
       delay,
     },
   }
 }
 
 const SCREENS_LEAVE = {
-  opacity: { duration: 0.5, ease: EXIT_EASE },
-  scale: { duration: 0.5, ease: EXIT_EASE },
-  x: { duration: 0.5, ease: FLOAT_EASE },
-  y: { duration: 0.8, ease: SCREENS_DOWN_EASE },
+  opacity: { duration: 0.72, ease: EXIT_EASE },
+  scale: { duration: 0.92, ease: RUSH_EASE },
+  x: { duration: 0.72, ease: FLOAT_EASE },
+  y: { duration: 0.72, ease: FLOAT_EASE },
 } as const
 
 type HiwStepCopyProps = {
@@ -264,8 +263,8 @@ const PHONE_SKETCH_SLOT: Record<HiwCaptionPlacement, string> = {
     'absolute left-[39%] top-[-2.95rem] w-max origin-bottom text-left',
   andFinally:
     'absolute inset-x-[14%] top-[-2.6rem] mx-auto w-max origin-bottom text-center',
-  switch: 'absolute inset-x-3 top-1 origin-top text-center',
-  screens: 'absolute inset-x-3 top-1 origin-top text-center',
+  switch: 'absolute inset-x-3 -top-0.5 origin-top text-center',
+  screens: 'absolute inset-x-3 -top-0.5 origin-top text-center',
 }
 
 /** Reserved heading band on phone — absolute so caption swaps never reflow the sketch. */
@@ -304,7 +303,7 @@ type CaptionStyle = {
   slot: string
   initial: CaptionPose
   animate: CaptionPose
-  /** Visible downward drift before the joint drop. */
+  /** Visible rush toward the viewer before the joint fade. */
   preSink?: CaptionPose
   exit: CaptionPose
   leave: CaptionPose
@@ -439,11 +438,11 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   },
   switch: {
     seat: 'stage',
-    slot: 'absolute left-0 right-0 top-[1.7rem] mx-auto w-[min(92%,20.5rem)] origin-bottom text-center sm:top-[1.85rem] lg:top-[2rem]',
-    initial: { opacity: 0, y: 10, scale: 0.99 },
-    animate: { opacity: 1, y: -6, scale: 1 },
-    exit: { opacity: 0, y: -6, scale: 1 },
-    leave: { opacity: 0, y: -6, scale: 1 },
+    slot: 'absolute left-0 right-0 top-[0.85rem] mx-auto w-[min(92%,20.5rem)] origin-bottom text-center sm:top-[1rem] lg:top-[1.1rem]',
+    initial: { opacity: 0, y: 8, scale: 0.99 },
+    animate: { opacity: 1, y: -10, scale: 1 },
+    exit: { opacity: 0, y: -18, scale: 1 },
+    leave: { opacity: 0, y: -18, scale: 1 },
     transition: {
       opacity: { duration: 0.32, ease: ENTER_EASE },
       scale: { duration: 0.55, ease: ENTER_EASE },
@@ -454,11 +453,12 @@ export const CAPTION_STYLE: Record<HiwCaptionPlacement, CaptionStyle> = {
   },
   screens: {
     seat: 'stage',
-    slot: 'absolute left-0 right-0 top-[1.7rem] mx-auto w-[min(92%,20.5rem)] origin-bottom text-center sm:top-[1.85rem] lg:top-[2rem]',
+    slot: 'absolute left-0 right-0 top-0 mx-auto w-[min(92%,20.5rem)] origin-center text-center sm:top-[0.1rem] lg:top-[0.15rem]',
     initial: { opacity: 0, y: 16, scale: 0.99 },
     animate: { opacity: 1, y: -34, scale: 1 },
-    exit: { opacity: 0, y: 42, scale: 1 },
-    leave: { opacity: 0, y: 42, scale: 1 },
+    preSink: { opacity: 0, y: -22, scale: 1.32 },
+    exit: { opacity: 0, y: -22, scale: 1.32 },
+    leave: { opacity: 0, y: -22, scale: 1.32 },
     transition: floatTransition(1.8, ENTER_EASE),
     exitTransition: SCREENS_LEAVE,
   },
@@ -472,7 +472,7 @@ export const ELLIPSIS_TAIL_MS = ELLIPSIS_DOT_MS * 2
 export const HOUSE_ELLIPSIS_DELAY_MS = 50
 export const HOUSE_AND_THEN_DELAY_MS =
   HOUSE_ELLIPSIS_DELAY_MS + ELLIPSIS_TAIL_MS + 240
-/** Punchline: dots land, then “that actually works”. */
+/** Punchline: dots land, then “that actually works!”. */
 export const WORKS_ELLIPSIS_DELAY_MS = 120
 export const WORKS_SUFFIX_DELAY_MS =
   WORKS_ELLIPSIS_DELAY_MS + ELLIPSIS_TAIL_MS + 480 + 200
@@ -604,8 +604,8 @@ export function HiwCaption({
     ? { opacity: 0, x: 0, y: 0, scale: 1 }
     : style.exit
   const dropPose = phoneStage
-    ? { opacity: 0, x: 0, y: 20, scale: 1 }
-    : style.leave
+    ? { opacity: 0, x: 0, y: 0, scale: 1.22 }
+    : style.preSink ?? style.leave
   const leaveTransition =
     placement === 'screens'
       ? style.exitTransition ?? SCREENS_LEAVE

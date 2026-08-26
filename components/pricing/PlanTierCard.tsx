@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import Link from 'next/link'
 import { PackagePriceLabel } from '@/components/pricing/PackagePriceLabel'
 import { PlanTierIcon } from '@/components/pricing/PlanTierIcon'
 import type { PlanId } from '@/lib/pricing'
@@ -41,6 +42,8 @@ export function PlanTierCard({
   action,
   className,
   anchor = true,
+  mobileHref,
+  mobileLinkLabel,
 }: {
   plan: TierCardPlan
   popularLabel: string
@@ -54,6 +57,9 @@ export function PlanTierCard({
   className?: string
   /** Set false when another copy of this plan already owns the hash id. */
   anchor?: boolean
+  /** Mobile-only: whole card taps through to this href; See more stays desktop. */
+  mobileHref?: string
+  mobileLinkLabel?: string
 }) {
   const isPopular = Boolean(plan.highlighted)
   const compact = density === 'landing'
@@ -79,6 +85,14 @@ export function PlanTierCard({
         className
       )}
     >
+      {mobileHref ? (
+        <Link
+          href={mobileHref}
+          className="absolute inset-0 z-10 lg:hidden"
+          aria-label={mobileLinkLabel ?? plan.name}
+        />
+      ) : null}
+
       {isPopular && compact ? (
         <span className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-card px-2.5 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.12em] text-gray-800 ring-1 ring-gray-200/90">
           {popularLabel}
@@ -139,7 +153,13 @@ export function PlanTierCard({
       <div className={cn('w-full', compact ? 'mt-1.5 flex flex-1 flex-col justify-start sm:mt-3' : 'mt-4 flex min-h-0 flex-1 flex-col')}>
         {children}
       </div>
-      <div className={cn('w-full shrink-0', compact ? 'mt-1.5 flex justify-center sm:mt-3' : 'mt-2.5')}>
+      <div
+        className={cn(
+          'w-full shrink-0',
+          compact ? 'mt-1.5 flex justify-center sm:mt-3' : 'mt-2.5',
+          mobileHref && 'max-lg:hidden'
+        )}
+      >
         {action}
       </div>
     </article>
