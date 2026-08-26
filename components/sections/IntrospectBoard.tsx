@@ -518,7 +518,9 @@ export function IntrospectBoard({
 
   useEffect(() => {
     const root = document.documentElement
-    root.dataset.introspect = phase === 'success' ? 'success' : ''
+    // welcome | scroll | success — CSS uses `scroll` for the under-nav fade
+    root.dataset.introspect =
+      phase === 'success' ? 'success' : phase === 'welcome' ? 'welcome' : 'scroll'
     return () => {
       delete root.dataset.introspect
     }

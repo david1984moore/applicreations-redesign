@@ -167,6 +167,25 @@ function useCursorIdleNavVisibility(enabled: boolean, resetKey: string, frozen =
   return { visible, hold, release }
 }
 
+/** Matches Tailwind `lg` (1024px). Introspect mobile keeps the nav pinned. */
+function useIsMaxLg() {
+  const [matches, setMatches] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(max-width: 1023px)').matches
+      : false
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const sync = () => setMatches(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  return matches
+}
+
 /**
  * Keep in sync with spacer + page scroll offsets.
  * In this design system h-12 = --spacing-12 = 6rem (not Tailwind’s default 3rem).
@@ -200,9 +219,16 @@ export function Navigation() {
     return () => observer.disconnect()
   }, [onIntrospect])
 
+  const isMaxLg = useIsMaxLg()
+  // Mobile Introspect: no cursor to revive chrome — keep the bar pinned.
   const scrollNav = useSubpageNavVisibility(!onHome && !onIntrospect, pathname || '/')
-  const idleNav = useCursorIdleNavVisibility(onIntrospect, pathname || '/', successLock)
+  const idleNav = useCursorIdleNavVisibility(
+    onIntrospect && !isMaxLg,
+    pathname || '/',
+    successLock
+  )
   const { visible, hold, release } = onIntrospect ? idleNav : scrollNav
+  const navVisible = onIntrospect && isMaxLg ? true : visible
 
   // Landing uses its own brand chrome — no global nav
   if (onHome) return null
@@ -221,7 +247,7 @@ export function Navigation() {
         className={cn(
           'site-nav fixed top-0 left-0 right-0 z-50 bg-paper/85 backdrop-blur-md',
           'transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
-          visible
+          navVisible
             ? 'translate-y-0 opacity-100'
             : '-translate-y-full opacity-0 pointer-events-none'
         )}

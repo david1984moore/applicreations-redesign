@@ -274,6 +274,37 @@ html[data-introspect] .site-nav {
   -webkit-backdrop-filter: none;
 }
 
+/* Introspect scroll phases: cream pin + soft fade under the nav bottom edge
+   so question/review content dissolves before it reaches the links (desktop +
+   mobile). Links stay visually open (no frosted glass). */
+html[data-introspect='scroll'] .site-nav {
+  background: oklch(99.2% 0.006 85);
+}
+
+html[data-introspect='scroll'] .site-nav::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 2.75rem;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    oklch(99.2% 0.006 85) 0%,
+    oklch(99.2% 0.006 85 / 0.72) 38%,
+    oklch(99.2% 0.006 85 / 0) 100%
+  );
+}
+
+/* Mobile welcome/success: keep the cream pin even when not scrolling so the
+   fixed bar never reads as empty over morph wash. */
+@media (max-width: 1023px) {
+  html[data-introspect] .site-nav {
+    background: oklch(99.2% 0.006 85);
+  }
+}
+
 html[data-introspect] footer {
   background: transparent;
 }
