@@ -1021,10 +1021,9 @@ function FinaleCinema({
                 transition={headlineTransition}
                 style={{
                   backfaceVisibility: 'hidden',
-                  willChange:
-                    playingFinale && beat !== 'cta'
-                      ? 'transform, opacity'
-                      : undefined,
+                  willChange: playingFinale
+                    ? 'transform, opacity'
+                    : undefined,
                 }}
                 transformTemplate={keepLayer}
                 aria-hidden={showCta || undefined}
