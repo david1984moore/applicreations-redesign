@@ -5,16 +5,17 @@ import { animate, motion } from 'framer-motion'
 import { C } from '@/components/pricing/ExampleScreenRotator'
 import { Backdrop, Rocks, Worker } from '@/components/landing/hiw/HiwConstructionSketch'
 import { HiwWorkingWebsiteSketch } from '@/components/landing/hiw/HiwDeviceSketch'
-import { HiwShopSketch } from '@/components/landing/hiw/HiwShopSketch'
+import { HiwShopSketch, SCENE_FADE, hiwShopServeClock } from '@/components/landing/hiw/HiwShopSketch'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const CROSS = { duration: 1.05, ease: EASE }
 const SOFT_DISSOLVE = [0.4, 0, 0.2, 1] as const
 /** Switch dissolves — screens bloom through while the lever stays thrown. */
-const SWITCH_TO_SCREENS = { duration: 1.58, ease: SOFT_DISSOLVE }
-/** Go-live line stays up while the man starts dissolving, then yields. */
-export const SWITCH_CAPTION_LAG_MS = 680
-const SCREENS_IN = { duration: 1.78, ease: SOFT_DISSOLVE, delay: 0.18 }
+const SWITCH_TO_SCREENS = { duration: 1.12, ease: SOFT_DISSOLVE }
+const SCREENS_IN = { duration: 0.72, ease: SOFT_DISSOLVE, delay: 0.06 }
+/** Shop starts yielding, then the live screens fade in. */
+const SCREENS_OVERTAKE_DELAY_S = 0.14
+const SCREENS_OVERTAKE = { duration: 0.72, ease: [0.22, 1, 0.36, 1] as const }
 const SCREENS_CROSS = { duration: 1.12, ease: EASE }
 const SOFT = { duration: 0.86, ease: EASE }
 
@@ -151,8 +152,10 @@ export function HiwStep3Cinema({
 }: HiwStep3CinemaProps) {
   const [beat, setBeat] = useState<ReviewBeat>('review')
   const [screensReady, setScreensReady] = useState(false)
+  const [overtaking, setOvertaking] = useState(false)
   const onBeatRef = useRef(onBeat)
   onBeatRef.current = onBeat
+  const { dissolveAt, holdPaid } = hiwShopServeClock(screensMs)
 
   const tableOn = beat === 'review' || beat === 'clear' || beat === 'revise'
   const houseOn =
@@ -221,10 +224,8 @@ export function HiwStep3Cinema({
       window.setTimeout(() => {
         setBeat('screens')
         setScreensReady(true)
-      }, switchAt + switchMs),
-      window.setTimeout(() => {
         onBeatRef.current?.('screens')
-      }, switchAt + switchMs + SWITCH_CAPTION_LAG_MS),
+      }, switchAt + switchMs),
     ]
     return () => {
       for (const id of timers) window.clearTimeout(id)
@@ -239,6 +240,16 @@ export function HiwStep3Cinema({
     finallyMs,
     switchMs,
   ])
+
+  useEffect(() => {
+    if (!playing || !screensOn || holdPaid) {
+      setOvertaking(false)
+      return
+    }
+    setOvertaking(false)
+    const id = window.setTimeout(() => setOvertaking(true), dissolveAt)
+    return () => window.clearTimeout(id)
+  }, [playing, screensOn, holdPaid, dissolveAt])
 
   return (
     <div className="relative isolate w-full min-h-[15.25rem] overflow-visible sm:min-h-[18.25rem] lg:min-h-[21rem]">
@@ -293,17 +304,40 @@ export function HiwStep3Cinema({
           aria-hidden
         >
           {screensReady ? (
-            <div className="flex w-full flex-col items-center justify-end gap-7 pt-5 sm:gap-8 sm:pt-6 lg:gap-9 lg:pt-7">
-              <HiwShopSketch
-                playing={playing && screensOn}
-                duration={screensMs}
-              />
-              <HiwWorkingWebsiteSketch
-                playing={playing && screensOn}
-                duration={screensMs}
-                entrance="fade"
-                size="compact"
-              />
+            <div className="relative flex w-full flex-col items-center justify-end pt-5 sm:pt-6 lg:pt-7">
+              <motion.div
+                className="relative z-[1] w-full"
+                initial={false}
+                animate={{ opacity: overtaking ? 0 : 1, y: overtaking ? -12 : 0 }}
+                transition={SCENE_FADE}
+              >
+                <HiwShopSketch
+                  playing={playing && screensOn}
+                  duration={screensMs}
+                />
+              </motion.div>
+              <motion.div
+                className="relative z-[2] mt-5 w-full origin-bottom sm:mt-6 lg:mt-7"
+                style={{ transformOrigin: 'bottom center' }}
+                initial={false}
+                animate={
+                  overtaking
+                    ? { y: -52, scale: 1.28, opacity: 1 }
+                    : { y: 28, scale: 0.74, opacity: 0 }
+                }
+                transition={{
+                  duration: SCREENS_OVERTAKE.duration,
+                  ease: SCREENS_OVERTAKE.ease,
+                  delay: overtaking ? SCREENS_OVERTAKE_DELAY_S : 0,
+                }}
+              >
+                <HiwWorkingWebsiteSketch
+                  playing={playing && screensOn}
+                  duration={screensMs}
+                  entrance="fade"
+                  size="compact"
+                />
+              </motion.div>
             </div>
           ) : null}
         </motion.div>

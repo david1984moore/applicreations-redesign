@@ -19,6 +19,7 @@ import {
   ELLIPSIS_TAIL_MS,
   HiwCaption,
   HiwStepCopy,
+  SCREENS_CAPTION_FADE_IN_MS,
   SCREENS_CAPTION_IN_DELAY_MS,
   SCREENS_SINK_FADE_S,
   WORKS_ELLIPSIS_DELAY_MS,
@@ -38,6 +39,7 @@ import {
   hiwSwitchLiveAtMs,
   type ReviewBeat,
 } from '@/components/landing/hiw/HiwReviewSketch'
+import { hiwShopServeClock } from '@/components/landing/hiw/HiwShopSketch'
 import { washEdgeXAtY } from '@/components/landing/hiw/HiwPageWash'
 import { SpectrumFlipCta } from '@/components/ui/SpectrumFlipCta'
 import type { Dictionary } from '@/lib/i18n/dictionaries/types'
@@ -166,8 +168,8 @@ const DESKTOP_MS = {
   step3Finally: 3200,
   /** Flip, zap, hold the go-live line — then dissolve the man first. */
   step3Switch: 2600,
-  /** Shop serve + screens + “And you're in business!” — hold until the dissolve/rush. */
-  step3Screens: 8400,
+  /** Shop hold, screens overtake, then rush toward the viewer. */
+  step3Screens: 7390,
   /** Caption keeps drifting this long before opacity starts falling. */
   step3CaptionFloat: 2400,
   glow: 2200,
@@ -339,6 +341,7 @@ function scaleTimings(viewportScale: number) {
     Math.round(DESKTOP_MS.step3Tune * scale) +
     captionGap +
     Math.round(DESKTOP_MS.step3Finally * scale)
+  const step3Screens = hiwShopServeClock().rushAt
   return {
     introIn: Math.round(DESKTOP_MS.introIn * scale),
     introStagger: Math.round(DESKTOP_MS.introStagger * scale),
@@ -398,7 +401,7 @@ function scaleTimings(viewportScale: number) {
     step3Finally: Math.round(DESKTOP_MS.step3Finally * scale),
     step3House,
     step3Switch,
-    step3Screens: Math.round(DESKTOP_MS.step3Screens * scale),
+    step3Screens,
     step3CaptionFloat: Math.round(DESKTOP_MS.step3CaptionFloat * scale),
     step3Play:
       Math.round(DESKTOP_MS.step3Review * scale) +
@@ -406,7 +409,7 @@ function scaleTimings(viewportScale: number) {
       Math.round(DESKTOP_MS.step3Revise * scale) +
       step3House +
       step3Switch +
-      Math.round(DESKTOP_MS.step3Screens * scale),
+      step3Screens,
     glow: Math.round(DESKTOP_MS.glow * scale),
     step3Glow: Math.round(DESKTOP_MS.step3Glow * scale),
     exit: Math.round(DESKTOP_MS.exit * scale),
@@ -440,12 +443,22 @@ function finaleLine(rest: string) {
   return `3 ${rest}`
 }
 
+/** Fade-in finishes as the card meets the reader. */
+function hiwScreensCaptionInDelayMs(screensMs: number) {
+  const { tapAt } = hiwShopServeClock(screensMs)
+  return Math.max(
+    SCREENS_CAPTION_IN_DELAY_MS,
+    tapAt - SCREENS_CAPTION_FADE_IN_MS,
+  )
+}
+
 function captionForStep(
   step: 1 | 2 | 3,
   previewBeat: PreviewBeat,
   reviewBeat: ReviewBeat,
   dict: Dictionary,
   switchMs: number,
+  screensMs: number,
 ): HiwCaptionContent | null {
   if (step === 1) {
     return {
@@ -512,7 +525,7 @@ function captionForStep(
   return {
     text: copy.suffix,
     placement: 'screens',
-    enterDelayMs: SCREENS_CAPTION_IN_DELAY_MS,
+    enterDelayMs: hiwScreensCaptionInDelayMs(screensMs),
   }
 }
 
@@ -1401,7 +1414,12 @@ function HiwStepView({
       sinkExit={step === 3}
       preSinkAfterMs={
         step === 3
-          ? Math.max(0, timings.step3Screens - timings.step3CaptionFloat)
+          ? hiwShopServeClock(timings.step3Screens).holdPaid
+            ? Math.max(0, timings.step3Screens - timings.step3CaptionFloat)
+            : Math.max(
+                0,
+                hiwShopServeClock(timings.step3Screens).rushAt,
+              )
           : undefined
       }
       preSinkDurationMs={
@@ -1423,7 +1441,7 @@ function HiwStepView({
           : undefined
       }
       copy={<HiwStepCopy n={copy.n} label={copy.label} Icon={copy.Icon} />}
-      caption={captionForStep(step, previewBeat, reviewBeat, dict, timings.step3Switch)}
+      caption={captionForStep(step, previewBeat, reviewBeat, dict, timings.step3Switch, timings.step3Screens)}
       illustration={
         step === 1 ? (
           <HiwFormSketch
@@ -1748,7 +1766,7 @@ export function HowItWorksStage({
 
   const stepCaption =
     phase.name === 'step'
-      ? captionForStep(phase.step, previewBeat, reviewBeat, dict, timings.step3Switch)
+      ? captionForStep(phase.step, previewBeat, reviewBeat, dict, timings.step3Switch, timings.step3Screens)
       : null
 
   const stepPoses: Partial<Record<StepNum, StepPose>> =

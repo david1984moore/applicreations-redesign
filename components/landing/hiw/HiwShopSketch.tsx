@@ -15,25 +15,41 @@ import { C } from '@/components/pricing/ExampleScreenRotator'
 const EASE = [0.22, 1, 0.36, 1] as const
 const SETTLE = { duration: 0.78, ease: [0.18, 0.72, 0.22, 1] as const }
 const REACH = { duration: 0.7, ease: EASE }
-const TAP = { duration: 0.28, ease: [0.18, 0.72, 0.22, 1] as const }
 const REST = { duration: 0.52, ease: EASE }
-/** Slow lift — still moving as the shop dissolves. */
-const RETRACT = { duration: 1.42, ease: [0.38, 0.04, 0.22, 1] as const }
-const SCENE_FADE = { duration: 1.55, ease: [0.42, 0, 0.58, 1] as const }
+/** Same arc as the reach — down and up at one speed, no linger on the reader. */
+const RETRACT = { duration: REACH.duration, ease: REACH.ease }
+/** Shop dissolve and screens-overtake share this clock. */
+export const SCENE_FADE = { duration: 0.9, ease: [0.42, 0, 0.58, 1] as const }
+const SCENE_FADE_MS = Math.round(SCENE_FADE.duration * 1000)
 
 const SET_AT_MS = 180
 const PLACED_AT_MS = SET_AT_MS + Math.round(SETTLE.duration * 1000) + 60
-/** Early reach — only used when the shop is held for inspection. */
+/** Reach as soon as the tea is down — no idle hold with the card in the air. */
 const REACH_AT_MS = PLACED_AT_MS + 220
-const TAP_AT_MS = REACH_AT_MS + Math.round(REACH.duration * 1000) + 40
-const PAID_AT_MS = TAP_AT_MS + Math.round(TAP.duration * 1000)
-/** Brief check on the POS, then the arm starts up. */
-const PAID_HOLD_MS = 560
-/** Lift is already underway this long before opacity starts falling. */
-const FADE_AFTER_LIFT_MS = 180
-/** Shop fade begins this long before the beat ends so the rush starts mid-dissolve. */
-const DISSOLVE_LEAD_MS = 520 + FADE_AFTER_LIFT_MS
-const REACH_LEAD_MS = Math.round(REACH.duration * 1000) + 40
+const TAP_AT_MS = REACH_AT_MS + Math.round(REACH.duration * 1000)
+/** Beat after the tap, then the shop yields. */
+export const HOLD_AFTER_TAP_MS = 560
+/** Grown screens sit before they rush toward the viewer. */
+const SCREENS_FEATURE_MS = 480
+const HOLD_PAID_DURATION_MS = 20000
+
+export function hiwShopServeClock(duration = 8400) {
+  const holdPaid = duration > HOLD_PAID_DURATION_MS
+  const retractAt = TAP_AT_MS
+  const dissolveAt = holdPaid ? TAP_AT_MS : TAP_AT_MS + HOLD_AFTER_TAP_MS
+  const rushAt = holdPaid
+    ? duration
+    : dissolveAt + SCENE_FADE_MS + SCREENS_FEATURE_MS
+  return {
+    holdPaid,
+    reachAt: REACH_AT_MS,
+    tapAt: TAP_AT_MS,
+    paidAt: TAP_AT_MS,
+    retractAt,
+    dissolveAt,
+    rushAt,
+  }
+}
 
 const DRESS = 'oklch(62% 0.13 18)'
 const DRESS_D = 'oklch(54% 0.12 16)'
@@ -90,7 +106,6 @@ const CUST_PAY = { x: -4.6, y: -12.6 }
 const CUST_UPPER = 5.8
 const CUST_LOWER = 6.6
 const CARD_IDLE = { x: -11.2, y: -13.8 }
-const CARD_REACH = { x: -13.2, y: -8.6 }
 const CARD_TAP = { x: -14.4, y: -8.0 }
 
 const POS_AT = { x: 180, y: 85.5 }
@@ -174,7 +189,7 @@ export function HiwShopSketch({
   duration?: number
 }) {
   const [pose, setPose] = useState<ShopPose>('offer')
-  const holdPaid = duration > 20000
+  const { reachAt, retractAt } = hiwShopServeClock(duration)
 
   useEffect(() => {
     if (!playing) {
@@ -182,30 +197,16 @@ export function HiwShopSketch({
       return
     }
     setPose('offer')
-    const retractAt = duration - DISSOLVE_LEAD_MS
-    const paidAt = holdPaid
-      ? PAID_AT_MS
-      : Math.max(PAID_AT_MS, retractAt - PAID_HOLD_MS)
-    const tapAt = holdPaid
-      ? TAP_AT_MS
-      : paidAt - Math.round(TAP.duration * 1000)
-    const reachAt = holdPaid
-      ? REACH_AT_MS
-      : Math.max(PLACED_AT_MS + 280, tapAt - REACH_LEAD_MS)
     const timers = [
       window.setTimeout(() => setPose('set'), SET_AT_MS),
       window.setTimeout(() => setPose('placed'), PLACED_AT_MS),
       window.setTimeout(() => setPose('reach'), reachAt),
-      window.setTimeout(() => setPose('tap'), tapAt),
-      window.setTimeout(() => setPose('paid'), paidAt),
+      window.setTimeout(() => setPose('retract'), retractAt),
     ]
-    if (!holdPaid) {
-      timers.push(window.setTimeout(() => setPose('retract'), retractAt))
-    }
     return () => {
       for (const id of timers) window.clearTimeout(id)
     }
-  }, [playing, holdPaid, duration])
+  }, [playing, reachAt, retractAt])
 
   const serving = pose === 'offer' || pose === 'set'
   const setDown = pose !== 'offer'
@@ -218,7 +219,7 @@ export function HiwShopSketch({
   const tapping = pose === 'tap' || pose === 'paid'
   const reaching = pose === 'reach' || tapping
   const retracting = pose === 'retract'
-  const glowing = tapping
+  const glowing = reaching
 
   const ownerLean = useAnimated(
     -2,
@@ -233,22 +234,22 @@ export function HiwShopSketch({
   const teaY = useAnimated(TEA_OFFER.y, teaTarget.y, playing, teaTween)
   const foodX = useAnimated(FOOD_OFFER.x, foodTarget.x, playing, teaTween)
   const foodY = useAnimated(FOOD_OFFER.y, foodTarget.y, playing, teaTween)
-  const cardTween = retracting ? RETRACT : tapping ? TAP : reaching ? REACH : REST
+  const cardTween = retracting ? RETRACT : reaching ? REACH : REST
   const custLean = useAnimated(
     -2,
-    retracting ? -2 : tapping ? -4 : reaching ? -3 : -2,
+    retracting ? -2 : reaching ? -4 : -2,
     playing,
     cardTween,
   )
   const cardX = useAnimated(
     CARD_IDLE.x,
-    tapping ? CARD_TAP.x : reaching ? CARD_REACH.x : CARD_IDLE.x,
+    reaching ? CARD_TAP.x : CARD_IDLE.x,
     playing,
     cardTween,
   )
   const cardY = useAnimated(
     CARD_IDLE.y,
-    tapping ? CARD_TAP.y : reaching ? CARD_REACH.y : CARD_IDLE.y,
+    reaching ? CARD_TAP.y : CARD_IDLE.y,
     playing,
     cardTween,
   )
@@ -291,11 +292,8 @@ export function HiwShopSketch({
       className="h-auto w-full max-h-[8rem] shrink-0 overflow-visible sm:max-h-[10rem] lg:max-h-[11rem]"
       aria-hidden
       initial={false}
-      animate={{ opacity: retracting ? 0 : 1 }}
-      transition={{
-        ...SCENE_FADE,
-        delay: retracting ? FADE_AFTER_LIFT_MS / 1000 : 0,
-      }}
+      animate={{ opacity: 1 }}
+      transition={SCENE_FADE}
     >
       <ellipse cx="176" cy="138" rx="56" ry="6.4" fill="oklch(78% 0.03 75 / 0.32)" />
 
@@ -365,7 +363,7 @@ export function HiwShopSketch({
         <CustomerReach lean={custLean} near={cardArm} glowing={glowing} />
       </g>
 
-      <TapWaves active={tapping} paid={pose === 'paid' || retracting} />
+      <TapWaves active={reaching} paid={retracting} />
     </motion.svg>
   )
 }

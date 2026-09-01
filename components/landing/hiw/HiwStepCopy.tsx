@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import { C } from '@/components/pricing/ExampleScreenRotator'
 import { PREVIEW_CAPTION_OUT_S } from '@/components/landing/hiw/HiwDeviceSketch'
+import { HOLD_AFTER_TAP_MS } from '@/components/landing/hiw/HiwShopSketch'
 import { cn } from '@/lib/utils'
 
 const ENTER_EASE = [0.22, 1, 0.36, 1] as const
@@ -101,7 +102,7 @@ const SWITCH_LEAVE = {
   y: { duration: 0.44, ease: FLOAT_EASE },
 } as const
 export const SWITCH_CAPTION_OUT_S = SWITCH_LEAVE.opacity.duration
-/** Air after the go-live line is gone, before “And you're in business”. */
+/** Floor: air after the go-live line is gone. Real delay waits for the card tap. */
 export const SCREENS_CAPTION_IN_DELAY_MS = Math.round(SWITCH_CAPTION_OUT_S * 1000) + 90
 
 /** Step-1 form line — quick out, slightly ahead of the form slide. */
@@ -167,8 +168,14 @@ function screensDropTransition(duration: number, fadeDelay: number) {
 /** Rise, then hold — fade finishes in place so the screens can rush forward. */
 const SCREENS_UP_EASE = [0.25, 0.08, 0.4, 0.75] as const
 const SCREENS_HOLD_EASE = [0.3, 0.13, 0.58, 1] as const
-/** One arc for “And you're in business!” — fade finishes before the screens rush. */
-const SCREENS_ARC_S = 5.4
+/** Punchline lives on the tap, then yields as the shop dissolves. */
+const SCREENS_FADE_IN_S = 0.26
+const SCREENS_FADE_OUT_S = 0.36
+const SCREENS_HOLD_S = HOLD_AFTER_TAP_MS / 1000
+const SCREENS_ARC_S = SCREENS_FADE_IN_S + SCREENS_HOLD_S + SCREENS_FADE_OUT_S
+const SCREENS_FADE_IN_T = SCREENS_FADE_IN_S / SCREENS_ARC_S
+const SCREENS_HOLD_T = (SCREENS_FADE_IN_S + SCREENS_HOLD_S) / SCREENS_ARC_S
+export const SCREENS_CAPTION_FADE_IN_MS = Math.round(SCREENS_FADE_IN_S * 1000)
 const SCREENS_ARC_Y = [2, -40, -26] as const
 const SCREENS_ARC_Y_PHONE = [0, -24, -16] as const
 
@@ -186,8 +193,8 @@ function screensArcTransition(delayMs: number | undefined) {
   return {
     opacity: {
       duration: SCREENS_ARC_S,
-      times: [0, 0.07, 0.7, 1],
-      ease: [ENTER_EASE, [0, 0, 1, 1] as const, SINK_FADE_EASE],
+      times: [0, SCREENS_FADE_IN_T, SCREENS_HOLD_T, 1],
+      ease: [ENTER_EASE, [0, 0, 1, 1] as const, EXIT_EASE],
       delay,
     },
     scale: { duration: 0.48, ease: ENTER_EASE, delay },

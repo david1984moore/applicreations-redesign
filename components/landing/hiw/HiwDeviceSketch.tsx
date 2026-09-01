@@ -1738,9 +1738,10 @@ export function HiwWorkingWebsiteSketch({
   const fadeIn = entrance === 'fade'
   const compact = size === 'compact'
   const land = {
-    duration: fadeIn ? 1.48 : 0.92,
+    duration: fadeIn ? (compact ? 0.42 : 1.48) : 0.92,
     ease: fadeIn ? ([0.4, 0, 0.2, 1] as const) : LAND,
   } as const
+  const fadeDelay = (late: number) => (fadeIn ? (compact ? late * 0.42 : late) : 0)
   const [laptopScene, setLaptopScene] = useState<ExampleSceneId>('home')
   const [phoneScene, setPhoneScene] = useState<ExampleSceneId>('products')
   const [tabletScene, setTabletScene] = useState<ExampleSceneId>('services')
@@ -1863,7 +1864,7 @@ export function HiwWorkingWebsiteSketch({
           }
           initial={fadeIn ? { opacity: 0, y: 8 } : { x: -96, y: -34, scale: 0.56, opacity: 0 }}
           animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
-          transition={{ ...land, delay: fadeIn ? 0.1 : 0 }}
+          transition={{ ...land, delay: fadeIn ? fadeDelay(0.1) : 0 }}
         >
           <PerspectiveShell rotateY={compact ? 14 : fadeIn ? 16 : 12} rotateX={compact ? 4 : fadeIn ? 3 : 5}>
             <LaptopChrome
@@ -1890,7 +1891,7 @@ export function HiwWorkingWebsiteSketch({
           }
           initial={fadeIn ? { opacity: 0, y: 10 } : { x: 96, y: -30, scale: 0.56, opacity: 0 }}
           animate={{ x: 0, y: fadeIn || compact ? 5 : 2, scale: 1, opacity: 1 }}
-          transition={{ ...land, delay: fadeIn ? 0.24 : 0.06 }}
+          transition={{ ...land, delay: fadeIn ? fadeDelay(0.24) : 0.06 }}
         >
           <PerspectiveShell rotateY={compact ? -20 : fadeIn ? -24 : -13} rotateX={compact ? 7 : fadeIn ? 8 : 5}>
             <PhoneChrome
@@ -1917,7 +1918,7 @@ export function HiwWorkingWebsiteSketch({
         }
         initial={fadeIn ? { opacity: 0, y: 9 } : { y: -22, scale: 0.5, opacity: 0 }}
         animate={{ y: fadeIn || compact ? 0 : -8, scale: 1, opacity: 1 }}
-        transition={{ ...land, delay: fadeIn ? 0.38 : 0.1 }}
+        transition={{ ...land, delay: fadeIn ? fadeDelay(0.38) : 0.1 }}
       >
         <PerspectiveShell rotateY={compact ? 3 : fadeIn ? 2 : 8} rotateX={compact ? 10 : fadeIn ? 12 : 7}>
           <TabletChrome
