@@ -15,7 +15,7 @@
 - Simple messaging: "Custom apps and websites" 
 - Professional web development services without geographic targeting
 
-**Use the Hero section in `components/sections/Hero.tsx` as the reference for approved messaging.**
+**Use `lib/i18n/dictionaries/en.ts` + `LandingBoard` as the reference for approved messaging.** The old `Hero.tsx` section was deleted in the 1 Sep 2026 cleanup.
 
 ---
 
@@ -32,6 +32,24 @@
 **Parking lot — Pass 2:**
 - Simple Introspect form (not the old interactive engine): name, business name, email/phone, what you do, package interest (Basic/Pro/Business), free notes. No sales metrics. No “free demo” language.
 - Drop real project screenshots into `public/images/` (replace SVG stand-ins for Caramel & Jo / Mi Gente Bonita)
+- Dead-code cleanup pass — **done 1 Sep 2026** (leftover sections/UI/assets removed; stale reports in `docs/archive/`)
+- Render hardening: `/api/health` + `healthCheckPath` (listed, not built)
+
+---
+
+## Baseline Lock — 1 September 2026
+
+The site is the **respectable v1 baseline**. Treat **live code** + `docs/baseline-lock.md` + `docs/canonical-site-snapshot.md` as the source of truth. The rest of this SCOPE file (Delaware copy, $600/$1,000/$3,000, old landing recipe, quote tool) is historical. Do not implement it.
+
+**Current prices (`lib/pricing.ts`):** Starter $349 · Basic $699 · Business $999 · Pro contact. Hosting/support $19 / $39 / $99 per month. Build & hand off $500.
+
+**Live routes:** `/` (LandingBoard: brand + 4 pricing cards + How-it-works cinema) · `/pricing` · `/introspect` · `/redesign` · `/about` · `/contact` · `/demos` · Spanish `/es…`. APIs: contact, introspect, pricing-selection.
+
+**Locked visuals:** SpectrumFlipCta (25 Aug) · HIW cord (18 Aug) · BrandLockup (18 Aug) · LandingBoard desktop composition (1 / 16 Aug).
+
+**Do not:** remount leftover sections (Hero, FAQ, Services, old HowItWorks, …); change prices or locked motion; start cleanup without an explicit ask.
+
+**Render (1 Sep 2026 check):** Emails for exit 143 and “cause undetermined” match a single-instance platform recycle, not a proven app crash. Details in `docs/baseline-lock.md` §3.
 
 ---
 

@@ -1,0 +1,35 @@
+---
+description: September 2026 baseline lock — keep live behavior, prices, routes; no cleanup unless asked
+alwaysApply: true
+---
+
+# Baseline lock (1 Sep 2026)
+
+The site is the respectable v1 baseline. Full inventory: `docs/baseline-lock.md`. Visual/copy ground truth: `docs/canonical-site-snapshot.md`.
+
+**Do not** change live behavior, prices, routes, or locked visuals. Dead leftovers were deleted 1 Sep 2026. Do not recreate them.
+
+## Live routes (keep)
+
+`/` `LandingBoard` · `/pricing` · `/introspect` · `/redesign` · `/about` · `/contact` · `/demos` (+ `/es…`)
+
+APIs: `POST /api/contact` · `/api/introspect` · `/api/pricing-selection`
+
+## Live numbers (`lib/pricing.ts`)
+
+Website: Starter $349 · Basic $699 · Business $999 · Pro contact  
+Support: $19 / $39 / $99 per month · Handoff $500  
+Copy: `lib/i18n/dictionaries/en.ts` + `es.ts` only. No Delaware marketing copy.
+
+## Already frozen (do not retune)
+
+- `SpectrumFlipCta` (25 Aug 2026)
+- HIW cord + jack (`HiwDeviceSketch` / `HiwConstructionSketch`, 18 Aug 2026)
+- `BrandLockup` butterfly over “li” (18 Aug 2026)
+- `LandingBoard` desktop 7/5 composition + shell clamps (1 / 16 Aug 2026)
+
+## Do not remount leftovers
+
+These were deleted 1 Sep 2026. Do not recreate them: `Hero`, `FAQ`, `Services`, old `HowItWorks`, old `Pricing` section, `IntrospectTeaser`, `FinalCTA`, `OurWorkPreview`, `OpportunitySolution`, `Maintenance*`, unused UI (`Card`, `Badge`, `Input`, `Link`, `IntrospectButton`), `DetailGroups`, `PlanFeatureRotator`, `lib/animations.ts`.
+
+Ignore STATUS/SCOPE prices of $600/$1,000/$3,000 or $1,900/$3,250/$6,250.

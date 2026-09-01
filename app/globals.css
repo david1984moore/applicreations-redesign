@@ -229,25 +229,6 @@ body {
   font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Touch-friendly horizontal galleries without visible scrollbars */
-.gallery-swipe {
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.gallery-swipe::-webkit-scrollbar {
-  display: none;
-}
-
-/* Soft tan wash with light blue accents */
-.coastal-wash {
-  background:
-    radial-gradient(ellipse 80% 60% at 10% 0%, oklch(93% 0.03 230 / 0.4), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 90% 20%, oklch(93% 0.03 80 / 0.55), transparent 50%),
-    var(--color-background);
-}
-
 /* Introspect: one cream field from nav through the page. Morphing
    color regions are painted by IntrospectMorphWash (fixed, z-[1]). */
 .introspect-page-wash {
@@ -349,37 +330,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .font-semibold {
   font-weight: 500;
-}
-
-/* Near-imperceptible directional fade — L→R ↔ R→L over ~90s */
-@property --fade-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 90deg;
-}
-
-@keyframes fade-direction-switch {
-  0%,
-  100% {
-    --fade-angle: 90deg;
-  }
-  50% {
-    --fade-angle: 270deg;
-  }
-}
-
-.bg-fade-pro {
-  --fade-from: oklch(98% 0.015 215);
-  --fade-to: oklch(91% 0.04 210);
-  background: linear-gradient(var(--fade-angle), var(--fade-from), var(--fade-to));
-  animation: fade-direction-switch 90s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-}
-
-.bg-fade-next {
-  --fade-from: var(--color-primary-600);
-  --fade-to: var(--color-primary-800);
-  background: linear-gradient(var(--fade-angle), var(--fade-from), var(--fade-to));
-  animation: fade-direction-switch 90s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
 @keyframes hiw-glow-build {
@@ -752,11 +702,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bg-fade-pro,
-  .bg-fade-next {
-    animation: none;
-  }
-
   .hiw-glow-build {
     animation: none;
     filter: none;

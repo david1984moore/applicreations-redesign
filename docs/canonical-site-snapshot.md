@@ -1,8 +1,8 @@
 # Applicreations — canonical site snapshot
 
-**Captured:** 20 August 2026  
+**Captured:** 20 August 2026 · **Baseline lock addendum:** 1 September 2026  
 **Repo:** `applicreations-redesign`  
-**Purpose:** Ground-truth reference for the site as it currently renders. Use this when you cannot see the live page. Prefer this file over `STATUS.md` / `SCOPE.md` for prices, layout, and motion — those docs still contain stale Pass-1 numbers.
+**Purpose:** Ground-truth reference for the site as it currently renders. Use this when you cannot see the live page. Prefer this file and `docs/baseline-lock.md` over older `STATUS.md` / `SCOPE.md` sessions for prices, layout, and motion.
 
 **Locales:** English is unprefixed (`/`, `/pricing`, …). Spanish is under `/es`. `/en` redirects to the bare path. Middleware rewrites English URLs into the `[locale]` segment.
 
@@ -128,17 +128,14 @@ Live UI often uses `rounded-xl` (cards) and `rounded-2xl` (CTAs).
 
 Live Framer Motion almost always uses **`[0.22, 1, 0.36, 1]`** (iOS-ish ease-out), not `--ease-out`.
 
-`prefers-reduced-motion: reduce` forces animation/transition duration to **0.3s**, and disables HIW CSS animations plus `.bg-fade-*`.
+`prefers-reduced-motion: reduce` forces animation/transition duration to **0.3s**, and disables HIW CSS animations.
 
 ### 1.8 Custom utilities
 
 | Class | What it does | Live? |
 |---|---|---|
-| `.coastal-wash` | Two radial washes (sky + sand) over paper | Introspect page |
 | `.coastal-grain` | Fractal-noise overlay, opacity 0.035, multiply | Introspect page |
-| `.gallery-swipe` | Hidden scrollbar, touch pan | (utility present) |
 | `.font-display` / `.font-caramel` / `.font-mi-gente` | Face switches | Yes |
-| `.bg-fade-pro` / `.bg-fade-next` | 90s oscillating linear gradient | **Unused** (legacy Pricing section) |
 | `.hiw-glow-build` | 2.2s violet drop-shadow in | HIW |
 | `.hiw-glow-pulse` | 2.72s radial pulse | HIW intro |
 | `.hiw-intro-3-neon` | 0.68s neon flash on “3” | HIW intro |
@@ -193,13 +190,14 @@ Always on. Height **1.75rem**, centered `© 2026 Applicreations` (`text-[0.6875r
 | `/` | `/es` | `app/[locale]/page.tsx` | `LandingBoard` |
 | `/pricing` | `/es/pricing` | `…/pricing/page.tsx` | `PricingPageClient` |
 | `/introspect` | `/es/introspect` | `…/introspect/page.tsx` | `IntrospectBoard` |
+| `/redesign` | `/es/redesign` | `…/redesign/page.tsx` | `IntrospectBoard variant="redesign"` |
 | `/about` | `/es/about` | `…/about/page.tsx` | `AboutBoard` |
 | `/contact` | `/es/contact` | `…/contact/page.tsx` | `ContactBoard` |
 | `/demos` | `/es/demos` | `…/demos/page.tsx` | `DemosPageClient` |
 
 APIs (not pages): `POST /api/contact`, `POST /api/introspect`, `POST /api/pricing-selection`.
 
-Loading UI: `LocaleAwareLoading` on about/contact/introspect/pricing/demos.
+Loading UI: `LocaleAwareLoading` on about/contact/introspect/redesign/pricing/demos.
 
 ---
 
@@ -350,7 +348,7 @@ CTAs: Continue to Introspect (handoff via query + `sessionStorage`), Email this 
 ## 6. Introspect (`/introspect`)
 
 **File:** `components/sections/IntrospectBoard.tsx`  
-Page uses `.coastal-wash` + `.coastal-grain`. Headings in `.font-mi-gente` (Poppins). Progress bar fill `oklch(58% 0.14 310)`.
+Page uses `.introspect-page-wash` + `.coastal-grain`. Headings in `.font-mi-gente` (Poppins). Progress bar fill `oklch(58% 0.14 310)`.
 
 Phases: `welcome` → `questions` (steps 1–9) → `review` → `success`.
 
@@ -460,7 +458,7 @@ Only components actually imported by a live route or by another live component.
 | `LocaleProvider` | `locale`, `dictionary` | i18n context (`dict`, `t`, `href`, `setLocale`) |
 | `LocaleTransitionGuard` | — | Restore scroll |
 | `LocaleAwareLoading` | `children` | Skip skeleton on locale swap |
-| `Button` | `variant: primary\|secondary\|ghost\|icon\|outline`, `size: sm\|md\|lg`, `href?`, `isLoading?`, **`asChild?` unused** | Buttons / link-buttons |
+| `Button` | `variant: primary\|secondary\|ghost\|icon\|outline`, `size: sm\|md\|lg`, `href?`, `isLoading?` | Buttons / link-buttons |
 | `SpectrumFlipCta` | `href?`, `size: sm\|md`, `disabled?`, `type?` | Canonical CTA |
 | `Progress` | Radix + `indicatorClassName?` | Introspect bar |
 | `IconContact` | `className?` | Envelope icon (also used on pricing/demos) |
@@ -597,17 +595,11 @@ Same layout. Dictionary `es.ts` is complete for the live surfaces. Nav: Introspe
 
 ---
 
-## 14. Leftover / unused (not part of the live site)
+## 14. Leftovers removed (1 Sep 2026 cleanup)
 
-Do not treat these as current UI. They still compile.
+Deleted, do not recreate: leftover sections (`Hero`, `FAQ`, `Services`, old `HowItWorks`, old `Pricing`, teasers, `Maintenance*`), unused UI (`Card`, `Badge`, `Input`, `Link`, `IntrospectButton`), `DetailGroups`, `PlanFeatureRotator`, `lib/animations.ts`, unused CSS (`.coastal-wash`, `.gallery-swipe`, `.bg-fade-*`), unused public stand-ins, and unused npm (`@phosphor-icons/react`, `@radix-ui/react-slot`, `class-variance-authority`).
 
-**Unmounted sections:** `Hero`, `FAQ`, `Services`, `HowItWorks`, `Pricing`, `IntrospectTeaser`, `OpportunitySolution`, `OurWorkPreview`, `FinalCTA`, `Maintenance` (old $75/$150), `MaintenanceCondensed`.
-
-**Unmounted UI:** `Card`, `Badge`, `Input`, `Link` (`components/ui/Link.tsx`), `IntrospectButton` (hardcoded English tooltip).
-
-**Dead API:** `Button.asChild` is on the type and never read. `@radix-ui/react-slot` is in `package.json` and never imported. `class-variance-authority` is only used by unused `Badge`.
-
-**Dead motion helpers:** `lib/animations.ts` is only imported by unused FAQ/FinalCTA. `.bg-fade-pro` / `.bg-fade-next` only on unused Pricing.
+Stale reports moved to `docs/archive/`.
 
 **Live Radix:** `@radix-ui/react-progress` (Introspect bar only).
 
@@ -620,7 +612,7 @@ app/globals.css                          tokens + HIW CSS
 app/layout.tsx                           fonts
 app/[locale]/layout.tsx                  chrome
 app/[locale]/page.tsx                    home → LandingBoard
-app/[locale]/{pricing,introspect,about,contact,demos}/
+app/[locale]/{pricing,introspect,redesign,about,contact,demos}/
 
 lib/pricing.ts                           prices
 lib/projects.ts                          project metadata

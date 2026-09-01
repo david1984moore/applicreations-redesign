@@ -6,11 +6,11 @@ Complete redesign of Applicreations.com using Next.js 15 and iOS-inspired design
 
 1. Install dependencies: `npm install`
 2. Run dev server: `npm run dev`
-3. Open http://localhost:3000
+3. Open http://localhost:3004
 
 ## Development Commands
 
-- `npm run dev` - Start development server with Turbopack
+- `npm run dev` - Start development server on port 3004
 - `npm run build` - Build for production
 - `npm run start` - Start production server locally
 - `npm run lint` - Run ESLint
@@ -21,23 +21,17 @@ Complete redesign of Applicreations.com using Next.js 15 and iOS-inspired design
 
 ```
 applicreations-redesign/
-├── app/                  # Next.js App Router
-│   ├── globals.css      # Design system CSS
-│   ├── layout.tsx       # Root layout
-│   └── page.tsx         # Homepage
+├── app/[locale]/         # Localized routes (home, pricing, introspect, …)
 ├── components/
-│   └── ui/              # Base UI components
-│       ├── Button.tsx
-│       ├── Card.tsx
-│       ├── Input.tsx
-│       └── Link.tsx
-├── lib/
-│   ├── animations.ts    # Animation constants
-│   └── utils.ts         # Utility functions
-├── SCOPE.md             # Complete project specifications
-├── STATUS.md            # Current progress tracker
-├── ALIASES.md           # Command shortcuts
-└── DECISIONS.md         # Design decision log
+│   ├── sections/        # Live boards (Landing, About, Contact, Introspect)
+│   ├── landing/hiw/     # How-it-works cinema
+│   ├── pricing/         # Pricing page
+│   └── ui/              # BrandLockup, Navigation, SpectrumFlipCta, Button, …
+├── lib/                  # pricing, i18n, introspect, email
+├── docs/baseline-lock.md # Locked baseline + cleanup record
+├── SCOPE.md
+├── STATUS.md
+└── DECISIONS.md
 ```
 
 ## Design System

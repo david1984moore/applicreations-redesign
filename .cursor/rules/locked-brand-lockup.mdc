@@ -1,0 +1,12 @@
+---
+description: Frozen BrandLockup — butterfly centered over the “li” in Applicreations
+alwaysApply: true
+---
+
+# Locked BrandLockup (18 Aug 2026)
+
+The wordmark with the butterfly centered over the “li” in “Applicreations” is **user-approved and frozen**.
+
+Do not edit class strings, mark size, lift (`-translate-y-[80%]`), or clearance in `components/ui/BrandLockup.tsx` / `BRAND_LOCKUP`. Those strings are the source of truth.
+
+Do not restyle the landing brand block to “improve” alignment. Leave the lockup exactly as it is.

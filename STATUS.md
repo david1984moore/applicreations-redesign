@@ -1,10 +1,18 @@
 # Project Status
 
-**Current Task:** How it works cinema — step-3 table copy, then screens go-live line
+**Current Task:** Baseline locked + dead-code cleanup complete (1 Sep 2026)
 
 **⚠️ CRITICAL: NO DELAWARE REFERENCES** - Site must be generic/national, not location-specific. All copy must be truthful.
 
+**⚠️ BASELINE LOCK 1 Sep 2026** — Respectable v1 is frozen for behavior, prices, routes, and locked visuals. Inventory: `docs/baseline-lock.md`. Ground truth: `docs/canonical-site-snapshot.md`. Cursor rules: `locked-baseline-site.mdc`, `locked-brand-lockup.mdc`, `locked-hiw-cord.mdc`, `locked-spectrum-flip-cta.mdc`.
+
+**Live prices (`lib/pricing.ts`):** Starter $349 · Basic $699 · Business $999 · Pro contact. Support $19 / $39 / $99. Handoff $500. Ignore older STATUS/SCOPE prices.
+
+**Live routes:** `/` `/pricing` `/introspect` `/redesign` `/about` `/contact` `/demos` (+ `/es…`). APIs: contact, introspect, pricing-selection.
+
 **⚠️ LOCKED Aug 18 2026 (final) — How it works live-preview cord.** User: absolutely perfect. Do not edit `wirePath` / `PreviewWire` / cord stroke / port-jack attachments in `HiwDeviceSketch.tsx`.
+
+**⚠️ LOCKED Aug 18 2026 — BrandLockup.** Butterfly centered over “li”. Do not retune `BrandLockup.tsx`.
 
 **⚠️ LOCKED Aug 25 2026 (final) — Get Started / Start Re-design CTA.** User: likes exactly how they act. Do not retune `SpectrumFlipCta` layout, origin, hover check, nudge, or bloom.
 
@@ -13,18 +21,19 @@
 ## Progress Tracking
 
 ### Overall Status
+- [x] **Baseline v1 locked 1 Sep 2026** — live home is `LandingBoard` (brand + 4 cards + HIW cinema), not the old Hero/FAQ stack. See `docs/baseline-lock.md`.
 - [x] Phase 1: Foundation & Design System - COMPLETE (coastal tokens Jul 2026)
-- [x] Phase 2: Homepage Construction - COMPLETE ✅ → Coastal one-pager rebuild Jul 2026
-  - [x] 2.1: Hero Section - COMPLETE (brand-first coastal)
-  - [x] 2.2: Our Work preview - COMPLETE
-  - [x] 2.3: Pricing (Basic $600 / Pro $1,000 / Business $3,000) - COMPLETE
-  - [x] 2.4: Introspect teaser - COMPLETE (form deferred to Pass 2)
-  - [x] 2.5: Final CTA / Contact - COMPLETE
-  - [x] 2.6: FAQ - REMOVED from homepage
+- [x] Phase 2: Homepage Construction - COMPLETE (historical checklist below; prices/sections are stale)
+  - [x] 2.1: Hero Section - COMPLETE (brand-first coastal) — **file unused; home is LandingBoard**
+  - [x] 2.2: Our Work preview - COMPLETE — **moved to `/demos`**
+  - [x] 2.3: Pricing — **live: $349 / $699 / $999 / contact** (old $600/$1k/$3k is stale)
+  - [x] 2.4: Introspect — **live at `/introspect` + `/redesign`**
+  - [x] 2.5: Contact - COMPLETE (`/contact`)
+  - [x] 2.6: FAQ - REMOVED from homepage (file leftover)
   - [~] 2.7: Social Proof - SKIPPED (needs real testimonials)
-- [~] Phase 3: Supporting Pages - IN PROGRESS
-  - [~] 3.1: Introspect questionnaire (Pass 2) — v1 built at `/introspect`
-  - [x] 3.2: Portfolio/Demos Page - EXISTS (coastal restyle deferred)
+- [x] Phase 3: Supporting Pages — live: about, contact, demos, pricing, introspect, redesign
+  - [x] 3.1: Introspect questionnaire — `/introspect` + `/redesign`
+  - [x] 3.2: Portfolio/Demos Page
   - [x] 3.3: Contact Page
   - [x] 3.4: About Page
 - [ ] Phase 4: Advanced Features
@@ -43,6 +52,24 @@
 ---
 
 ## Session Log
+
+### Session 20 - September 1, 2026
+**Focus:** Delete-only cleanup of leftovers (no visual/price changes)
+**Completed:**
+- ✅ Removed 11 leftover sections, 5 unused UI files, `DetailGroups`, `PlanFeatureRotator`, `lib/animations.ts`
+- ✅ Removed unused CSS (`.coastal-wash`, `.gallery-swipe`, `.bg-fade-*`) and unused public stand-ins
+- ✅ Dropped unused npm: `@phosphor-icons/react`, `@radix-ui/react-slot`, `class-variance-authority`; removed unused `Button.asChild`
+- ✅ Archived stale reports to `docs/archive/`; removed old screenshot dumps and loose root camera shots
+- ✅ Locked visuals, live routes, prices, and dictionaries untouched
+**Next:** Render health-check hardening (parked) or leave baseline as-is
+
+### Session 19 - September 1, 2026
+**Focus:** Baseline lock + Render failure check + cleanup inventory (no cleanup)
+**Completed:**
+- ✅ Declared respectable v1 baseline. Live ingredient map locked in `docs/baseline-lock.md` + `.cursor/rules/locked-baseline-site.mdc` + `locked-brand-lockup.mdc`
+- ✅ SCOPE.md / this file / `docs/canonical-site-snapshot.md` pointed at current routes and prices ($349 / $699 / $999, support $19/$39/$99)
+- ✅ Render emails reviewed: 28 Aug **exit 143** (SIGTERM) and ~1 Sep **undetermined** — most likely single-instance platform recycle, not an app crash. Hardening listed, not implemented
+- ✅ Essential vs dead inventory written. Leftover Hero/FAQ/Services/old pricing/etc. flagged. Cleanup ran in Session 20.
 
 ### Session 18 - August 2, 2026
 **Focus:** Introspect questionnaire (Pass 2)

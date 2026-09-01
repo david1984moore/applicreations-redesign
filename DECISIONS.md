@@ -8,6 +8,23 @@ Each entry: Date, Decision, Rationale, Alternatives Considered
 
 ---
 
+## September 1, 2026 - Dead-code cleanup
+**Decision**: Delete leftover sections, unused UI, unused CSS/assets, and unused npm packages. Archive stale reports. Do not touch locked visuals or live routes.
+**Rationale**: User approved the inventory and asked to start cleanup.
+**Impact**: Leaner repo. Same visitor-facing site. Record in `docs/baseline-lock.md` §5.
+
+---
+
+## September 1, 2026 - Baseline lock (no cleanup yet)
+**Decision**: Treat the current live site as the respectable v1 baseline. Lock routes, prices, copy sources, and already-frozen visuals. Inventory leftovers; do not delete them until explicitly asked.
+**Rationale**: User confirmed the site looks and functions as the baseline they want. Further work must not alter current behavior. STATUS/SCOPE still describe older homepages and prices.
+**What is locked**: Live routes including `/redesign`; prices Starter $349 / Basic $699 / Business $999 / Pro contact and support $19/$39/$99; SpectrumFlipCta, HIW cord, BrandLockup, LandingBoard composition; dictionaries + `lib/pricing.ts` as copy/number sources.
+**Render**: 28 Aug exit 143 and ~1 Sep undetermined failure read as platform SIGTERM / instance recycle on a single instance, not an identified application crash. Hardening is parked.
+**Alternatives**: Start deleting dead sections immediately — rejected; user asked for the report first.
+**Impact**: `docs/baseline-lock.md` + `.cursor/rules/locked-baseline-site.mdc` + `locked-brand-lockup.mdc`. Cleanup is a future, delete-only pass.
+
+---
+
 ## October 21, 2025 - Repository Strategy
 **Decision**: Create separate repository for redesign (Option A)
 **Rationale**: Cleaner separation between live site and redesign. No risk of accidentally affecting production. Easier to manage two distinct codebases.
