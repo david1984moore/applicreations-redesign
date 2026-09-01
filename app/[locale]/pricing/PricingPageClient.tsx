@@ -86,6 +86,7 @@ export default function PricingPageClient() {
   const [selectedBuildHandoff, setSelectedBuildHandoff] = useState(false)
   const [buildHandoffConfirmOpen, setBuildHandoffConfirmOpen] = useState(false)
   const [buildHandoffOpen, setBuildHandoffOpen] = useState(false)
+  const [emailOpen, setEmailOpen] = useState(false)
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null
   const selectedSupport =
@@ -128,7 +129,7 @@ export default function PricingPageClient() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_90%_10%,oklch(93%_0.03_80/0.45),transparent_50%)]" />
       </div>
 
-      <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+      <div className="max-w-[90rem] mx-auto min-w-0 px-4 sm:px-6 lg:px-8">
             <section
               className="pt-1 sm:pt-1.5 pb-4 xl:flex xl:min-h-[calc(100svh-var(--spacing-12))] xl:flex-col"
               aria-labelledby="website-plans-heading"
@@ -287,13 +288,17 @@ export default function PricingPageClient() {
                 </div>
               </PlanFeatureRevealProvider>
             </section>
+      </div>
 
             <section
               id="mix-and-match"
-              className="scroll-mt-16 -mx-4 bg-[oklch(68%_0.24_232)] px-4 py-5 sm:-mx-6 sm:px-6 sm:py-6 lg:-mx-8 lg:px-8"
+              className={cn(
+                'scroll-mt-16 min-w-0 bg-[oklch(68%_0.24_232)] px-4 py-5 sm:px-6 sm:py-6 lg:px-8',
+                emailOpen ? 'overflow-visible pb-8 sm:pb-10' : 'overflow-x-clip'
+              )}
               aria-labelledby="mix-and-match-heading"
             >
-              <div>
+              <div className="mx-auto min-w-0 max-w-[90rem]">
                 <h2
                   id="mix-and-match-heading"
                   className="font-display text-xl sm:text-2xl text-white leading-none"
@@ -307,14 +312,15 @@ export default function PricingPageClient() {
 
                 <div
                   className={cn(
-                    'mt-4 grid overflow-hidden rounded-2xl border border-white bg-white',
+                    'mt-4 grid min-w-0 w-full items-stretch overflow-hidden rounded-2xl border border-white bg-white',
                     'shadow-[0_10px_24px_rgba(8,40,80,0.18)]',
-                    'md:grid-cols-2 lg:h-[31rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(18rem,22rem)] lg:grid-rows-1'
+                    'md:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,22rem)]',
+                    !emailOpen && 'lg:min-h-[31rem]'
                   )}
                 >
                   <MixMatchPicker
                     step={1}
-                    className="border-b border-[oklch(86%_0.03_230)] md:border-r lg:border-b-0"
+                    className="min-w-0 border-b border-[oklch(86%_0.03_230)] md:border-r lg:border-b-0"
                     heading={p.mixMatchWebsiteHeading}
                     items={plans.map((plan) => ({
                       id: plan.id,
@@ -327,7 +333,7 @@ export default function PricingPageClient() {
                   />
                   <MixMatchPicker
                     step={2}
-                    className="border-b border-[oklch(86%_0.03_230)] lg:border-b-0 lg:border-r"
+                    className="min-w-0 border-b border-[oklch(86%_0.03_230)] lg:border-b-0 lg:border-r"
                     heading={p.mixMatchHostingHeading}
                     items={supportPlans.map((plan) => ({
                       id: plan.id,
@@ -338,7 +344,12 @@ export default function PricingPageClient() {
                     }))}
                     onSelect={(id) => selectSupport(id as SupportPlanId)}
                   />
-                  <div className="h-full min-h-0 md:col-span-2 lg:col-span-1">
+                  <div
+                    className={cn(
+                      'min-w-0 md:col-span-2 lg:col-span-1',
+                      emailOpen ? 'h-auto min-h-min self-start' : 'self-stretch'
+                    )}
+                  >
                     <SelectionSummary
                       selectedPlan={selectedPlan}
                       selectedSupport={selectedSupport}
@@ -346,12 +357,14 @@ export default function PricingPageClient() {
                       onClearPlan={() => setSelectedPlanId(null)}
                       onClearSupport={() => setSelectedSupportId(null)}
                       onClearBuildHandoff={() => setSelectedBuildHandoff(false)}
+                      onEmailOpenChange={setEmailOpen}
                     />
                   </div>
                 </div>
               </div>
             </section>
 
+      <div className="max-w-[90rem] mx-auto min-w-0 px-4 sm:px-6 lg:px-8 pb-6">
             <section
               id="going-live"
               className="scroll-mt-16 border-t border-gray-200 py-5"

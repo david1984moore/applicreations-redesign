@@ -25,11 +25,11 @@ export function MixMatchPicker({
   return (
     <div
       className={cn(
-        'flex h-full min-h-0 flex-col overflow-hidden p-3 sm:p-3.5',
+        'flex h-auto min-h-full min-w-0 flex-col overflow-hidden p-3 sm:p-3.5',
         className
       )}
     >
-      <h3 className="flex shrink-0 items-center gap-2 font-display text-lg leading-none tracking-tight text-gray-900">
+      <h3 className="flex min-w-0 shrink-0 items-center gap-2 font-display text-lg leading-none tracking-tight text-gray-900">
         {step != null ? (
           <span
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[oklch(90%_0.05_230)] font-display text-sm font-bold text-[oklch(38%_0.10_230)]"
@@ -38,7 +38,7 @@ export function MixMatchPicker({
             {step}
           </span>
         ) : null}
-        {heading}
+        <span className="min-w-0">{heading}</span>
       </h3>
       <ul className="mt-2 flex flex-col gap-1.5 lg:mt-2.5">
         {items.map((item) => (
@@ -56,8 +56,8 @@ export function MixMatchPicker({
                   : 'bg-white ring-[oklch(82%_0.03_230)] hover:bg-[oklch(97%_0.02_230)] hover:ring-[oklch(70%_0.06_230)]'
               )}
             >
-              <span className="flex items-baseline justify-between gap-3">
-                <span className="font-display text-lg leading-none text-gray-900">
+              <span className="flex min-w-0 items-baseline justify-between gap-3">
+                <span className="min-w-0 font-display text-lg leading-none text-gray-900">
                   {item.name}
                 </span>
                 <span className="shrink-0 font-sans text-sm font-bold tabular-nums text-primary-600">

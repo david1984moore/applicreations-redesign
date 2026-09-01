@@ -207,10 +207,10 @@ export function PricingComparisonMatrix({
   ]
 
   return (
-    <div className="mt-1">
+    <div className="mt-1 min-w-0">
       <div
         className={cn(
-          'relative overflow-hidden rounded-2xl',
+          'relative min-w-0 overflow-hidden rounded-2xl',
           'bg-[oklch(32%_0.09_300)] text-white',
           'shadow-[0_18px_40px_-24px_oklch(28%_0.08_295/0.55)]'
         )}
@@ -253,7 +253,7 @@ export function PricingComparisonMatrix({
 
         {open ? (
           <div id="pricing-comparison-matrix" className="relative mt-2">
-            <div className="overflow-x-auto">
+            <div className="min-w-0 overflow-x-auto">
               <table className="w-full min-w-[32rem] border-collapse text-left table-fixed sm:min-w-[40rem]">
                 <colgroup>
                   <col className="w-[24%]" />

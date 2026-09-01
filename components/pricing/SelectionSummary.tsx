@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from '@/components/i18n/LocaleProvider'
 import { Button } from '@/components/ui/Button'
@@ -22,6 +22,7 @@ interface SelectionSummaryProps {
   onClearSupport: () => void
   onClearPlan: () => void
   onClearBuildHandoff: () => void
+  onEmailOpenChange?: (open: boolean) => void
 }
 
 export function SelectionSummary({
@@ -31,6 +32,7 @@ export function SelectionSummary({
   onClearSupport,
   onClearPlan,
   onClearBuildHandoff,
+  onEmailOpenChange,
 }: SelectionSummaryProps) {
   const router = useRouter()
   const { dict, t, locale } = useLocale()
@@ -45,6 +47,16 @@ export function SelectionSummary({
     'idle'
   )
   const [emailMessage, setEmailMessage] = useState('')
+  const emailFormRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    onEmailOpenChange?.(emailOpen)
+  }, [emailOpen, onEmailOpenChange])
+
+  useEffect(() => {
+    if (!emailOpen) return
+    emailFormRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [emailOpen])
 
   const quoted = Boolean(selectedPlan?.contactForPricing)
   const packagePrice = quoted ? 0 : (selectedPlan?.price ?? 0)
@@ -136,11 +148,20 @@ export function SelectionSummary({
       : p.noMonthlySupport
 
   const slotClass =
-    'flex min-h-[2.75rem] items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-sm'
+    'flex min-h-[2.75rem] min-w-0 items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-sm'
 
   const card = (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden p-3 sm:p-3.5">
-      <h3 className="flex shrink-0 items-center gap-2 font-display text-lg leading-none tracking-tight text-gray-900">
+    <div
+      className={cn(
+        'flex min-w-0 flex-col',
+        emailOpen
+          ? 'h-auto min-h-min overflow-visible px-3 pt-3 pb-8 sm:px-3.5 sm:pt-3.5 sm:pb-8'
+          : 'h-full min-h-0 overflow-x-hidden overflow-y-auto p-3 sm:p-3.5',
+        hasSelection && !emailOpen && 'max-lg:pb-20',
+        hasSelection && emailOpen && 'max-lg:pb-24'
+      )}
+    >
+      <h3 className="flex min-w-0 shrink-0 items-center gap-2 font-display text-lg leading-none tracking-tight text-gray-900">
         <span
           className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[oklch(90%_0.05_230)] font-display text-sm font-bold text-[oklch(38%_0.10_230)]"
           aria-hidden
@@ -161,7 +182,7 @@ export function SelectionSummary({
         >
           {selectedPlan ? (
             <>
-              <span className="min-w-0">
+              <span className="min-w-0 pr-2">
                 <span className="block font-medium text-gray-900">
                   {t(p.packageSuffix, { name: selectedPlan.name })}
                 </span>
@@ -193,7 +214,7 @@ export function SelectionSummary({
         >
           {selectedSupport ? (
             <>
-              <span className="min-w-0">
+              <span className="min-w-0 pr-2">
                 <span className="block font-medium text-gray-900">
                   {selectedSupport.name}
                 </span>
@@ -211,7 +232,7 @@ export function SelectionSummary({
             </>
           ) : selectedBuildHandoff ? (
             <>
-              <span className="min-w-0">
+              <span className="min-w-0 pr-2">
                 <span className="block font-medium text-gray-900">
                   {p.buildHandoffName}
                 </span>
@@ -235,15 +256,12 @@ export function SelectionSummary({
         </li>
       </ul>
 
-      <p
-        className={cn(
-          'mt-2 min-h-[2rem] shrink-0 text-xs leading-snug text-gray-600',
-          hasSelection && 'invisible'
-        )}
-      >
-        <span className="hidden lg:inline">{p.emptySelection}</span>
-        <span className="lg:hidden">{p.emptySelectionTap}</span>
-      </p>
+      {!hasSelection ? (
+        <p className="mt-2 shrink-0 text-xs leading-snug text-gray-600">
+          <span className="hidden lg:inline">{p.emptySelection}</span>
+          <span className="lg:hidden">{p.emptySelectionTap}</span>
+        </p>
+      ) : null}
 
       <div className="mt-2 shrink-0 border-t border-gray-200 pt-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -257,25 +275,27 @@ export function SelectionSummary({
           {p.previewTerms}
         </p>
         <ul className="mt-2 space-y-1 text-xs leading-snug">
-          <li className="flex items-start justify-between gap-3">
-            <span className="font-medium text-gray-900">{p.scheduleProjectStart}</span>
-            <span className="shrink-0 font-medium text-gray-900">
+          <li className="flex min-w-0 items-start justify-between gap-3">
+            <span className="min-w-0 font-medium text-gray-900">
+              {p.scheduleProjectStart}
+            </span>
+            <span className="shrink-0 font-medium tabular-nums text-gray-900">
               {deposit != null ? formatMoney(deposit, locale) : '$0'}
             </span>
           </li>
-          <li className="flex items-start justify-between gap-3">
-            <span className="font-medium text-gray-900">{p.scheduleGoLive}</span>
-            <span className="shrink-0 font-medium text-gray-900">
+          <li className="flex min-w-0 items-start justify-between gap-3">
+            <span className="min-w-0 font-medium text-gray-900">{p.scheduleGoLive}</span>
+            <span className="shrink-0 font-medium tabular-nums text-gray-900">
               {goLiveDue != null ? formatMoney(goLiveDue, locale) : '$0'}
             </span>
           </li>
         </ul>
       </div>
 
-      <div className="mt-auto flex shrink-0 flex-col gap-1.5 pt-2">
+      <div className="mt-auto flex min-w-0 shrink-0 flex-col gap-1.5 pt-2">
         <SpectrumFlipCta
           size="sm"
-          className="w-full"
+          className="w-full min-w-0 max-w-full"
           disabled={!hasSelection}
           onClick={continueToIntrospect}
         >
@@ -296,8 +316,12 @@ export function SelectionSummary({
             {p.emailThisSelection}
           </button>
         ) : (
-          <form onSubmit={sendEmailToClient} className="space-y-2">
-            <label className="block">
+          <form
+            ref={emailFormRef}
+            onSubmit={sendEmailToClient}
+            className="min-w-0 shrink-0 space-y-2 pb-1"
+          >
+            <label className="block min-w-0">
               <span className="sr-only">{p.yourEmailSrOnly}</span>
               <input
                 type="email"
@@ -313,7 +337,7 @@ export function SelectionSummary({
                 }}
                 placeholder={p.emailPlaceholder}
                 className={cn(
-                  'w-full rounded-md border bg-white px-3 py-2 text-sm text-gray-900',
+                  'w-full min-w-0 rounded-md border bg-white px-3 py-2 text-sm text-gray-900',
                   'placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[oklch(52%_0.14_295/0.35)]',
                   emailError ? 'border-red-400' : 'border-gray-300'
                 )}
@@ -334,12 +358,12 @@ export function SelectionSummary({
             ) : (
               <p className="text-xs text-gray-500 leading-snug">{p.emailHint}</p>
             )}
-            <div className="flex gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <Button
                 type="submit"
                 variant="secondary"
                 size="sm"
-                className="flex-1"
+                className="min-w-0 flex-1 px-3"
                 isLoading={emailStatus === 'sending'}
                 disabled={emailStatus === 'sending' || emailStatus === 'sent'}
               >
@@ -349,7 +373,7 @@ export function SelectionSummary({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="shrink-0"
+                className="shrink-0 px-3"
                 onClick={() => {
                   setEmailOpen(false)
                   setEmailError(undefined)
@@ -377,7 +401,10 @@ export function SelectionSummary({
     <>
       <div
         id="payment-preview"
-        className="scroll-mt-16 h-full min-h-0"
+        className={cn(
+          'scroll-mt-16 scroll-mb-24 min-w-0',
+          emailOpen ? 'h-auto min-h-min' : 'h-full min-h-0'
+        )}
         aria-live="polite"
         aria-label={p.yourSelection}
       >
