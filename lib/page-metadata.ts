@@ -4,13 +4,14 @@ import { withLocale } from '@/lib/i18n/paths'
 import type { Locale } from '@/lib/i18n/config'
 import { getSiteUrl } from '@/lib/site'
 
-const OG_IMAGE = {
-  url: '/og-image.png?v=20260824',
-  width: 1200,
-  height: 630,
-} as const
+const TWITTER_IMAGE = '/og-image.png?v=20260901'
 
-/** Page metadata with branded Open Graph / iMessage / Slack link preview. */
+function shortOgTitle(title: string, brandName: string): string {
+  const beforeDash = title.split(' — ')[0]?.trim()
+  return beforeDash || brandName
+}
+
+/** Page metadata with a compact Open Graph / iMessage / Slack link preview. */
 export function pageMetadata({
   locale,
   title,
@@ -24,26 +25,26 @@ export function pageMetadata({
 }): Metadata {
   const dict = getDictionary(locale)
   const url = `${getSiteUrl()}${withLocale(path, locale)}`
-  const imageAlt = `${dict.brand.name} — ${dict.landing.tagline}`
+  const ogTitle = shortOgTitle(title, dict.brand.name)
 
   return {
     title,
     description,
     openGraph: {
       type: 'website',
-      // Match the hostname so iMessage's footer is only applicreations.com.
-      siteName: 'applicreations.com',
-      title: 'applicreations.com',
+      siteName: dict.brand.name,
+      title: ogTitle,
       description,
       url,
       locale: locale === 'es' ? 'es_ES' : 'en_US',
-      images: [{ ...OG_IMAGE, alt: imageAlt }],
+      // Omit og:image so iMessage stays the compact icon+title bubble.
+      // A 900px+ image is what produces the large square card.
     },
     twitter: {
-      card: 'summary_large_image',
-      title,
+      card: 'summary',
+      title: ogTitle,
       description,
-      images: [OG_IMAGE.url],
+      images: [TWITTER_IMAGE],
     },
   }
 }

@@ -41,31 +41,23 @@ export const metadata: Metadata = {
     'Friendly custom websites and apps for local businesses. Simple pricing. Clear next steps.',
   applicationName: 'Applicreations',
   icons: {
-    icon: [{ url: '/logo-mark.png', type: 'image/png' }],
-    apple: [{ url: '/logo-mark.png', type: 'image/png' }],
+    icon: [{ url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' }],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   openGraph: {
     type: 'website',
-    siteName: 'applicreations.com',
-    title: 'applicreations.com',
+    siteName: 'Applicreations',
+    title: 'Applicreations',
     description:
       'Friendly custom websites and apps for local businesses. Simple pricing. Clear next steps.',
     url: siteUrl,
-    images: [
-      {
-        url: '/og-image.png?v=20260824',
-        width: 1200,
-        height: 630,
-        alt: 'Applicreations — Custom apps and websites',
-      },
-    ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Applicreations — Custom apps and websites',
+    card: 'summary',
+    title: 'Applicreations',
     description:
       'Friendly custom websites and apps for local businesses. Simple pricing. Clear next steps.',
-    images: ['/og-image.png?v=20260824'],
+    images: ['/og-image.png?v=20260901'],
   },
 }
 
